@@ -48,16 +48,12 @@ class MangaPageWidget extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () async {
-                  final clipboard = SystemClipboard.instance;
-                  if (clipboard == null) {
-                    return; // Clipboard API is not supported on this platform.
-                  }
-                  final item = DataWriterItem();
-                  item.add(Formats.plainText(mangaPage.dialoguesDelta ?? ''));
-                  await clipboard.write([item]);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Page $pageIndex をコピーしました')));
+                  if (mangaPage.dialoguesDelta != null) {
+                    await _copyToClipboard(mangaPage.dialoguesDelta!);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Page $pageIndex をコピーしました')));
+                    }
                   }
                 },
                 icon: const Icon(Icons.copy),
@@ -113,6 +109,17 @@ class MangaPageWidget extends StatelessWidget {
       MangaStartPage.left => 'L',
       MangaStartPage.right => 'R',
     };
+  }
+
+  Future<void> _copyToClipboard(String deltaString) async {
+    final clipboard = SystemClipboard.instance;
+    if (clipboard == null) {
+      return; // Clipboard API is not supported on this platform.
+    }
+    final item = DataWriterItem();
+    final delta = Delta.fromJson(json.decode(deltaString));
+    item.add(Formats.plainText(Document.fromDelta(delta).toPlainText()));
+    await clipboard.write([item]);
   }
 }
 

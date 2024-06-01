@@ -22,6 +22,7 @@ Manga _$MangaFromJson(Map<String, dynamic> json) {
 mixin _$Manga {
   String get name => throw _privateConstructorUsedError;
   MangaStartPage get startPage => throw _privateConstructorUsedError;
+  String? get ideaMemo => throw _privateConstructorUsedError;
   List<MangaPage> get pages => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -34,7 +35,11 @@ abstract class $MangaCopyWith<$Res> {
   factory $MangaCopyWith(Manga value, $Res Function(Manga) then) =
       _$MangaCopyWithImpl<$Res, Manga>;
   @useResult
-  $Res call({String name, MangaStartPage startPage, List<MangaPage> pages});
+  $Res call(
+      {String name,
+      MangaStartPage startPage,
+      String? ideaMemo,
+      List<MangaPage> pages});
 }
 
 /// @nodoc
@@ -52,6 +57,7 @@ class _$MangaCopyWithImpl<$Res, $Val extends Manga>
   $Res call({
     Object? name = null,
     Object? startPage = null,
+    Object? ideaMemo = freezed,
     Object? pages = null,
   }) {
     return _then(_value.copyWith(
@@ -63,6 +69,10 @@ class _$MangaCopyWithImpl<$Res, $Val extends Manga>
           ? _value.startPage
           : startPage // ignore: cast_nullable_to_non_nullable
               as MangaStartPage,
+      ideaMemo: freezed == ideaMemo
+          ? _value.ideaMemo
+          : ideaMemo // ignore: cast_nullable_to_non_nullable
+              as String?,
       pages: null == pages
           ? _value.pages
           : pages // ignore: cast_nullable_to_non_nullable
@@ -78,7 +88,11 @@ abstract class _$$MangaImplCopyWith<$Res> implements $MangaCopyWith<$Res> {
       __$$MangaImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String name, MangaStartPage startPage, List<MangaPage> pages});
+  $Res call(
+      {String name,
+      MangaStartPage startPage,
+      String? ideaMemo,
+      List<MangaPage> pages});
 }
 
 /// @nodoc
@@ -94,6 +108,7 @@ class __$$MangaImplCopyWithImpl<$Res>
   $Res call({
     Object? name = null,
     Object? startPage = null,
+    Object? ideaMemo = freezed,
     Object? pages = null,
   }) {
     return _then(_$MangaImpl(
@@ -105,6 +120,10 @@ class __$$MangaImplCopyWithImpl<$Res>
           ? _value.startPage
           : startPage // ignore: cast_nullable_to_non_nullable
               as MangaStartPage,
+      ideaMemo: freezed == ideaMemo
+          ? _value.ideaMemo
+          : ideaMemo // ignore: cast_nullable_to_non_nullable
+              as String?,
       pages: null == pages
           ? _value._pages
           : pages // ignore: cast_nullable_to_non_nullable
@@ -119,6 +138,7 @@ class _$MangaImpl implements _Manga {
   const _$MangaImpl(
       {required this.name,
       required this.startPage,
+      required this.ideaMemo,
       required final List<MangaPage> pages})
       : _pages = pages;
 
@@ -129,6 +149,8 @@ class _$MangaImpl implements _Manga {
   final String name;
   @override
   final MangaStartPage startPage;
+  @override
+  final String? ideaMemo;
   final List<MangaPage> _pages;
   @override
   List<MangaPage> get pages {
@@ -139,7 +161,7 @@ class _$MangaImpl implements _Manga {
 
   @override
   String toString() {
-    return 'Manga(name: $name, startPage: $startPage, pages: $pages)';
+    return 'Manga(name: $name, startPage: $startPage, ideaMemo: $ideaMemo, pages: $pages)';
   }
 
   @override
@@ -150,12 +172,14 @@ class _$MangaImpl implements _Manga {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.startPage, startPage) ||
                 other.startPage == startPage) &&
+            (identical(other.ideaMemo, ideaMemo) ||
+                other.ideaMemo == ideaMemo) &&
             const DeepCollectionEquality().equals(other._pages, _pages));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, name, startPage,
+  int get hashCode => Object.hash(runtimeType, name, startPage, ideaMemo,
       const DeepCollectionEquality().hash(_pages));
 
   @JsonKey(ignore: true)
@@ -176,6 +200,7 @@ abstract class _Manga implements Manga {
   const factory _Manga(
       {required final String name,
       required final MangaStartPage startPage,
+      required final String? ideaMemo,
       required final List<MangaPage> pages}) = _$MangaImpl;
 
   factory _Manga.fromJson(Map<String, dynamic> json) = _$MangaImpl.fromJson;
@@ -184,6 +209,8 @@ abstract class _Manga implements Manga {
   String get name;
   @override
   MangaStartPage get startPage;
+  @override
+  String? get ideaMemo;
   @override
   List<MangaPage> get pages;
   @override

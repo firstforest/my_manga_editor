@@ -23,8 +23,9 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
     return MangaPageViewModel(
       uuid: const Uuid().v4(),
       manga: Manga(
-        name: 'test',
+        name: '無名の傑作',
         startPage: MangaStartPage.left,
+        ideaMemo: null,
         pages: [1, 2, 3]
             .map(
               (i) => MangaPage(
@@ -106,6 +107,12 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
       pages.add(MangaPage(
           id: pages.length + 1, memoDelta: null, dialoguesDelta: null));
       state = AsyncValue.data(data.copyWith.manga(pages: pages));
+    });
+  }
+
+  Future<void> updateIdeaMemo(String value) async {
+    state.whenOrNull(data: (data) {
+      state = AsyncValue.data(data.copyWith.manga(ideaMemo: value));
     });
   }
 }

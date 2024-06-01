@@ -19,6 +19,7 @@ class Manga with _$Manga {
   const factory Manga({
     required String name,
     required MangaStartPage startPage,
+    required String? ideaMemo,
     required List<MangaPage> pages,
   }) = _Manga;
 

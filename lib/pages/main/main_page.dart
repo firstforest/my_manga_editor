@@ -100,7 +100,16 @@ class MainPage extends HookConsumerWidget {
       body: Row(
         key: ValueKey(viewModel.asData?.value.uuid),
         children: [
-          const Expanded(flex: 1, child: Workspace()),
+          Expanded(
+              flex: 1,
+              child: Workspace(
+                initialText: viewModel.valueOrNull?.manga.ideaMemo,
+                onTextChanged: (value) {
+                  ref
+                      .read(mangaPageViewModelNotifierProvider.notifier)
+                      .updateIdeaMemo(value);
+                },
+              )),
           Expanded(
             flex: 3,
             child: ColoredBox(

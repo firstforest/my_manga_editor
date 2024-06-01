@@ -8,7 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/models/manga.dart';
-import 'package:my_manga_editor/quill_controller_hoook.dart';
+import 'package:my_manga_editor/quill_controller_hook.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 
 class MangaPageWidget extends StatelessWidget {

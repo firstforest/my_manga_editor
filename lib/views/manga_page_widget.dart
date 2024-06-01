@@ -18,14 +18,15 @@ class MangaPageWidget extends StatelessWidget {
     required this.mangaPage,
     required this.onMemoChanged,
     required this.onDialogueChanged,
+    required this.onDeleteButtonPressed,
   });
 
   final int pageIndex;
   final MangaStartPage startPage;
   final MangaPage mangaPage;
   final Function(String value) onMemoChanged;
-
   final Function(String value) onDialogueChanged;
+  final Function() onDeleteButtonPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +55,10 @@ class MangaPageWidget extends StatelessWidget {
                   }
                 },
                 icon: const Icon(Icons.copy),
+              ),
+              IconButton(
+                onPressed: onDeleteButtonPressed,
+                icon: const Icon(Icons.delete),
               ),
             ],
           ),

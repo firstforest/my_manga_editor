@@ -134,22 +134,27 @@ class MainPage extends HookConsumerWidget {
                           right: 24.r + 8.r,
                         ),
                         child: MangaPageWidget(
-                          pageIndex: index + 1,
-                          startPage: data.manga.startPage,
-                          mangaPage: page,
-                          onMemoChanged: (value) {
-                            ref
-                                .read(
-                                    mangaPageViewModelNotifierProvider.notifier)
-                                .updateMemo(page.id, value);
-                          },
-                          onDialogueChanged: (value) {
-                            ref
-                                .read(
-                                    mangaPageViewModelNotifierProvider.notifier)
-                                .updateDialogue(page.id, value);
-                          },
-                        ),
+                            pageIndex: index + 1,
+                            startPage: data.manga.startPage,
+                            mangaPage: page,
+                            onMemoChanged: (value) {
+                              ref
+                                  .read(mangaPageViewModelNotifierProvider
+                                      .notifier)
+                                  .updateMemo(page.id, value);
+                            },
+                            onDialogueChanged: (value) {
+                              ref
+                                  .read(mangaPageViewModelNotifierProvider
+                                      .notifier)
+                                  .updateDialogue(page.id, value);
+                            },
+                            onDeleteButtonPressed: () {
+                              ref
+                                  .read(mangaPageViewModelNotifierProvider
+                                      .notifier)
+                                  .deletePage(page.id);
+                            }),
                       ),
                     );
                   },

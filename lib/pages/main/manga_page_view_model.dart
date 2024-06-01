@@ -99,4 +99,13 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
       state = AsyncValue.data(data.copyWith.manga(name: value));
     });
   }
+
+  Future<void> addPage() async {
+    state.whenOrNull(data: (data) {
+      final pages = List<MangaPage>.from(data.manga.pages);
+      pages.add(MangaPage(
+          id: pages.length + 1, memoDelta: null, dialoguesDelta: null));
+      state = AsyncValue.data(data.copyWith.manga(pages: pages));
+    });
+  }
 }

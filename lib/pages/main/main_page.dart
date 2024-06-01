@@ -23,6 +23,7 @@ class MainPage extends HookConsumerWidget {
       }
     });
     final isNameEdit = useState(false);
+    final scrollController = useScrollController();
 
     return Scaffold(
       appBar: AppBar(
@@ -144,6 +145,7 @@ class MainPage extends HookConsumerWidget {
                         .read(mangaPageViewModelNotifierProvider.notifier)
                         .reorderPage(oldIndex, newIndex);
                   },
+                  scrollController: scrollController,
                 ),
                 error: (_, __) => const Text('error'),
                 loading: () => const CircularProgressIndicator(),
@@ -151,6 +153,19 @@ class MainPage extends HookConsumerWidget {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          ref.read(mangaPageViewModelNotifierProvider.notifier).addPage();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            scrollController.animateTo(
+              scrollController.position.maxScrollExtent,
+              duration: const Duration(seconds: 1),
+              curve: Curves.fastOutSlowIn,
+            );
+          });
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

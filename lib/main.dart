@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:my_manga_editor/main_page.dart';
+import 'package:my_manga_editor/pages/main/main_page.dart';
 
 void main() {
   runApp(const ScreenUtilInit(child: ProviderScope(child: MyApp())));

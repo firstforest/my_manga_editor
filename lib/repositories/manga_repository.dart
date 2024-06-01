@@ -34,4 +34,10 @@ class MangaRepository {
     }
     return Manga.fromJson(json.decode(jsonString));
   }
+
+  Future<void> clearData() async {
+    logger.d('clearData');
+    final prefs = await _sharedPreferences;
+    await prefs.clear();
+  }
 }

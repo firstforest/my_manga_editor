@@ -29,13 +29,13 @@ const _$MangaStartPageEnumMap = {
 _$MangaPageImpl _$$MangaPageImplFromJson(Map<String, dynamic> json) =>
     _$MangaPageImpl(
       id: (json['id'] as num).toInt(),
-      memo: json['memo'] as String,
-      dialogues: json['dialogues'] as String,
+      memoDelta: json['memoDelta'] as String?,
+      dialoguesDelta: json['dialoguesDelta'] as String?,
     );
 
 Map<String, dynamic> _$$MangaPageImplToJson(_$MangaPageImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'memo': instance.memo,
-      'dialogues': instance.dialogues,
+      'memoDelta': instance.memoDelta,
+      'dialoguesDelta': instance.dialoguesDelta,
     };

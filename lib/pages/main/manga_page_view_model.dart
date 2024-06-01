@@ -29,8 +29,8 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
             .map(
               (i) => MangaPage(
                 id: i,
-                memo: 'memo $i',
-                dialogues: 'dialogues',
+                memoDelta: null,
+                dialoguesDelta: null,
               ),
             )
             .toList(),
@@ -69,7 +69,7 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
     state.whenOrNull(data: (data) {
       final pages = data.manga.pages.map((page) {
         if (page.id == id) {
-          return page.copyWith(memo: value);
+          return page.copyWith(memoDelta: value);
         }
         return page;
       }).toList();
@@ -82,11 +82,15 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
     state.whenOrNull(data: (data) {
       final pages = data.manga.pages.map((page) {
         if (page.id == id) {
-          return page.copyWith(dialogues: value);
+          return page.copyWith(dialoguesDelta: value);
         }
         return page;
       }).toList();
       state = AsyncValue.data(data.copyWith.manga(pages: pages));
     });
+  }
+
+  Future<void> clearData() async {
+    await ref.read(mangaRepositoryProvider).clearData();
   }
 }

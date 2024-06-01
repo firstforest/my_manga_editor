@@ -7,7 +7,7 @@ part of 'manga_page_view_model.dart';
 // **************************************************************************
 
 String _$mangaPageViewModelNotifierHash() =>
-    r'd5dddde368f0d35cadae39ac5b7c300955b3adf8';
+    r'be28952044e462bbf98526c6f6e4877ab71a3147';
 
 /// See also [MangaPageViewModelNotifier].
 @ProviderFor(MangaPageViewModelNotifier)

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill/quill_delta.dart';
 
-QuillController useQuillController(String text) {
-  return use(_QuillControllerHook(text));
+QuillController useQuillController(Delta? initialDelta) {
+  return use(_QuillControllerHook(initialDelta));
 }
 
 class _QuillControllerHook extends Hook<QuillController> {
-  const _QuillControllerHook(this.text);
+  const _QuillControllerHook(this.initialDelta);
 
-  final String text;
+  final Delta? initialDelta;
 
   @override
   HookState<QuillController, Hook<QuillController>> createState() =>
@@ -24,7 +25,9 @@ class _QuillControllerHookState
   void initHook() {
     super.initHook();
     _controller = QuillController.basic();
-    _controller.document = Document.fromHtml(hook.text);
+    if (hook.initialDelta != null) {
+      _controller.document = Document.fromDelta(hook.initialDelta!);
+    }
   }
 
   @override

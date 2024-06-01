@@ -23,12 +23,19 @@ class MainPage extends ConsumerWidget {
             icon: const Icon(Icons.save),
           ),
           IconButton(
-              onPressed: () {
-                ref
-                    .read(mangaPageViewModelNotifierProvider.notifier)
-                    .loadManga();
-              },
-              icon: const Icon(Icons.refresh)),
+            onPressed: () {
+              ref.read(mangaPageViewModelNotifierProvider.notifier).loadManga();
+            },
+            icon: const Icon(Icons.refresh),
+          ),
+          IconButton(
+            onPressed: () {
+              ref.read(mangaPageViewModelNotifierProvider.notifier).clearData();
+            },
+            icon: const Icon(
+              Icons.delete_forever,
+            ),
+          ),
         ],
       ),
       body: Row(

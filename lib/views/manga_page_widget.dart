@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/logger.dart';
@@ -50,7 +53,7 @@ class MangaPageWidget extends StatelessWidget {
                     return; // Clipboard API is not supported on this platform.
                   }
                   final item = DataWriterItem();
-                  item.add(Formats.plainText(mangaPage.dialogues));
+                  item.add(Formats.plainText(mangaPage.dialoguesDelta ?? ''));
                   await clipboard.write([item]);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -69,7 +72,7 @@ class MangaPageWidget extends StatelessWidget {
               ),
               color: Colors.indigo.shade100,
               child: _TextAreaWidget(
-                initialText: mangaPage.memo,
+                initialText: mangaPage.memoDelta,
                 onChanged: onMemoChanged,
               ),
             ),
@@ -86,7 +89,7 @@ class MangaPageWidget extends StatelessWidget {
               color: Colors.black12,
               child: _TextAreaWidget(
                 key: ValueKey(mangaPage.id),
-                initialText: mangaPage.dialogues,
+                initialText: mangaPage.dialoguesDelta,
                 onChanged: onDialogueChanged,
               ),
             ),
@@ -117,16 +120,17 @@ class _TextAreaWidget extends HookConsumerWidget {
   const _TextAreaWidget(
       {super.key, required this.initialText, required this.onChanged});
 
-  final String initialText;
+  final String? initialText;
   final Function(String value) onChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final quillController = useQuillController(initialText);
+    final quillController = useQuillController(
+        initialText != null ? Delta.fromJson(json.decode(initialText!)) : null);
     final focusNode = useFocusNode();
 
     quillController.addListener(() {
-      onChanged(quillController.document.toPlainText());
+      onChanged(json.encode(quillController.document.toDelta().toJson()));
     });
 
     return QuillEditor.basic(

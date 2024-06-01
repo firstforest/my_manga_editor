@@ -1,7 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'manga.freezed.dart';
-
 part 'manga.g.dart';
 
 enum MangaStartPage {
@@ -30,8 +29,8 @@ class Manga with _$Manga {
 class MangaPage with _$MangaPage {
   const factory MangaPage({
     required int id,
-    required String memo,
-    required String dialogues,
+    required String? memoDelta,
+    required String? dialoguesDelta,
   }) = _MangaPage;
 
   factory MangaPage.fromJson(Map<String, dynamic> json) =>

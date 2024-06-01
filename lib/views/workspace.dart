@@ -35,6 +35,23 @@ class _WorkspaceState extends State<Workspace> {
       widget
           .onTextChanged(json.encode(_controller.document.toDelta().toJson()));
     });
+    _controller.addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    final selection = _controller.selection;
+    final index = selection.baseOffset - 3;
+    if (0 <= index) {
+      if (_controller.document.getPlainText(index, 3) == '\n* ') {
+        logger.d('text: ${_controller.document.toPlainText()}');
+        _controller.document.format(selection.baseOffset - 2, 2, Attribute.ul);
+        _controller.document.delete(selection.baseOffset - 2, 2);
+        _controller.updateSelection(
+          selection.copyWith(baseOffset: selection.baseOffset - 2),
+          ChangeSource.silent,
+        );
+      }
+    }
   }
 
   @override
@@ -74,6 +91,7 @@ class _WorkspaceState extends State<Workspace> {
             configurations: QuillEditorConfigurations(
               controller: _controller,
               padding: const EdgeInsets.all(8.0),
+              placeholder: '何でも書ける場所',
             ),
           ),
         ),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:my_manga_editor/main_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ScreenUtilInit(child: ProviderScope(child: MyApp())));
 }
 
 class MyApp extends StatelessWidget {
@@ -17,69 +19,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: MainPage(),
-    );
-  }
-}
-
-class MainPage extends StatelessWidget {
-  const MainPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('漫画用エディタ'),
-      ),
-      body: Row(
-        children: [
-          const Flexible(child: Workspace()),
-          Flexible(
-            child: ColoredBox(
-              color: Colors.black12,
-              child: Column(
-                children: [
-                  QuillEditor.basic(
-                    configurations: QuillEditorConfigurations(
-                      controller: QuillController.basic(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class Workspace extends StatefulWidget {
-  const Workspace({super.key});
-
-  @override
-  State<Workspace> createState() => _WorkspaceState();
-}
-
-class _WorkspaceState extends State<Workspace> {
-  final _controller = QuillController.basic();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        QuillToolbar.simple(
-          configurations:
-              QuillSimpleToolbarConfigurations(controller: _controller),
-        ),
-        Expanded(
-          child: QuillEditor.basic(
-            configurations: QuillEditorConfigurations(
-              controller: _controller,
-            ),
-          ),
-        ),
-      ],
+      home: const MainPage(),
     );
   }
 }

@@ -1,55 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:my_manga_editor/models/manga.dart';
+import 'package:my_manga_editor/pages/main/manga_page_view_model.dart';
 import 'package:my_manga_editor/views/manga_page_widget.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-part 'main_page.freezed.dart';
-part 'main_page.g.dart';
-
-@freezed
-class MangaPageViewModel with _$MangaPageViewModel {
-  const factory MangaPageViewModel({
-    required Manga manga,
-  }) = _MangaPageViewModel;
-}
-
-@riverpod
-class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
-  @override
-  FutureOr<MangaPageViewModel> build() async {
-    return MangaPageViewModel(
-      manga: Manga(
-        name: 'test',
-        startPage: MangaStartPage.left,
-        pages: [1, 2, 3]
-            .map(
-              (i) => MangaPage(
-                id: i,
-                memo: 'memo $i',
-                dialogues: 'dialogues',
-              ),
-            )
-            .toList(),
-      ),
-    );
-  }
-
-  void reorderPage(int oldIndex, int newIndex) {
-    state.whenOrNull(data: (data) {
-      final pages = List<MangaPage>.from(data.manga.pages);
-      if (oldIndex < newIndex) {
-        newIndex -= 1;
-      }
-      final item = pages.removeAt(oldIndex);
-      pages.insert(newIndex, item);
-      state = AsyncValue.data(data.copyWith.manga(pages: pages));
-    });
-  }
-}
+import 'package:my_manga_editor/views/workspace.dart';
 
 class MainPage extends ConsumerWidget {
   const MainPage({super.key});
@@ -103,37 +57,6 @@ class MainPage extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class Workspace extends StatefulWidget {
-  const Workspace({super.key});
-
-  @override
-  State<Workspace> createState() => _WorkspaceState();
-}
-
-class _WorkspaceState extends State<Workspace> {
-  final _controller = QuillController.basic();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        QuillToolbar.simple(
-          configurations:
-              QuillSimpleToolbarConfigurations(controller: _controller),
-        ),
-        Expanded(
-          child: QuillEditor.basic(
-            configurations: QuillEditorConfigurations(
-              controller: _controller,
-              padding: const EdgeInsets.all(8.0),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

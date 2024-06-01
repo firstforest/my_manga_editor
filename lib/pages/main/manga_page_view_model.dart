@@ -93,4 +93,10 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
   Future<void> clearData() async {
     await ref.read(mangaRepositoryProvider).clearData();
   }
+
+  Future<void> updateName(String value) async {
+    state.whenOrNull(data: (data) {
+      state = AsyncValue.data(data.copyWith.manga(name: value));
+    });
+  }
 }

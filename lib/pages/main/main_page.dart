@@ -15,8 +15,24 @@ class MainPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('漫画用エディタ'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              ref.read(mangaPageViewModelNotifierProvider.notifier).saveManga();
+            },
+            icon: const Icon(Icons.save),
+          ),
+          IconButton(
+              onPressed: () {
+                ref
+                    .read(mangaPageViewModelNotifierProvider.notifier)
+                    .loadManga();
+              },
+              icon: const Icon(Icons.refresh)),
+        ],
       ),
       body: Row(
+        key: ValueKey(viewModel.asData?.value.uuid),
         children: [
           const Expanded(flex: 1, child: Workspace()),
           Expanded(
@@ -39,6 +55,18 @@ class MainPage extends ConsumerWidget {
                           pageIndex: index + 1,
                           startPage: data.manga.startPage,
                           mangaPage: page,
+                          onMemoChanged: (value) {
+                            ref
+                                .read(
+                                    mangaPageViewModelNotifierProvider.notifier)
+                                .updateMemo(page.id, value);
+                          },
+                          onDialogueChanged: (value) {
+                            ref
+                                .read(
+                                    mangaPageViewModelNotifierProvider.notifier)
+                                .updateDialogue(page.id, value);
+                          },
                         ),
                       ),
                     );

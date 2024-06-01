@@ -1,27 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/models/manga.dart';
 import 'package:my_manga_editor/quill_controller_hoook.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 
-class MangaPageWidget extends HookConsumerWidget {
+class MangaPageWidget extends StatelessWidget {
   const MangaPageWidget({
     super.key,
     required this.pageIndex,
     required this.startPage,
     required this.mangaPage,
+    required this.onMemoChanged,
+    required this.onDialogueChanged,
   });
 
   final int pageIndex;
   final MangaStartPage startPage;
   final MangaPage mangaPage;
+  final Function(String value) onMemoChanged;
+
+  final Function(String value) onDialogueChanged;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final memoController = useQuillController(mangaPage.memo);
-    final dialoguesController = useQuillController(mangaPage.dialogues);
+  Widget build(BuildContext context) {
+    logger.d('build mangaPageWidget: $pageIndex');
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -62,12 +68,9 @@ class MangaPageWidget extends HookConsumerWidget {
                 minHeight: 200.r,
               ),
               color: Colors.indigo.shade100,
-              child: QuillEditor.basic(
-                configurations: QuillEditorConfigurations(
-                  controller: memoController,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r),
-                ),
+              child: _TextAreaWidget(
+                initialText: mangaPage.memo,
+                onChanged: onMemoChanged,
               ),
             ),
           ),
@@ -81,12 +84,10 @@ class MangaPageWidget extends HookConsumerWidget {
                 minHeight: 200.r,
               ),
               color: Colors.black12,
-              child: QuillEditor.basic(
-                configurations: QuillEditorConfigurations(
-                  controller: dialoguesController,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r),
-                ),
+              child: _TextAreaWidget(
+                key: ValueKey(mangaPage.id),
+                initialText: mangaPage.dialogues,
+                onChanged: onDialogueChanged,
               ),
             ),
           ),
@@ -109,5 +110,30 @@ class MangaPageWidget extends HookConsumerWidget {
       MangaStartPage.left => 'L',
       MangaStartPage.right => 'R',
     };
+  }
+}
+
+class _TextAreaWidget extends HookConsumerWidget {
+  const _TextAreaWidget(
+      {super.key, required this.initialText, required this.onChanged});
+
+  final String initialText;
+  final Function(String value) onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quillController = useQuillController(initialText);
+    final focusNode = useFocusNode();
+
+    quillController.addListener(() {
+      onChanged(quillController.document.toPlainText());
+    });
+
+    return QuillEditor.basic(
+        focusNode: focusNode,
+        configurations: QuillEditorConfigurations(
+          controller: quillController,
+          padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r),
+        ));
   }
 }

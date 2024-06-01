@@ -88,8 +88,13 @@ class MainPage extends HookConsumerWidget {
             icon: const Icon(Icons.refresh),
           ),
           IconButton(
-            onPressed: () {
-              ref.read(mangaPageViewModelNotifierProvider.notifier).clearData();
+            onPressed: () async {
+              await ref
+                  .read(mangaPageViewModelNotifierProvider.notifier)
+                  .clearData();
+              ref
+                  .read(mangaPageViewModelNotifierProvider.notifier)
+                  .resetManga();
             },
             icon: const Icon(
               Icons.delete_forever,

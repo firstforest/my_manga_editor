@@ -20,6 +20,10 @@ class MangaPageViewModel with _$MangaPageViewModel {
 class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
   @override
   FutureOr<MangaPageViewModel> build() async {
+    return _createInitialState();
+  }
+
+  MangaPageViewModel _createInitialState() {
     return MangaPageViewModel(
       uuid: const Uuid().v4(),
       manga: Manga(
@@ -63,6 +67,10 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
       state = AsyncValue.data(
           MangaPageViewModel(uuid: const Uuid().v4(), manga: manga));
     }
+  }
+
+  Future<void> resetManga() async {
+    state = AsyncValue.data(_createInitialState());
   }
 
   Future<void> updateMemo(int id, String value) async {

@@ -51,6 +51,16 @@ class _WorkspaceState extends State<Workspace> {
           ChangeSource.silent,
         );
       }
+    } else if (index == -1) {
+      if (_controller.document.getPlainText(0, 2) == '* ') {
+        logger.d('text: ${_controller.document.toPlainText()}');
+        _controller.document.format(0, 2, Attribute.ul);
+        _controller.document.delete(0, 1);
+        _controller.updateSelection(
+          selection.copyWith(baseOffset: 1),
+          ChangeSource.silent,
+        );
+      }
     }
   }
 

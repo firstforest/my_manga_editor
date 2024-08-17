@@ -37,44 +37,8 @@ class MangaPageWidget extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildPageIndicator(),
-              SizedBox(
-                height: 4.r,
-              ),
-              IconButton(
-                onPressed: () async {
-                  if (mangaPage.dialoguesDelta != null) {
-                    await _copyToClipboard(mangaPage.dialoguesDelta!);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Page $pageIndex をコピーしました')));
-                    }
-                  }
-                },
-                icon: const Icon(Icons.copy),
-              ),
-              IconButton(
-                onPressed: onDeleteButtonPressed,
-                icon: const Icon(Icons.delete),
-              ),
-            ],
-          ),
-          Expanded(
-            flex: 1,
-            child: Container(
-              constraints: BoxConstraints(
-                minHeight: 200.r,
-              ),
-              color: Colors.indigo.shade100,
-              child: _TextAreaWidget(
-                initialText: mangaPage.memoDelta,
-                onChanged: onMemoChanged,
-              ),
-            ),
-          ),
+          _buildInfoArea(context),
+          _buildMemoArea(),
           SizedBox(
             width: 4.r,
           ),
@@ -86,14 +50,80 @@ class MangaPageWidget extends StatelessWidget {
               ),
               color: Colors.black12,
               child: _TextAreaWidget(
+                key: ValueKey('${mangaPage.id}_togaki'),
+                initialText: null,
+                placeholder: 'ト書き',
+                onChanged: (value) {
+
+                },
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 2.r,
+          ),
+          Expanded(
+            flex: 2,
+            child: Container(
+              constraints: BoxConstraints(
+                minHeight: 200.r,
+              ),
+              color: Colors.black12,
+              child: _TextAreaWidget(
                 key: ValueKey(mangaPage.id),
                 initialText: mangaPage.dialoguesDelta,
+                placeholder: 'セリフ',
                 onChanged: onDialogueChanged,
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Expanded _buildMemoArea() {
+    return Expanded(
+      flex: 1,
+      child: Container(
+        constraints: BoxConstraints(
+          minHeight: 200.r,
+        ),
+        color: Colors.indigo.shade100,
+        child: _TextAreaWidget(
+          initialText: mangaPage.memoDelta,
+          placeholder: 'このページで描きたいこと',
+          onChanged: onMemoChanged,
+        ),
+      ),
+    );
+  }
+
+  Column _buildInfoArea(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPageIndicator(),
+        SizedBox(
+          height: 4.r,
+        ),
+        IconButton(
+          onPressed: () async {
+            if (mangaPage.dialoguesDelta != null) {
+              await _copyToClipboard(mangaPage.dialoguesDelta!);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Page $pageIndex をコピーしました')));
+              }
+            }
+          },
+          icon: const Icon(Icons.copy),
+        ),
+        IconButton(
+          onPressed: onDeleteButtonPressed,
+          icon: const Icon(Icons.delete),
+        ),
+      ],
     );
   }
 
@@ -126,10 +156,15 @@ class MangaPageWidget extends StatelessWidget {
 }
 
 class _TextAreaWidget extends HookConsumerWidget {
-  const _TextAreaWidget(
-      {super.key, required this.initialText, required this.onChanged});
+  const _TextAreaWidget({
+    super.key,
+    required this.initialText,
+    this.placeholder,
+    required this.onChanged,
+  });
 
   final String? initialText;
+  final String? placeholder;
   final Function(String value) onChanged;
 
   @override
@@ -146,6 +181,7 @@ class _TextAreaWidget extends HookConsumerWidget {
         focusNode: focusNode,
         configurations: QuillEditorConfigurations(
           controller: quillController,
+          placeholder: placeholder,
           padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r),
         ));
   }

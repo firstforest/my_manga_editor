@@ -78,12 +78,18 @@ class MainPage extends HookConsumerWidget {
           IconButton(
             onPressed: () {
               ref.read(mangaPageViewModelNotifierProvider.notifier).saveManga();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('保存しました')),
+              );
             },
             icon: const Icon(Icons.save),
           ),
           IconButton(
             onPressed: () {
               ref.read(mangaPageViewModelNotifierProvider.notifier).loadManga();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('読み込みしました')),
+              );
             },
             icon: const Icon(Icons.refresh),
           ),

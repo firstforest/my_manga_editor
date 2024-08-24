@@ -31,6 +31,7 @@ class MangaPage with _$MangaPage {
   const factory MangaPage({
     required int id,
     required String? memoDelta,
+    required String? stageDirectionDelta,
     required String? dialoguesDelta,
   }) = _MangaPage;
 

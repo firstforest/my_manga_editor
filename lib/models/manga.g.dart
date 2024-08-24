@@ -32,6 +32,7 @@ _$MangaPageImpl _$$MangaPageImplFromJson(Map<String, dynamic> json) =>
     _$MangaPageImpl(
       id: (json['id'] as num).toInt(),
       memoDelta: json['memoDelta'] as String?,
+      stageDirectionDelta: json['stageDirectionDelta'] as String?,
       dialoguesDelta: json['dialoguesDelta'] as String?,
     );
 
@@ -39,5 +40,6 @@ Map<String, dynamic> _$$MangaPageImplToJson(_$MangaPageImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'memoDelta': instance.memoDelta,
+      'stageDirectionDelta': instance.stageDirectionDelta,
       'dialoguesDelta': instance.dialoguesDelta,
     };

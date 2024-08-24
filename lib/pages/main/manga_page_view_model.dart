@@ -35,6 +35,7 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
               (i) => MangaPage(
                 id: i,
                 memoDelta: null,
+                stageDirectionDelta: null,
                 dialoguesDelta: null,
               ),
             )
@@ -86,6 +87,19 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
     });
   }
 
+  Future<void> updateStageDirection(int id, String value) async {
+    logger.d('updateStageDirection: $id, $value');
+    state.whenOrNull(data: (data) {
+      final pages = data.manga.pages.map((page) {
+        if (page.id == id) {
+          return page.copyWith(stageDirectionDelta: value);
+        }
+        return page;
+      }).toList();
+      state = AsyncValue.data(data.copyWith.manga(pages: pages));
+    });
+  }
+
   Future<void> updateDialogue(int id, String value) async {
     logger.d('updateDialogue: $id, $value');
     state.whenOrNull(data: (data) {
@@ -112,8 +126,14 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
   Future<void> addPage() async {
     state.whenOrNull(data: (data) {
       final pages = List<MangaPage>.from(data.manga.pages);
-      pages.add(MangaPage(
-          id: pages.length + 1, memoDelta: null, dialoguesDelta: null));
+      pages.add(
+        MangaPage(
+          id: pages.length + 1,
+          memoDelta: null,
+          stageDirectionDelta: null,
+          dialoguesDelta: null,
+        ),
+      );
       state = AsyncValue.data(data.copyWith.manga(pages: pages));
     });
   }

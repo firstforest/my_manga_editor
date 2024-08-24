@@ -17,6 +17,7 @@ class MangaPageWidget extends StatelessWidget {
     required this.startPage,
     required this.mangaPage,
     required this.onMemoChanged,
+    required this.onStageDirectionChanged,
     required this.onDialogueChanged,
     required this.onDeleteButtonPressed,
   });
@@ -25,6 +26,7 @@ class MangaPageWidget extends StatelessWidget {
   final MangaStartPage startPage;
   final MangaPage mangaPage;
   final Function(String value) onMemoChanged;
+  final Function(String value) onStageDirectionChanged;
   final Function(String value) onDialogueChanged;
   final Function() onDeleteButtonPressed;
 
@@ -51,11 +53,9 @@ class MangaPageWidget extends StatelessWidget {
               color: Colors.black12,
               child: _TextAreaWidget(
                 key: ValueKey('${mangaPage.id}_togaki'),
-                initialText: null,
+                initialText: mangaPage.stageDirectionDelta,
                 placeholder: 'ト書き',
-                onChanged: (value) {
-
-                },
+                onChanged: onStageDirectionChanged,
               ),
             ),
           ),

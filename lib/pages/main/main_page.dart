@@ -149,6 +149,12 @@ class MainPage extends HookConsumerWidget {
                                       .notifier)
                                   .updateMemo(page.id, value);
                             },
+                            onStageDirectionChanged: (value) {
+                              ref
+                                  .read(mangaPageViewModelNotifierProvider
+                                      .notifier)
+                                  .updateStageDirection(page.id, value);
+                            },
                             onDialogueChanged: (value) {
                               ref
                                   .read(mangaPageViewModelNotifierProvider

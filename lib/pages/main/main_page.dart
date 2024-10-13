@@ -24,6 +24,8 @@ class MainPage extends HookConsumerWidget {
     });
     final isNameEdit = useState(false);
     final scrollController = useScrollController();
+    final uuid = ref.watch(
+        mangaPageViewModelNotifierProvider.select((e) => e.asData?.value.uuid));
 
     return Scaffold(
       appBar: AppBar(
@@ -109,16 +111,24 @@ class MainPage extends HookConsumerWidget {
         ],
       ),
       body: Row(
-        key: ValueKey(viewModel.asData?.value.uuid),
+        key: ValueKey(uuid),
         children: [
           Expanded(
               flex: 1,
-              child: Workspace(
-                initialText: viewModel.valueOrNull?.manga.ideaMemo,
-                onTextChanged: (value) {
-                  ref
-                      .read(mangaPageViewModelNotifierProvider.notifier)
-                      .updateIdeaMemo(value);
+              child: HookConsumer(
+                builder: (BuildContext context, WidgetRef ref, Widget? child) {
+                  final initialText = ref.watch(
+                      mangaPageViewModelNotifierProvider
+                          .select((e) => e.valueOrNull?.manga.ideaMemo));
+                  final onTextChanged = useCallback((value) {
+                    ref
+                        .read(mangaPageViewModelNotifierProvider.notifier)
+                        .updateIdeaMemo(value);
+                  }, const []);
+                  return Workspace(
+                    initialText: initialText,
+                    onTextChanged: onTextChanged,
+                  );
                 },
               )),
           Expanded(

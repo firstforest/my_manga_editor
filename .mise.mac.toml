@@ -1,0 +1,4 @@
+[tools]
+ruby = "latest"
+bundler = "latest"
+cocoapods = "latest"

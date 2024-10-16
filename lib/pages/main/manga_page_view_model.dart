@@ -3,7 +3,6 @@ import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/models/manga.dart';
 import 'package:my_manga_editor/repositories/manga_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:uuid/uuid.dart';
 
 part 'manga_page_view_model.freezed.dart';
 part 'manga_page_view_model.g.dart';
@@ -11,7 +10,7 @@ part 'manga_page_view_model.g.dart';
 @freezed
 class MangaPageViewModel with _$MangaPageViewModel {
   const factory MangaPageViewModel({
-    required String uuid,
+    required String fileName,
     required Manga manga,
   }) = _MangaPageViewModel;
 }
@@ -19,29 +18,31 @@ class MangaPageViewModel with _$MangaPageViewModel {
 @riverpod
 class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
   @override
-  FutureOr<MangaPageViewModel> build() async {
+  FutureOr<MangaPageViewModel> build(String fileName) async {
     return _createInitialState();
   }
 
-  MangaPageViewModel _createInitialState() {
-    return MangaPageViewModel(
-      uuid: const Uuid().v4(),
-      manga: Manga(
-        name: '無名の傑作',
-        startPage: MangaStartPage.left,
-        ideaMemo: null,
-        pages: [1, 2, 3]
-            .map(
-              (i) => MangaPage(
-                id: i,
-                memoDelta: null,
-                stageDirectionDelta: null,
-                dialoguesDelta: null,
-              ),
-            )
-            .toList(),
-      ),
-    );
+  Future<MangaPageViewModel> _createInitialState() async {
+    final loadedViewModel = await loadViewModel();
+    return loadedViewModel ??
+        MangaPageViewModel(
+          fileName: fileName,
+          manga: Manga(
+            name: '無名の傑作',
+            startPage: MangaStartPage.left,
+            ideaMemo: null,
+            pages: [1, 2, 3]
+                .map(
+                  (i) => MangaPage(
+                    id: i,
+                    memoDelta: null,
+                    stageDirectionDelta: null,
+                    dialoguesDelta: null,
+                  ),
+                )
+                .toList(),
+          ),
+        );
   }
 
   void reorderPage(int oldIndex, int newIndex) {
@@ -58,20 +59,23 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
 
   Future<void> saveManga() async {
     await state.whenOrNull(data: (data) {
-      return ref.read(mangaRepositoryProvider).saveManga(data.manga);
+      return ref
+          .read(mangaRepositoryProvider)
+          .saveManga(data.fileName, data.manga);
     });
   }
 
-  Future<void> loadManga() async {
-    final manga = await ref.read(mangaRepositoryProvider).loadManga();
+  Future<MangaPageViewModel?> loadViewModel() async {
+    final manga = await ref.read(mangaRepositoryProvider).loadManga(fileName);
     if (manga != null) {
-      state = AsyncValue.data(
-          MangaPageViewModel(uuid: const Uuid().v4(), manga: manga));
+      return MangaPageViewModel(fileName: fileName, manga: manga);
+    } else {
+      return null;
     }
   }
 
   Future<void> resetManga() async {
-    state = AsyncValue.data(_createInitialState());
+    state = await AsyncValue.guard(_createInitialState);
   }
 
   Future<void> updateMemo(int id, String value) async {

@@ -11,12 +11,15 @@ class MainPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(mangaPageViewModelNotifierProvider);
+    final fileName = useState('manga.json');
+
+    final viewModel =
+        ref.watch(mangaPageViewModelNotifierProvider(fileName.value));
 
     final nameEditController =
         useTextEditingController(text: viewModel.valueOrNull?.manga.name);
     ref.listen(
-        mangaPageViewModelNotifierProvider
+        mangaPageViewModelNotifierProvider(fileName.value)
             .select((v) => v.valueOrNull?.manga.name), (prev, next) {
       if (next != null) {
         nameEditController.text = next;
@@ -24,8 +27,6 @@ class MainPage extends HookConsumerWidget {
     });
     final isNameEdit = useState(false);
     final scrollController = useScrollController();
-    final uuid = ref.watch(
-        mangaPageViewModelNotifierProvider.select((e) => e.asData?.value.uuid));
 
     return Scaffold(
       appBar: AppBar(
@@ -43,7 +44,9 @@ class MainPage extends HookConsumerWidget {
                       controller: nameEditController,
                       onSubmitted: (value) {
                         ref
-                            .read(mangaPageViewModelNotifierProvider.notifier)
+                            .read(mangaPageViewModelNotifierProvider(
+                                    fileName.value)
+                                .notifier)
                             .updateName(value);
                         isNameEdit.value = false;
                       },
@@ -52,7 +55,9 @@ class MainPage extends HookConsumerWidget {
                   IconButton(
                     onPressed: () {
                       ref
-                          .read(mangaPageViewModelNotifierProvider.notifier)
+                          .read(
+                              mangaPageViewModelNotifierProvider(fileName.value)
+                                  .notifier)
                           .updateName(nameEditController.text);
                       isNameEdit.value = false;
                     },
@@ -79,7 +84,10 @@ class MainPage extends HookConsumerWidget {
         actions: [
           IconButton(
             onPressed: () {
-              ref.read(mangaPageViewModelNotifierProvider.notifier).saveManga();
+              ref
+                  .read(mangaPageViewModelNotifierProvider(fileName.value)
+                      .notifier)
+                  .saveManga();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('保存しました')),
               );
@@ -88,7 +96,10 @@ class MainPage extends HookConsumerWidget {
           ),
           IconButton(
             onPressed: () {
-              ref.read(mangaPageViewModelNotifierProvider.notifier).loadManga();
+              ref
+                  .read(mangaPageViewModelNotifierProvider(fileName.value)
+                      .notifier)
+                  .loadViewModel();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('読み込みしました')),
               );
@@ -98,10 +109,12 @@ class MainPage extends HookConsumerWidget {
           IconButton(
             onPressed: () async {
               await ref
-                  .read(mangaPageViewModelNotifierProvider.notifier)
+                  .read(mangaPageViewModelNotifierProvider(fileName.value)
+                      .notifier)
                   .clearData();
               ref
-                  .read(mangaPageViewModelNotifierProvider.notifier)
+                  .read(mangaPageViewModelNotifierProvider(fileName.value)
+                      .notifier)
                   .resetManga();
             },
             icon: const Icon(
@@ -111,18 +124,19 @@ class MainPage extends HookConsumerWidget {
         ],
       ),
       body: Row(
-        key: ValueKey(uuid),
+        key: ValueKey(fileName),
         children: [
           Expanded(
               flex: 1,
               child: HookConsumer(
                 builder: (BuildContext context, WidgetRef ref, Widget? child) {
                   final initialText = ref.watch(
-                      mangaPageViewModelNotifierProvider
+                      mangaPageViewModelNotifierProvider(fileName.value)
                           .select((e) => e.valueOrNull?.manga.ideaMemo));
                   final onTextChanged = useCallback((value) {
                     ref
-                        .read(mangaPageViewModelNotifierProvider.notifier)
+                        .read(mangaPageViewModelNotifierProvider(fileName.value)
+                            .notifier)
                         .updateIdeaMemo(value);
                   }, const []);
                   return Workspace(
@@ -155,25 +169,29 @@ class MainPage extends HookConsumerWidget {
                             mangaPage: page,
                             onMemoChanged: (value) {
                               ref
-                                  .read(mangaPageViewModelNotifierProvider
+                                  .read(mangaPageViewModelNotifierProvider(
+                                          fileName.value)
                                       .notifier)
                                   .updateMemo(page.id, value);
                             },
                             onStageDirectionChanged: (value) {
                               ref
-                                  .read(mangaPageViewModelNotifierProvider
+                                  .read(mangaPageViewModelNotifierProvider(
+                                          fileName.value)
                                       .notifier)
                                   .updateStageDirection(page.id, value);
                             },
                             onDialogueChanged: (value) {
                               ref
-                                  .read(mangaPageViewModelNotifierProvider
+                                  .read(mangaPageViewModelNotifierProvider(
+                                          fileName.value)
                                       .notifier)
                                   .updateDialogue(page.id, value);
                             },
                             onDeleteButtonPressed: () {
                               ref
-                                  .read(mangaPageViewModelNotifierProvider
+                                  .read(mangaPageViewModelNotifierProvider(
+                                          fileName.value)
                                       .notifier)
                                   .deletePage(page.id);
                             }),
@@ -183,7 +201,8 @@ class MainPage extends HookConsumerWidget {
                   itemCount: data.manga.pages.length,
                   onReorder: (oldIndex, newIndex) {
                     ref
-                        .read(mangaPageViewModelNotifierProvider.notifier)
+                        .read(mangaPageViewModelNotifierProvider(fileName.value)
+                            .notifier)
                         .reorderPage(oldIndex, newIndex);
                   },
                   scrollController: scrollController,
@@ -197,7 +216,9 @@ class MainPage extends HookConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ref.read(mangaPageViewModelNotifierProvider.notifier).addPage();
+          ref
+              .read(mangaPageViewModelNotifierProvider(fileName.value).notifier)
+              .addPage();
           WidgetsBinding.instance.addPostFrameCallback((_) {
             scrollController.animateTo(
               scrollController.position.maxScrollExtent,

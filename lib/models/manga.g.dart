@@ -7,6 +7,7 @@ part of 'manga.dart';
 // **************************************************************************
 
 _$MangaImpl _$$MangaImplFromJson(Map<String, dynamic> json) => _$MangaImpl(
+      uuid: json['uuid'] as String,
       name: json['name'] as String,
       startPage: $enumDecode(_$MangaStartPageEnumMap, json['startPage']),
       ideaMemo: json['ideaMemo'] as String?,
@@ -17,6 +18,7 @@ _$MangaImpl _$$MangaImplFromJson(Map<String, dynamic> json) => _$MangaImpl(
 
 Map<String, dynamic> _$$MangaImplToJson(_$MangaImpl instance) =>
     <String, dynamic>{
+      'uuid': instance.uuid,
       'name': instance.name,
       'startPage': _$MangaStartPageEnumMap[instance.startPage]!,
       'ideaMemo': instance.ideaMemo,

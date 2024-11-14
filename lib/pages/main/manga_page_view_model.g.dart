@@ -7,7 +7,7 @@ part of 'manga_page_view_model.dart';
 // **************************************************************************
 
 String _$mangaPageViewModelNotifierHash() =>
-    r'187e50216a1d2bad0b1446c130eaf8b0ccab8f4a';
+    r'9df62f6bef43c3ed40b84819fe26dd94b403a5b2';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -32,10 +32,10 @@ class _SystemHash {
 
 abstract class _$MangaPageViewModelNotifier
     extends BuildlessAutoDisposeAsyncNotifier<MangaPageViewModel> {
-  late final String fileName;
+  late final String uuid;
 
   FutureOr<MangaPageViewModel> build(
-    String fileName,
+    String uuid,
   );
 }
 
@@ -51,10 +51,10 @@ class MangaPageViewModelNotifierFamily
 
   /// See also [MangaPageViewModelNotifier].
   MangaPageViewModelNotifierProvider call(
-    String fileName,
+    String uuid,
   ) {
     return MangaPageViewModelNotifierProvider(
-      fileName,
+      uuid,
     );
   }
 
@@ -63,7 +63,7 @@ class MangaPageViewModelNotifierFamily
     covariant MangaPageViewModelNotifierProvider provider,
   ) {
     return call(
-      provider.fileName,
+      provider.uuid,
     );
   }
 
@@ -88,9 +88,9 @@ class MangaPageViewModelNotifierProvider
         MangaPageViewModel> {
   /// See also [MangaPageViewModelNotifier].
   MangaPageViewModelNotifierProvider(
-    String fileName,
+    String uuid,
   ) : this._internal(
-          () => MangaPageViewModelNotifier()..fileName = fileName,
+          () => MangaPageViewModelNotifier()..uuid = uuid,
           from: mangaPageViewModelNotifierProvider,
           name: r'mangaPageViewModelNotifierProvider',
           debugGetCreateSourceHash:
@@ -100,7 +100,7 @@ class MangaPageViewModelNotifierProvider
           dependencies: MangaPageViewModelNotifierFamily._dependencies,
           allTransitiveDependencies:
               MangaPageViewModelNotifierFamily._allTransitiveDependencies,
-          fileName: fileName,
+          uuid: uuid,
         );
 
   MangaPageViewModelNotifierProvider._internal(
@@ -110,17 +110,17 @@ class MangaPageViewModelNotifierProvider
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.fileName,
+    required this.uuid,
   }) : super.internal();
 
-  final String fileName;
+  final String uuid;
 
   @override
   FutureOr<MangaPageViewModel> runNotifierBuild(
     covariant MangaPageViewModelNotifier notifier,
   ) {
     return notifier.build(
-      fileName,
+      uuid,
     );
   }
 
@@ -129,13 +129,13 @@ class MangaPageViewModelNotifierProvider
     return ProviderOverride(
       origin: this,
       override: MangaPageViewModelNotifierProvider._internal(
-        () => create()..fileName = fileName,
+        () => create()..uuid = uuid,
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        fileName: fileName,
+        uuid: uuid,
       ),
     );
   }
@@ -148,14 +148,13 @@ class MangaPageViewModelNotifierProvider
 
   @override
   bool operator ==(Object other) {
-    return other is MangaPageViewModelNotifierProvider &&
-        other.fileName == fileName;
+    return other is MangaPageViewModelNotifierProvider && other.uuid == uuid;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, fileName.hashCode);
+    hash = _SystemHash.combine(hash, uuid.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -163,8 +162,8 @@ class MangaPageViewModelNotifierProvider
 
 mixin MangaPageViewModelNotifierRef
     on AutoDisposeAsyncNotifierProviderRef<MangaPageViewModel> {
-  /// The parameter `fileName` of this provider.
-  String get fileName;
+  /// The parameter `uuid` of this provider.
+  String get uuid;
 }
 
 class _MangaPageViewModelNotifierProviderElement
@@ -173,8 +172,7 @@ class _MangaPageViewModelNotifierProviderElement
   _MangaPageViewModelNotifierProviderElement(super.provider);
 
   @override
-  String get fileName =>
-      (origin as MangaPageViewModelNotifierProvider).fileName;
+  String get uuid => (origin as MangaPageViewModelNotifierProvider).uuid;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

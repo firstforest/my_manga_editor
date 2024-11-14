@@ -17,6 +17,7 @@ enum MangaStartPage {
 @freezed
 class Manga with _$Manga {
   const factory Manga({
+    required String uuid,
     required String name,
     required MangaStartPage startPage,
     required String? ideaMemo,

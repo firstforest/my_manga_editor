@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/models/manga.dart';
 import 'package:path_provider/path_provider.dart';
@@ -34,8 +35,14 @@ class MangaRepository {
     await file.writeAsString(json.encode(manga.toJson()));
   }
 
-  Future<List<String>> getMangaFiles() async {
-    return [];
+  Future<List<Manga>> getMangaFiles() async {
+    final directoryRoot = await getApplicationDocumentsDirectory();
+    final directory = Directory('${directoryRoot.path}/$directoryName');
+    final files = directory.listSync();
+    return (await Future.wait(
+            files.map((e) => e.uri.pathSegments.last).map((e) => loadManga(e))))
+        .whereNotNull()
+        .toList();
   }
 
   Future<Manga?> loadManga(String fileName) async {

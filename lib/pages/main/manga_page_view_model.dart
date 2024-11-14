@@ -18,31 +18,39 @@ class MangaPageViewModel with _$MangaPageViewModel {
 @riverpod
 class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
   @override
-  FutureOr<MangaPageViewModel> build(String fileName) async {
+  FutureOr<MangaPageViewModel> build(String uuid) async {
     return _createInitialState();
   }
 
   Future<MangaPageViewModel> _createInitialState() async {
     final loadedViewModel = await loadViewModel();
-    return loadedViewModel ??
-        MangaPageViewModel(
-          fileName: fileName,
-          manga: Manga(
-            name: '無名の傑作',
-            startPage: MangaStartPage.left,
-            ideaMemo: null,
-            pages: [1, 2, 3]
-                .map(
-                  (i) => MangaPage(
-                    id: i,
-                    memoDelta: null,
-                    stageDirectionDelta: null,
-                    dialoguesDelta: null,
-                  ),
-                )
-                .toList(),
-          ),
-        );
+    if (loadedViewModel != null) {
+      return loadedViewModel;
+    } else {
+      final newModel = MangaPageViewModel(
+        fileName: '$uuid.json',
+        manga: Manga(
+          uuid: uuid,
+          name: '無名の傑作',
+          startPage: MangaStartPage.left,
+          ideaMemo: null,
+          pages: [1, 2, 3]
+              .map(
+                (i) => MangaPage(
+                  id: i,
+                  memoDelta: null,
+                  stageDirectionDelta: null,
+                  dialoguesDelta: null,
+                ),
+              )
+              .toList(),
+        ),
+      );
+      ref
+          .read(mangaRepositoryProvider)
+          .saveManga(newModel.fileName, newModel.manga);
+      return newModel;
+    }
   }
 
   void reorderPage(int oldIndex, int newIndex) {
@@ -66,9 +74,10 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
   }
 
   Future<MangaPageViewModel?> loadViewModel() async {
-    final manga = await ref.read(mangaRepositoryProvider).loadManga(fileName);
+    final manga =
+        await ref.read(mangaRepositoryProvider).loadManga('$uuid.json');
     if (manga != null) {
-      return MangaPageViewModel(fileName: fileName, manga: manga);
+      return MangaPageViewModel(fileName: '$uuid.json', manga: manga);
     } else {
       return null;
     }

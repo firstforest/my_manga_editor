@@ -20,6 +20,7 @@ Manga _$MangaFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Manga {
+  String get uuid => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   MangaStartPage get startPage => throw _privateConstructorUsedError;
   String? get ideaMemo => throw _privateConstructorUsedError;
@@ -36,7 +37,8 @@ abstract class $MangaCopyWith<$Res> {
       _$MangaCopyWithImpl<$Res, Manga>;
   @useResult
   $Res call(
-      {String name,
+      {String uuid,
+      String name,
       MangaStartPage startPage,
       String? ideaMemo,
       List<MangaPage> pages});
@@ -55,12 +57,17 @@ class _$MangaCopyWithImpl<$Res, $Val extends Manga>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? uuid = null,
     Object? name = null,
     Object? startPage = null,
     Object? ideaMemo = freezed,
     Object? pages = null,
   }) {
     return _then(_value.copyWith(
+      uuid: null == uuid
+          ? _value.uuid
+          : uuid // ignore: cast_nullable_to_non_nullable
+              as String,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -89,7 +96,8 @@ abstract class _$$MangaImplCopyWith<$Res> implements $MangaCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {String name,
+      {String uuid,
+      String name,
       MangaStartPage startPage,
       String? ideaMemo,
       List<MangaPage> pages});
@@ -106,12 +114,17 @@ class __$$MangaImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? uuid = null,
     Object? name = null,
     Object? startPage = null,
     Object? ideaMemo = freezed,
     Object? pages = null,
   }) {
     return _then(_$MangaImpl(
+      uuid: null == uuid
+          ? _value.uuid
+          : uuid // ignore: cast_nullable_to_non_nullable
+              as String,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -136,7 +149,8 @@ class __$$MangaImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$MangaImpl implements _Manga {
   const _$MangaImpl(
-      {required this.name,
+      {required this.uuid,
+      required this.name,
       required this.startPage,
       required this.ideaMemo,
       required final List<MangaPage> pages})
@@ -145,6 +159,8 @@ class _$MangaImpl implements _Manga {
   factory _$MangaImpl.fromJson(Map<String, dynamic> json) =>
       _$$MangaImplFromJson(json);
 
+  @override
+  final String uuid;
   @override
   final String name;
   @override
@@ -161,7 +177,7 @@ class _$MangaImpl implements _Manga {
 
   @override
   String toString() {
-    return 'Manga(name: $name, startPage: $startPage, ideaMemo: $ideaMemo, pages: $pages)';
+    return 'Manga(uuid: $uuid, name: $name, startPage: $startPage, ideaMemo: $ideaMemo, pages: $pages)';
   }
 
   @override
@@ -169,6 +185,7 @@ class _$MangaImpl implements _Manga {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$MangaImpl &&
+            (identical(other.uuid, uuid) || other.uuid == uuid) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.startPage, startPage) ||
                 other.startPage == startPage) &&
@@ -179,7 +196,7 @@ class _$MangaImpl implements _Manga {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, name, startPage, ideaMemo,
+  int get hashCode => Object.hash(runtimeType, uuid, name, startPage, ideaMemo,
       const DeepCollectionEquality().hash(_pages));
 
   @JsonKey(ignore: true)
@@ -198,13 +215,16 @@ class _$MangaImpl implements _Manga {
 
 abstract class _Manga implements Manga {
   const factory _Manga(
-      {required final String name,
+      {required final String uuid,
+      required final String name,
       required final MangaStartPage startPage,
       required final String? ideaMemo,
       required final List<MangaPage> pages}) = _$MangaImpl;
 
   factory _Manga.fromJson(Map<String, dynamic> json) = _$MangaImpl.fromJson;
 
+  @override
+  String get uuid;
   @override
   String get name;
   @override

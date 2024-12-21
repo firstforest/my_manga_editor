@@ -4,7 +4,6 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/models/manga.dart';
 import 'package:my_manga_editor/quill_controller_hook.dart';
 import 'package:my_manga_editor/repositories/manga_providers.dart';
@@ -171,15 +170,15 @@ class _QuillTextAreaWidget extends HookConsumerWidget {
     final quillController = useQuillController(null);
     final focusNode = useFocusNode();
 
-    ref.listen(deltaNotifierProvider(deltaId), (prev, next) {
-      if (prev == null &&
-          next.valueOrNull != null &&
-          next.value!.isNotEmpty &&
-          quillController.document.isEmpty()) {
-        logger.d('initialize quillController: ${next.value}');
-        quillController.document = Document.fromDelta(next.value!);
-      }
-    });
+    useEffect(() {
+      () async {
+        final initialText =
+            await ref.read(deltaNotifierProvider(deltaId).future);
+        if (initialText != null && initialText.isNotEmpty && context.mounted) {
+          quillController.document = Document.fromDelta(initialText);
+        }
+      }();
+    }, [deltaId]);
 
     final onTextChanged = useCallback(() {
       final delta = quillController.document.toDelta();

@@ -98,12 +98,14 @@ class MangaRepository {
   }
 
   Stream<Delta?> getDeltaStream(DeltaId id) {
+    logger.d('getDeltaStream: $id');
     return _ref.watch(mangaDaoProvider).watchDelta(id).map((dbDelta) {
       return dbDelta?.toDelta();
     });
   }
 
   void saveDelta(DeltaId id, Delta delta) {
+    logger.d('saveDelta: $id, $delta');
     _ref
         .watch(mangaDaoProvider)
         .upsertDelta(DbDelta(id: id, delta: delta).toCompanion(true));

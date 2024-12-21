@@ -108,21 +108,21 @@ class MainPage extends HookConsumerWidget {
             },
             icon: const Icon(Icons.list),
           ),
-          IconButton(
-            onPressed: () {
-              // ref
-              //     .read(
-              //         mangaPageViewModelNotifierProvider(selectedMangaId.value)
-              //             .notifier)
-              //     .saveManga();
-              // 保存は常にするようにするので不要
-              // どっちかというとその時のスナップショットをexportしたい気もする
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('保存しました')),
-              );
-            },
-            icon: const Icon(Icons.save),
-          ),
+          // IconButton(
+          //   onPressed: () {
+          //     // ref
+          //     //     .read(
+          //     //         mangaPageViewModelNotifierProvider(selectedMangaId.value)
+          //     //             .notifier)
+          //     //     .saveManga();
+          //     // 保存は常にするようにするので不要
+          //     // どっちかというとその時のスナップショットをexportしたい気もする
+          //     ScaffoldMessenger.of(context).showSnackBar(
+          //       const SnackBar(content: Text('保存しました')),
+          //     );
+          //   },
+          //   icon: const Icon(Icons.save),
+          // ),
         ],
       ),
       body: switch (viewModel.valueOrNull?.manga) {
@@ -287,6 +287,14 @@ class MangaSelectDialog extends HookConsumerWidget {
                         .selectManga(manga.id);
                     Navigator.pop(context);
                   },
+                  trailing: IconButton(
+                    onPressed: () {
+                      ref
+                          .read(mangaNotifierProvider(manga.id).notifier)
+                          .delete();
+                    },
+                    icon: Icon(Icons.delete),
+                  ),
                 );
               })),
     );

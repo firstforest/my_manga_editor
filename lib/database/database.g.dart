@@ -471,8 +471,8 @@ class $DbMangaPagesTable extends DbMangaPages
       'manga_id', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: true,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES db_mangas (id)'));
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES db_mangas (id) ON DELETE CASCADE'));
   static const VerificationMeta _pageIndexMeta =
       const VerificationMeta('pageIndex');
   @override
@@ -820,6 +820,18 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
       [dbDeltas, dbMangas, dbMangaPages];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
+        [
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('db_mangas',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('db_manga_pages', kind: UpdateKind.delete),
+            ],
+          ),
+        ],
+      );
 }
 
 typedef $$DbDeltasTableCreateCompanionBuilder = DbDeltasCompanion Function({

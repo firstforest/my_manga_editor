@@ -28,7 +28,8 @@ class DbMangas extends Table {
 class DbMangaPages extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  IntColumn get mangaId => integer().references(DbMangas, #id)();
+  IntColumn get mangaId =>
+      integer().references(DbMangas, #id, onDelete: KeyAction.cascade)();
 
   IntColumn get pageIndex => integer()();
 
@@ -150,6 +151,21 @@ class MangaDao extends DatabaseAccessor<AppDatabase> with _$MangaDaoMixin {
   }
 
   Future<void> deleteMangaPage(int pageId) {
-    return (delete(dbMangaPages)..where((t) => t.id.equals(pageId))).go();
+    return transaction(() async {
+      final page = await (select(dbMangaPages)
+            ..where((t) => t.id.equals(pageId)))
+          .getSingle();
+      await (delete(dbDeltas)..where((t) => t.id.equals(page.memoDelta))).go();
+      await (delete(dbDeltas)
+            ..where((t) => t.id.equals(page.stageDirectionDelta)))
+          .go();
+      await (delete(dbDeltas)..where((t) => t.id.equals(page.dialoguesDelta)))
+          .go();
+      await (delete(dbMangaPages)..where((t) => t.id.equals(pageId))).go();
+    });
+  }
+
+  Future<void> deleteManga(int id) {
+    return (delete(dbMangas)..where((t) => t.id.equals(id))).go();
   }
 }

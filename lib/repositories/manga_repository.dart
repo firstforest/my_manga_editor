@@ -149,6 +149,10 @@ class MangaRepository {
   Future<void> deleteMangaPage(int pageId) {
     return _ref.read(mangaDaoProvider).deleteMangaPage(pageId);
   }
+
+  Future<void> deleteManga(int id) {
+    return _ref.read(mangaDaoProvider).deleteManga(id);
+  }
 }
 
 extension DbMangaExt on DbManga {

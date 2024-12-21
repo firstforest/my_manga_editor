@@ -42,6 +42,10 @@ class MangaNotifier extends _$MangaNotifier {
   Future<void> updateName(String value) async {
     await ref.read(mangaRepositoryProvider).updateMangaName(id, value);
   }
+
+  void delete() {
+    ref.read(mangaRepositoryProvider).deleteManga(id);
+  }
 }
 
 @riverpod

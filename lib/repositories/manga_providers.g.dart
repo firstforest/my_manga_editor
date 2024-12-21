@@ -175,7 +175,7 @@ class _MangaPageIdListProviderElement
   int get mangaId => (origin as MangaPageIdListProvider).mangaId;
 }
 
-String _$mangaNotifierHash() => r'cee04c396972d4eb3007e52e32c064f5be58ba7c';
+String _$mangaNotifierHash() => r'9281ae2a0bc86ef8a7e5569a627adbeb8c7fcdb6';
 
 abstract class _$MangaNotifier
     extends BuildlessAutoDisposeStreamNotifier<Manga?> {

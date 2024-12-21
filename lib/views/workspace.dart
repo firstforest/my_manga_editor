@@ -54,6 +54,7 @@ class Workspace extends HookConsumerWidget {
           controller.document = Document.fromDelta(initialText);
         }
       }();
+      return null;
     }, [deltaId]);
 
     final onTextChanged = useCallback(() {

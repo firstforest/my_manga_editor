@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:dart_quill_delta/src/delta/delta.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_manga_editor/database/database.dart';
 import 'package:my_manga_editor/logger.dart';

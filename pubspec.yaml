@@ -51,6 +51,7 @@ dependencies:
   path_provider: ^2.1.5
   drift: ^2.22.1
   drift_flutter: ^0.2.3
+  collection: ^1.19.0
 
 dev_dependencies:
   flutter_test:

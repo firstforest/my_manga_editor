@@ -178,6 +178,7 @@ class _QuillTextAreaWidget extends HookConsumerWidget {
           quillController.document = Document.fromDelta(initialText);
         }
       }();
+      return null;
     }, [deltaId]);
 
     final onTextChanged = useCallback(() {

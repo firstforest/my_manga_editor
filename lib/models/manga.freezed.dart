@@ -20,14 +20,17 @@ Manga _$MangaFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Manga {
-  String get uuid => throw _privateConstructorUsedError;
+  int get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   MangaStartPage get startPage => throw _privateConstructorUsedError;
-  String? get ideaMemo => throw _privateConstructorUsedError;
-  List<MangaPage> get pages => throw _privateConstructorUsedError;
+  int get ideaMemo => throw _privateConstructorUsedError;
 
+  /// Serializes this Manga to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of Manga
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $MangaCopyWith<Manga> get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -36,12 +39,7 @@ abstract class $MangaCopyWith<$Res> {
   factory $MangaCopyWith(Manga value, $Res Function(Manga) then) =
       _$MangaCopyWithImpl<$Res, Manga>;
   @useResult
-  $Res call(
-      {String uuid,
-      String name,
-      MangaStartPage startPage,
-      String? ideaMemo,
-      List<MangaPage> pages});
+  $Res call({int id, String name, MangaStartPage startPage, int ideaMemo});
 }
 
 /// @nodoc
@@ -54,20 +52,21 @@ class _$MangaCopyWithImpl<$Res, $Val extends Manga>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of Manga
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? uuid = null,
+    Object? id = null,
     Object? name = null,
     Object? startPage = null,
-    Object? ideaMemo = freezed,
-    Object? pages = null,
+    Object? ideaMemo = null,
   }) {
     return _then(_value.copyWith(
-      uuid: null == uuid
-          ? _value.uuid
-          : uuid // ignore: cast_nullable_to_non_nullable
-              as String,
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -76,14 +75,10 @@ class _$MangaCopyWithImpl<$Res, $Val extends Manga>
           ? _value.startPage
           : startPage // ignore: cast_nullable_to_non_nullable
               as MangaStartPage,
-      ideaMemo: freezed == ideaMemo
+      ideaMemo: null == ideaMemo
           ? _value.ideaMemo
           : ideaMemo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      pages: null == pages
-          ? _value.pages
-          : pages // ignore: cast_nullable_to_non_nullable
-              as List<MangaPage>,
+              as int,
     ) as $Val);
   }
 }
@@ -95,12 +90,7 @@ abstract class _$$MangaImplCopyWith<$Res> implements $MangaCopyWith<$Res> {
       __$$MangaImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String uuid,
-      String name,
-      MangaStartPage startPage,
-      String? ideaMemo,
-      List<MangaPage> pages});
+  $Res call({int id, String name, MangaStartPage startPage, int ideaMemo});
 }
 
 /// @nodoc
@@ -111,20 +101,21 @@ class __$$MangaImplCopyWithImpl<$Res>
       _$MangaImpl _value, $Res Function(_$MangaImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of Manga
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? uuid = null,
+    Object? id = null,
     Object? name = null,
     Object? startPage = null,
-    Object? ideaMemo = freezed,
-    Object? pages = null,
+    Object? ideaMemo = null,
   }) {
     return _then(_$MangaImpl(
-      uuid: null == uuid
-          ? _value.uuid
-          : uuid // ignore: cast_nullable_to_non_nullable
-              as String,
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -133,14 +124,10 @@ class __$$MangaImplCopyWithImpl<$Res>
           ? _value.startPage
           : startPage // ignore: cast_nullable_to_non_nullable
               as MangaStartPage,
-      ideaMemo: freezed == ideaMemo
+      ideaMemo: null == ideaMemo
           ? _value.ideaMemo
           : ideaMemo // ignore: cast_nullable_to_non_nullable
-              as String?,
-      pages: null == pages
-          ? _value._pages
-          : pages // ignore: cast_nullable_to_non_nullable
-              as List<MangaPage>,
+              as int,
     ));
   }
 }
@@ -149,35 +136,26 @@ class __$$MangaImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$MangaImpl implements _Manga {
   const _$MangaImpl(
-      {required this.uuid,
+      {required this.id,
       required this.name,
       required this.startPage,
-      required this.ideaMemo,
-      required final List<MangaPage> pages})
-      : _pages = pages;
+      required this.ideaMemo});
 
   factory _$MangaImpl.fromJson(Map<String, dynamic> json) =>
       _$$MangaImplFromJson(json);
 
   @override
-  final String uuid;
+  final int id;
   @override
   final String name;
   @override
   final MangaStartPage startPage;
   @override
-  final String? ideaMemo;
-  final List<MangaPage> _pages;
-  @override
-  List<MangaPage> get pages {
-    if (_pages is EqualUnmodifiableListView) return _pages;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_pages);
-  }
+  final int ideaMemo;
 
   @override
   String toString() {
-    return 'Manga(uuid: $uuid, name: $name, startPage: $startPage, ideaMemo: $ideaMemo, pages: $pages)';
+    return 'Manga(id: $id, name: $name, startPage: $startPage, ideaMemo: $ideaMemo)';
   }
 
   @override
@@ -185,21 +163,21 @@ class _$MangaImpl implements _Manga {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$MangaImpl &&
-            (identical(other.uuid, uuid) || other.uuid == uuid) &&
+            (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.startPage, startPage) ||
                 other.startPage == startPage) &&
             (identical(other.ideaMemo, ideaMemo) ||
-                other.ideaMemo == ideaMemo) &&
-            const DeepCollectionEquality().equals(other._pages, _pages));
+                other.ideaMemo == ideaMemo));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, uuid, name, startPage, ideaMemo,
-      const DeepCollectionEquality().hash(_pages));
+  int get hashCode => Object.hash(runtimeType, id, name, startPage, ideaMemo);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of Manga
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$MangaImplCopyWith<_$MangaImpl> get copyWith =>
@@ -215,26 +193,26 @@ class _$MangaImpl implements _Manga {
 
 abstract class _Manga implements Manga {
   const factory _Manga(
-      {required final String uuid,
+      {required final int id,
       required final String name,
       required final MangaStartPage startPage,
-      required final String? ideaMemo,
-      required final List<MangaPage> pages}) = _$MangaImpl;
+      required final int ideaMemo}) = _$MangaImpl;
 
   factory _Manga.fromJson(Map<String, dynamic> json) = _$MangaImpl.fromJson;
 
   @override
-  String get uuid;
+  int get id;
   @override
   String get name;
   @override
   MangaStartPage get startPage;
   @override
-  String? get ideaMemo;
+  int get ideaMemo;
+
+  /// Create a copy of Manga
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  List<MangaPage> get pages;
-  @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MangaImplCopyWith<_$MangaImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -246,12 +224,16 @@ MangaPage _$MangaPageFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$MangaPage {
   int get id => throw _privateConstructorUsedError;
-  String? get memoDelta => throw _privateConstructorUsedError;
-  String? get stageDirectionDelta => throw _privateConstructorUsedError;
-  String? get dialoguesDelta => throw _privateConstructorUsedError;
+  int get memoDelta => throw _privateConstructorUsedError;
+  int get stageDirectionDelta => throw _privateConstructorUsedError;
+  int get dialoguesDelta => throw _privateConstructorUsedError;
 
+  /// Serializes this MangaPage to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of MangaPage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $MangaPageCopyWith<MangaPage> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -262,10 +244,7 @@ abstract class $MangaPageCopyWith<$Res> {
       _$MangaPageCopyWithImpl<$Res, MangaPage>;
   @useResult
   $Res call(
-      {int id,
-      String? memoDelta,
-      String? stageDirectionDelta,
-      String? dialoguesDelta});
+      {int id, int memoDelta, int stageDirectionDelta, int dialoguesDelta});
 }
 
 /// @nodoc
@@ -278,31 +257,33 @@ class _$MangaPageCopyWithImpl<$Res, $Val extends MangaPage>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of MangaPage
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? id = null,
-    Object? memoDelta = freezed,
-    Object? stageDirectionDelta = freezed,
-    Object? dialoguesDelta = freezed,
+    Object? memoDelta = null,
+    Object? stageDirectionDelta = null,
+    Object? dialoguesDelta = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
-      memoDelta: freezed == memoDelta
+      memoDelta: null == memoDelta
           ? _value.memoDelta
           : memoDelta // ignore: cast_nullable_to_non_nullable
-              as String?,
-      stageDirectionDelta: freezed == stageDirectionDelta
+              as int,
+      stageDirectionDelta: null == stageDirectionDelta
           ? _value.stageDirectionDelta
           : stageDirectionDelta // ignore: cast_nullable_to_non_nullable
-              as String?,
-      dialoguesDelta: freezed == dialoguesDelta
+              as int,
+      dialoguesDelta: null == dialoguesDelta
           ? _value.dialoguesDelta
           : dialoguesDelta // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as int,
     ) as $Val);
   }
 }
@@ -316,10 +297,7 @@ abstract class _$$MangaPageImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int id,
-      String? memoDelta,
-      String? stageDirectionDelta,
-      String? dialoguesDelta});
+      {int id, int memoDelta, int stageDirectionDelta, int dialoguesDelta});
 }
 
 /// @nodoc
@@ -330,31 +308,33 @@ class __$$MangaPageImplCopyWithImpl<$Res>
       _$MangaPageImpl _value, $Res Function(_$MangaPageImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of MangaPage
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? id = null,
-    Object? memoDelta = freezed,
-    Object? stageDirectionDelta = freezed,
-    Object? dialoguesDelta = freezed,
+    Object? memoDelta = null,
+    Object? stageDirectionDelta = null,
+    Object? dialoguesDelta = null,
   }) {
     return _then(_$MangaPageImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
-      memoDelta: freezed == memoDelta
+      memoDelta: null == memoDelta
           ? _value.memoDelta
           : memoDelta // ignore: cast_nullable_to_non_nullable
-              as String?,
-      stageDirectionDelta: freezed == stageDirectionDelta
+              as int,
+      stageDirectionDelta: null == stageDirectionDelta
           ? _value.stageDirectionDelta
           : stageDirectionDelta // ignore: cast_nullable_to_non_nullable
-              as String?,
-      dialoguesDelta: freezed == dialoguesDelta
+              as int,
+      dialoguesDelta: null == dialoguesDelta
           ? _value.dialoguesDelta
           : dialoguesDelta // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as int,
     ));
   }
 }
@@ -374,11 +354,11 @@ class _$MangaPageImpl implements _MangaPage {
   @override
   final int id;
   @override
-  final String? memoDelta;
+  final int memoDelta;
   @override
-  final String? stageDirectionDelta;
+  final int stageDirectionDelta;
   @override
-  final String? dialoguesDelta;
+  final int dialoguesDelta;
 
   @override
   String toString() {
@@ -399,12 +379,14 @@ class _$MangaPageImpl implements _MangaPage {
                 other.dialoguesDelta == dialoguesDelta));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType, id, memoDelta, stageDirectionDelta, dialoguesDelta);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of MangaPage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$MangaPageImplCopyWith<_$MangaPageImpl> get copyWith =>
@@ -421,9 +403,9 @@ class _$MangaPageImpl implements _MangaPage {
 abstract class _MangaPage implements MangaPage {
   const factory _MangaPage(
       {required final int id,
-      required final String? memoDelta,
-      required final String? stageDirectionDelta,
-      required final String? dialoguesDelta}) = _$MangaPageImpl;
+      required final int memoDelta,
+      required final int stageDirectionDelta,
+      required final int dialoguesDelta}) = _$MangaPageImpl;
 
   factory _MangaPage.fromJson(Map<String, dynamic> json) =
       _$MangaPageImpl.fromJson;
@@ -431,13 +413,16 @@ abstract class _MangaPage implements MangaPage {
   @override
   int get id;
   @override
-  String? get memoDelta;
+  int get memoDelta;
   @override
-  String? get stageDirectionDelta;
+  int get stageDirectionDelta;
   @override
-  String? get dialoguesDelta;
+  int get dialoguesDelta;
+
+  /// Create a copy of MangaPage
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MangaPageImplCopyWith<_$MangaPageImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

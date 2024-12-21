@@ -16,10 +16,11 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$MangaPageViewModel {
-  String get fileName => throw _privateConstructorUsedError;
-  Manga get manga => throw _privateConstructorUsedError;
+  Manga? get manga => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of MangaPageViewModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $MangaPageViewModelCopyWith<MangaPageViewModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -30,9 +31,9 @@ abstract class $MangaPageViewModelCopyWith<$Res> {
           MangaPageViewModel value, $Res Function(MangaPageViewModel) then) =
       _$MangaPageViewModelCopyWithImpl<$Res, MangaPageViewModel>;
   @useResult
-  $Res call({String fileName, Manga manga});
+  $Res call({Manga? manga});
 
-  $MangaCopyWith<$Res> get manga;
+  $MangaCopyWith<$Res>? get manga;
 }
 
 /// @nodoc
@@ -45,28 +46,31 @@ class _$MangaPageViewModelCopyWithImpl<$Res, $Val extends MangaPageViewModel>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of MangaPageViewModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? fileName = null,
-    Object? manga = null,
+    Object? manga = freezed,
   }) {
     return _then(_value.copyWith(
-      fileName: null == fileName
-          ? _value.fileName
-          : fileName // ignore: cast_nullable_to_non_nullable
-              as String,
-      manga: null == manga
+      manga: freezed == manga
           ? _value.manga
           : manga // ignore: cast_nullable_to_non_nullable
-              as Manga,
+              as Manga?,
     ) as $Val);
   }
 
+  /// Create a copy of MangaPageViewModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $MangaCopyWith<$Res> get manga {
-    return $MangaCopyWith<$Res>(_value.manga, (value) {
+  $MangaCopyWith<$Res>? get manga {
+    if (_value.manga == null) {
+      return null;
+    }
+
+    return $MangaCopyWith<$Res>(_value.manga!, (value) {
       return _then(_value.copyWith(manga: value) as $Val);
     });
   }
@@ -80,10 +84,10 @@ abstract class _$$MangaPageViewModelImplCopyWith<$Res>
       __$$MangaPageViewModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String fileName, Manga manga});
+  $Res call({Manga? manga});
 
   @override
-  $MangaCopyWith<$Res> get manga;
+  $MangaCopyWith<$Res>? get manga;
 }
 
 /// @nodoc
@@ -94,21 +98,18 @@ class __$$MangaPageViewModelImplCopyWithImpl<$Res>
       $Res Function(_$MangaPageViewModelImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of MangaPageViewModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? fileName = null,
-    Object? manga = null,
+    Object? manga = freezed,
   }) {
     return _then(_$MangaPageViewModelImpl(
-      fileName: null == fileName
-          ? _value.fileName
-          : fileName // ignore: cast_nullable_to_non_nullable
-              as String,
-      manga: null == manga
+      manga: freezed == manga
           ? _value.manga
           : manga // ignore: cast_nullable_to_non_nullable
-              as Manga,
+              as Manga?,
     ));
   }
 }
@@ -116,16 +117,14 @@ class __$$MangaPageViewModelImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$MangaPageViewModelImpl implements _MangaPageViewModel {
-  const _$MangaPageViewModelImpl({required this.fileName, required this.manga});
+  const _$MangaPageViewModelImpl({required this.manga});
 
   @override
-  final String fileName;
-  @override
-  final Manga manga;
+  final Manga? manga;
 
   @override
   String toString() {
-    return 'MangaPageViewModel(fileName: $fileName, manga: $manga)';
+    return 'MangaPageViewModel(manga: $manga)';
   }
 
   @override
@@ -133,15 +132,15 @@ class _$MangaPageViewModelImpl implements _MangaPageViewModel {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$MangaPageViewModelImpl &&
-            (identical(other.fileName, fileName) ||
-                other.fileName == fileName) &&
             (identical(other.manga, manga) || other.manga == manga));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, fileName, manga);
+  int get hashCode => Object.hash(runtimeType, manga);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of MangaPageViewModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$MangaPageViewModelImplCopyWith<_$MangaPageViewModelImpl> get copyWith =>
@@ -150,16 +149,16 @@ class _$MangaPageViewModelImpl implements _MangaPageViewModel {
 }
 
 abstract class _MangaPageViewModel implements MangaPageViewModel {
-  const factory _MangaPageViewModel(
-      {required final String fileName,
-      required final Manga manga}) = _$MangaPageViewModelImpl;
+  const factory _MangaPageViewModel({required final Manga? manga}) =
+      _$MangaPageViewModelImpl;
 
   @override
-  String get fileName;
+  Manga? get manga;
+
+  /// Create a copy of MangaPageViewModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  Manga get manga;
-  @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MangaPageViewModelImplCopyWith<_$MangaPageViewModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -1,129 +1,131 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/models/manga.dart';
 import 'package:my_manga_editor/quill_controller_hook.dart';
+import 'package:my_manga_editor/repositories/manga_providers.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 
-class MangaPageWidget extends StatelessWidget {
+class MangaPageWidget extends HookConsumerWidget {
   const MangaPageWidget({
     super.key,
     required this.pageIndex,
     required this.startPage,
-    required this.mangaPage,
-    required this.onMemoChanged,
-    required this.onStageDirectionChanged,
-    required this.onDialogueChanged,
-    required this.onDeleteButtonPressed,
+    required this.mangaPageId,
+    // required this.onMemoChanged,
+    // required this.onStageDirectionChanged,
+    // required this.onDialogueChanged,
+    // required this.onDeleteButtonPressed,
   });
 
   final int pageIndex;
   final MangaStartPage startPage;
-  final MangaPage mangaPage;
-  final Function(String value) onMemoChanged;
-  final Function(String value) onStageDirectionChanged;
-  final Function(String value) onDialogueChanged;
-  final Function() onDeleteButtonPressed;
+  final MangaPageId mangaPageId;
+
+  // final Function(String value) onMemoChanged;
+  // final Function(String value) onStageDirectionChanged;
+  // final Function(String value) onDialogueChanged;
+  // final Function() onDeleteButtonPressed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = mangaPageNotifierProvider(mangaPageId);
+    final page = ref.watch(provider);
+    final dialoguesDelta =
+        ref.watch(deltaNotifierProvider(page.valueOrNull?.dialoguesDelta));
+
     return ConstrainedBox(
       constraints: BoxConstraints(
         minHeight: 200.r,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildInfoArea(context),
-          _buildMemoArea(),
-          SizedBox(
-            width: 4.r,
-          ),
-          Expanded(
-            flex: 2,
-            child: Container(
-              constraints: BoxConstraints(
-                minHeight: 200.r,
+      child: page.map(
+          data: (data) => Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPageIndicator(),
+                      SizedBox(
+                        height: 4.r,
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          if (dialoguesDelta.valueOrNull != null) {
+                            await _copyToClipboard(dialoguesDelta.value!);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content:
+                                          Text('Page $pageIndex をコピーしました')));
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.copy),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          ref.read(provider.notifier).delete();
+                        },
+                        icon: const Icon(Icons.delete),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      constraints: BoxConstraints(
+                        minHeight: 200.r,
+                      ),
+                      color: Colors.indigo.shade100,
+                      child: _QuillTextAreaWidget(
+                        deltaId: data.value.memoDelta,
+                        placeholder: 'このページで描きたいこと',
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 4.r,
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      constraints: BoxConstraints(
+                        minHeight: 200.r,
+                      ),
+                      color: Colors.black12,
+                      child: _QuillTextAreaWidget(
+                        key: ValueKey(data.value.stageDirectionDelta),
+                        deltaId: data.value.stageDirectionDelta,
+                        placeholder: 'ト書き',
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 2.r,
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      constraints: BoxConstraints(
+                        minHeight: 200.r,
+                      ),
+                      color: Colors.black12,
+                      child: _QuillTextAreaWidget(
+                        key: ValueKey(data.value.dialoguesDelta),
+                        deltaId: data.value.dialoguesDelta,
+                        placeholder: 'セリフ',
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              color: Colors.black12,
-              child: _TextAreaWidget(
-                key: ValueKey('${mangaPage.id}_togaki'),
-                initialText: mangaPage.stageDirectionDelta,
-                placeholder: 'ト書き',
-                onChanged: onStageDirectionChanged,
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 2.r,
-          ),
-          Expanded(
-            flex: 2,
-            child: Container(
-              constraints: BoxConstraints(
-                minHeight: 200.r,
-              ),
-              color: Colors.black12,
-              child: _TextAreaWidget(
-                key: ValueKey(mangaPage.id),
-                initialText: mangaPage.dialoguesDelta,
-                placeholder: 'セリフ',
-                onChanged: onDialogueChanged,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Expanded _buildMemoArea() {
-    return Expanded(
-      flex: 1,
-      child: Container(
-        constraints: BoxConstraints(
-          minHeight: 200.r,
-        ),
-        color: Colors.indigo.shade100,
-        child: _TextAreaWidget(
-          initialText: mangaPage.memoDelta,
-          placeholder: 'このページで描きたいこと',
-          onChanged: onMemoChanged,
-        ),
-      ),
-    );
-  }
-
-  Column _buildInfoArea(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildPageIndicator(),
-        SizedBox(
-          height: 4.r,
-        ),
-        IconButton(
-          onPressed: () async {
-            if (mangaPage.dialoguesDelta != null) {
-              await _copyToClipboard(mangaPage.dialoguesDelta!);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Page $pageIndex をコピーしました')));
-              }
-            }
-          },
-          icon: const Icon(Icons.copy),
-        ),
-        IconButton(
-          onPressed: onDeleteButtonPressed,
-          icon: const Icon(Icons.delete),
-        ),
-      ],
+          error: (error) => Text('error'),
+          loading: (loading) => const CircularProgressIndicator()),
     );
   }
 
@@ -143,39 +145,53 @@ class MangaPageWidget extends StatelessWidget {
     };
   }
 
-  Future<void> _copyToClipboard(String deltaString) async {
+  Future<void> _copyToClipboard(Delta delta) async {
     final clipboard = SystemClipboard.instance;
     if (clipboard == null) {
       return; // Clipboard API is not supported on this platform.
     }
     final item = DataWriterItem();
-    final delta = Delta.fromJson(json.decode(deltaString));
     item.add(Formats.plainText(Document.fromDelta(delta).toPlainText()));
     await clipboard.write([item]);
   }
 }
 
-class _TextAreaWidget extends HookConsumerWidget {
-  const _TextAreaWidget({
+class _QuillTextAreaWidget extends HookConsumerWidget {
+  const _QuillTextAreaWidget({
     super.key,
-    required this.initialText,
+    required this.deltaId,
     this.placeholder,
-    required this.onChanged,
   });
 
-  final String? initialText;
+  final DeltaId deltaId;
   final String? placeholder;
-  final Function(String value) onChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final quillController = useQuillController(
-        initialText != null ? Delta.fromJson(json.decode(initialText!)) : null);
+    final quillController = useQuillController(null);
     final focusNode = useFocusNode();
 
-    quillController.addListener(() {
-      onChanged(json.encode(quillController.document.toDelta().toJson()));
+    ref.listen(deltaNotifierProvider(deltaId), (prev, next) {
+      if (prev == null &&
+          next.valueOrNull != null &&
+          next.value!.isNotEmpty &&
+          quillController.document.isEmpty()) {
+        logger.d('initialize quillController: ${next.value}');
+        quillController.document = Document.fromDelta(next.value!);
+      }
     });
+
+    final onTextChanged = useCallback(() {
+      final delta = quillController.document.toDelta();
+      ref.read(deltaNotifierProvider(deltaId).notifier).updateDelta(delta);
+    }, [deltaId]);
+
+    useEffect(() {
+      quillController.addListener(onTextChanged);
+      return () {
+        quillController.removeListener(onTextChanged);
+      };
+    }, [deltaId]);
 
     return QuillEditor.basic(
         focusNode: focusNode,

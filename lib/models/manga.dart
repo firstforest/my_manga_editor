@@ -14,14 +14,17 @@ enum MangaStartPage {
       };
 }
 
+typedef MangaId = int;
+typedef MangaPageId = int;
+typedef DeltaId = int;
+
 @freezed
 class Manga with _$Manga {
   const factory Manga({
-    required String uuid,
+    required MangaId id,
     required String name,
     required MangaStartPage startPage,
-    required String? ideaMemo,
-    required List<MangaPage> pages,
+    required DeltaId ideaMemo,
   }) = _Manga;
 
   factory Manga.fromJson(Map<String, dynamic> json) => _$MangaFromJson(json);
@@ -30,10 +33,10 @@ class Manga with _$Manga {
 @freezed
 class MangaPage with _$MangaPage {
   const factory MangaPage({
-    required int id,
-    required String? memoDelta,
-    required String? stageDirectionDelta,
-    required String? dialoguesDelta,
+    required MangaPageId id,
+    required DeltaId memoDelta,
+    required DeltaId stageDirectionDelta,
+    required DeltaId dialoguesDelta,
   }) = _MangaPage;
 
   factory MangaPage.fromJson(Map<String, dynamic> json) =>

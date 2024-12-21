@@ -7,22 +7,18 @@ part of 'manga.dart';
 // **************************************************************************
 
 _$MangaImpl _$$MangaImplFromJson(Map<String, dynamic> json) => _$MangaImpl(
-      uuid: json['uuid'] as String,
+      id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       startPage: $enumDecode(_$MangaStartPageEnumMap, json['startPage']),
-      ideaMemo: json['ideaMemo'] as String?,
-      pages: (json['pages'] as List<dynamic>)
-          .map((e) => MangaPage.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      ideaMemo: (json['ideaMemo'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$MangaImplToJson(_$MangaImpl instance) =>
     <String, dynamic>{
-      'uuid': instance.uuid,
+      'id': instance.id,
       'name': instance.name,
       'startPage': _$MangaStartPageEnumMap[instance.startPage]!,
       'ideaMemo': instance.ideaMemo,
-      'pages': instance.pages,
     };
 
 const _$MangaStartPageEnumMap = {
@@ -33,9 +29,9 @@ const _$MangaStartPageEnumMap = {
 _$MangaPageImpl _$$MangaPageImplFromJson(Map<String, dynamic> json) =>
     _$MangaPageImpl(
       id: (json['id'] as num).toInt(),
-      memoDelta: json['memoDelta'] as String?,
-      stageDirectionDelta: json['stageDirectionDelta'] as String?,
-      dialoguesDelta: json['dialoguesDelta'] as String?,
+      memoDelta: (json['memoDelta'] as num).toInt(),
+      stageDirectionDelta: (json['stageDirectionDelta'] as num).toInt(),
+      dialoguesDelta: (json['dialoguesDelta'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$MangaPageImplToJson(_$MangaPageImpl instance) =>

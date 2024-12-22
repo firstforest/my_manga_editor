@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/models/manga.dart';
@@ -100,16 +101,17 @@ class Workspace extends HookConsumerWidget {
             showClipboardCut: false,
             showClipboardCopy: false,
             showClipboardPaste: false,
+            embedButtons: FlutterQuillEmbeds.toolbarButtons(),
           ),
         ),
         Expanded(
           child: QuillEditor.basic(
+            controller: controller,
             focusNode: focusNode,
             configurations: QuillEditorConfigurations(
-              controller: controller,
-              padding: const EdgeInsets.all(8.0),
-              placeholder: '何でも書ける場所',
-            ),
+                padding: const EdgeInsets.all(8.0),
+                placeholder: '何でも書ける場所',
+                embedBuilders: FlutterQuillEmbeds.editorBuilders()),
           ),
         ),
       ],

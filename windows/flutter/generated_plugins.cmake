@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
+  gal
   irondash_engine_context
   sqlite3_flutter_libs
   super_native_extensions

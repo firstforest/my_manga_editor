@@ -52,6 +52,7 @@ dependencies:
   drift: ^2.22.1
   drift_flutter: ^0.2.3
   collection: ^1.19.0
+  flutter_quill_extensions: ^10.8.5
 
 dev_dependencies:
   flutter_test:

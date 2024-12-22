@@ -155,13 +155,13 @@ class MangaDao extends DatabaseAccessor<AppDatabase> with _$MangaDaoMixin {
       final page = await (select(dbMangaPages)
             ..where((t) => t.id.equals(pageId)))
           .getSingle();
+      await (delete(dbMangaPages)..where((t) => t.id.equals(pageId))).go();
       await (delete(dbDeltas)..where((t) => t.id.equals(page.memoDelta))).go();
       await (delete(dbDeltas)
             ..where((t) => t.id.equals(page.stageDirectionDelta)))
           .go();
       await (delete(dbDeltas)..where((t) => t.id.equals(page.dialoguesDelta)))
           .go();
-      await (delete(dbMangaPages)..where((t) => t.id.equals(pageId))).go();
     });
   }
 

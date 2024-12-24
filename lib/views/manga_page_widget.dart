@@ -194,9 +194,9 @@ class _QuillTextAreaWidget extends HookConsumerWidget {
     }, [deltaId]);
 
     return QuillEditor.basic(
+        controller: quillController,
         focusNode: focusNode,
         configurations: QuillEditorConfigurations(
-          controller: quillController,
           placeholder: placeholder,
           padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r),
         ));

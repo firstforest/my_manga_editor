@@ -79,8 +79,8 @@ class Workspace extends HookConsumerWidget {
     return Column(
       children: [
         QuillToolbar.simple(
+          controller: controller,
           configurations: QuillSimpleToolbarConfigurations(
-            controller: controller,
             showFontFamily: false,
             showFontSize: false,
             showBoldButton: false,

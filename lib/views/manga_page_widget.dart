@@ -15,20 +15,11 @@ class MangaPageWidget extends HookConsumerWidget {
     required this.pageIndex,
     required this.startPage,
     required this.mangaPageId,
-    // required this.onMemoChanged,
-    // required this.onStageDirectionChanged,
-    // required this.onDialogueChanged,
-    // required this.onDeleteButtonPressed,
   });
 
   final int pageIndex;
   final MangaStartPage startPage;
   final MangaPageId mangaPageId;
-
-  // final Function(String value) onMemoChanged;
-  // final Function(String value) onStageDirectionChanged;
-  // final Function(String value) onDialogueChanged;
-  // final Function() onDeleteButtonPressed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,7 +30,7 @@ class MangaPageWidget extends HookConsumerWidget {
 
     return ConstrainedBox(
       constraints: BoxConstraints(
-        minHeight: 200.r,
+        minHeight: 300.r,
       ),
       child: page.map(
           data: (data) => Row(
@@ -78,7 +69,7 @@ class MangaPageWidget extends HookConsumerWidget {
                     flex: 1,
                     child: Container(
                       constraints: BoxConstraints(
-                        minHeight: 200.r,
+                        minHeight: 300.r,
                       ),
                       color: Colors.indigo.shade100,
                       child: _QuillTextAreaWidget(
@@ -94,7 +85,7 @@ class MangaPageWidget extends HookConsumerWidget {
                     flex: 2,
                     child: Container(
                       constraints: BoxConstraints(
-                        minHeight: 200.r,
+                        minHeight: 300.r,
                       ),
                       color: Colors.black12,
                       child: _QuillTextAreaWidget(
@@ -111,7 +102,7 @@ class MangaPageWidget extends HookConsumerWidget {
                     flex: 2,
                     child: Container(
                       constraints: BoxConstraints(
-                        minHeight: 200.r,
+                        minHeight: 300.r,
                       ),
                       color: Colors.black12,
                       child: _QuillTextAreaWidget(
@@ -199,6 +190,7 @@ class _QuillTextAreaWidget extends HookConsumerWidget {
         configurations: QuillEditorConfigurations(
           placeholder: placeholder,
           padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r),
+          maxHeight: 300.r,
         ));
   }
 }

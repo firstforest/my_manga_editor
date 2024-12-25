@@ -108,21 +108,6 @@ class MainPage extends HookConsumerWidget {
             },
             icon: const Icon(Icons.list),
           ),
-          // IconButton(
-          //   onPressed: () {
-          //     // ref
-          //     //     .read(
-          //     //         mangaPageViewModelNotifierProvider(selectedMangaId.value)
-          //     //             .notifier)
-          //     //     .saveManga();
-          //     // 保存は常にするようにするので不要
-          //     // どっちかというとその時のスナップショットをexportしたい気もする
-          //     ScaffoldMessenger.of(context).showSnackBar(
-          //       const SnackBar(content: Text('保存しました')),
-          //     );
-          //   },
-          //   icon: const Icon(Icons.save),
-          // ),
         ],
       ),
       body: switch (viewModel.valueOrNull?.manga) {
@@ -146,9 +131,11 @@ class MainPage extends HookConsumerWidget {
       floatingActionButton: switch (viewModel.valueOrNull?.manga?.id) {
         MangaId mangaId => FloatingActionButton(
             onPressed: () async {
+              final pageIdList =
+                  await ref.read(mangaPageIdListProvider(mangaId).future);
               await ref
                   .read(mangaNotifierProvider(mangaId).notifier)
-                  .addNewPage();
+                  .addNewPage(pageIdList.length);
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 scrollController.animateTo(
                   scrollController.position.maxScrollExtent,
@@ -200,10 +187,29 @@ class _MangaEditWidget extends HookConsumerWidget {
                       left: 24.r,
                       right: 24.r + 8.r,
                     ),
-                    child: MangaPageWidget(
-                      pageIndex: index + 1,
-                      startPage: manga.startPage,
-                      mangaPageId: pageId,
+                    child: Column(
+                      children: [
+                        MangaPageWidget(
+                          pageIndex: index + 1,
+                          startPage: manga.startPage,
+                          mangaPageId: pageId,
+                        ),
+                        SizedBox(
+                          height: 4.r,
+                        ),
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: IconButton(
+                            onPressed: () {
+                              ref
+                                  .read(
+                                      mangaNotifierProvider(manga.id).notifier)
+                                  .addNewPage(index + 1);
+                            },
+                            icon: const Icon(Icons.add),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );

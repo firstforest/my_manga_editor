@@ -24,9 +24,11 @@ class MangaNotifier extends _$MangaNotifier {
     return repo.getMangaStream(id);
   }
 
-  Future<void> addNewPage() async {
+  Future<void> addNewPage(int index) async {
     final repo = ref.watch(mangaRepositoryProvider);
     await repo.createNewMangaPage(id);
+    final pageIdList = await repo.watchAllMangaPageIdList(id).first;
+    await reorderPage(pageIdList, pageIdList.length - 1, index);
   }
 
   Future<void> reorderPage(

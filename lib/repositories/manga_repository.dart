@@ -155,6 +155,12 @@ class MangaRepository {
   Future<void> deleteManga(int id) {
     return _ref.read(mangaDaoProvider).deleteManga(id);
   }
+
+  Future<void> updateStartPage(int id, MangaStartPage value) async {
+    return _ref
+        .read(mangaDaoProvider)
+        .updateManga(id, DbMangasCompanion(startPage: Value(value)));
+  }
 }
 
 extension DbMangaExt on DbManga {

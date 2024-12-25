@@ -48,6 +48,10 @@ class MangaNotifier extends _$MangaNotifier {
   void delete() {
     ref.read(mangaRepositoryProvider).deleteManga(id);
   }
+
+  void updateStartPage(MangaStartPage value) {
+    ref.read(mangaRepositoryProvider).updateStartPage(id, value);
+  }
 }
 
 @riverpod

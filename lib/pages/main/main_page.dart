@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -17,84 +16,17 @@ class MainPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModel = ref.watch(mangaPageViewModelNotifierProvider);
 
-    final nameEditController =
-        useTextEditingController(text: viewModel.valueOrNull?.manga?.name);
-    ref.listen(
-        mangaPageViewModelNotifierProvider
-            .select((v) => v.valueOrNull?.manga?.name), (prev, next) {
-      if (next != null) {
-        nameEditController.text = next;
-      }
-    });
-    final isNameEdit = useState(false);
     final scrollController = useScrollController();
 
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        toolbarHeight: 72.r,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (kDebugMode)
-              Text('selectedMangaId = ${viewModel.valueOrNull?.manga}',
-                  style: TextStyle(fontSize: 5.sp)),
-            isNameEdit.value
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minWidth: 200.r,
-                          maxWidth: 500.r,
-                        ),
-                        child: TextField(
-                          controller: nameEditController,
-                          onSubmitted: (value) {
-                            final mangaId = viewModel.valueOrNull?.manga?.id;
-                            if (mangaId != null) {
-                              ref
-                                  .read(mangaNotifierProvider(mangaId).notifier)
-                                  .updateName(value);
-                            }
-                            isNameEdit.value = false;
-                          },
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          final mangaId = viewModel.valueOrNull?.manga?.id;
-                          if (mangaId != null) {
-                            ref
-                                .read(mangaNotifierProvider(mangaId).notifier)
-                                .updateName(nameEditController.text);
-                          }
-                          isNameEdit.value = false;
-                        },
-                        icon: const Icon(Icons.done),
-                      ),
-                    ],
-                  )
-                : ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minWidth: 200.r,
-                      maxWidth: 500.r,
-                    ),
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: viewModel.valueOrNull != null
-                          ? () {
-                              isNameEdit.value = true;
-                            }
-                          : null,
-                      child: Text(
-                        viewModel.valueOrNull?.manga?.name ?? '',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-          ],
-        ),
+        toolbarHeight: 64.r,
+        title: switch (viewModel.valueOrNull) {
+          MangaPageViewModel viewModel when viewModel.manga != null =>
+            MangaTitle(manga: viewModel.manga!),
+          _ => null,
+        },
         actions: [
           IconButton(
             onPressed: () async {
@@ -111,8 +43,16 @@ class MainPage extends HookConsumerWidget {
         ],
       ),
       body: switch (viewModel.valueOrNull?.manga) {
-        Manga manga =>
-          _MangaEditWidget(manga: manga, scrollController: scrollController),
+        Manga manga => Column(
+            children: [
+              Text('selectedMangaId = ${viewModel.valueOrNull?.manga}',
+                  style: TextStyle(fontSize: 4.sp)),
+              Expanded(
+                child: _MangaEditWidget(
+                    manga: manga, scrollController: scrollController),
+              ),
+            ],
+          ),
         // 自動で作るかボタンを用意する
         null => Center(
             child: TextButton(
@@ -149,6 +89,98 @@ class MainPage extends HookConsumerWidget {
         _ => null,
       },
     );
+  }
+}
+
+class MangaTitle extends HookConsumerWidget {
+  const MangaTitle({
+    super.key,
+    required this.manga,
+  });
+
+  final Manga manga;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nameEditController = useTextEditingController(text: manga.name);
+    final isNameEdit = useState(false);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildTitle(isNameEdit, nameEditController, ref),
+        DropdownButton(
+          value: manga.startPage,
+          items: MangaStartPage.values
+              .map((e) => DropdownMenuItem(
+                  value: e,
+                  child: Text('${switch (e) {
+                    MangaStartPage.left => '左',
+                    MangaStartPage.right => '右',
+                  }}始まり')))
+              .toList(),
+          onChanged: (value) {
+            if (value != null) {
+              ref
+                  .read(mangaNotifierProvider(manga.id).notifier)
+                  .updateStartPage(value);
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  RenderObjectWidget _buildTitle(ValueNotifier<bool> isNameEdit,
+      TextEditingController nameEditController, WidgetRef ref) {
+    return isNameEdit.value
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: 200.r,
+                  maxWidth: 500.r,
+                ),
+                child: TextField(
+                  controller: nameEditController,
+                  style: TextStyle(fontSize: 24.r),
+                  onSubmitted: (value) {
+                    ref
+                        .read(mangaNotifierProvider(manga.id).notifier)
+                        .updateName(value);
+                    isNameEdit.value = false;
+                  },
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  ref
+                      .read(mangaNotifierProvider(manga.id).notifier)
+                      .updateName(nameEditController.text);
+                  isNameEdit.value = false;
+                },
+                icon: const Icon(Icons.done),
+              ),
+            ],
+          )
+        : ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: 200.r,
+              maxWidth: 500.r,
+            ),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                isNameEdit.value = true;
+              },
+              child: Text(
+                manga.name,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 24.r),
+              ),
+            ),
+          );
   }
 }
 

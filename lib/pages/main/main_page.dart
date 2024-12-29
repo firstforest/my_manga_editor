@@ -4,6 +4,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/models/manga.dart';
+import 'package:my_manga_editor/pages/grid/manga_grid_page.dart';
 import 'package:my_manga_editor/pages/main/manga_page_view_model.dart';
 import 'package:my_manga_editor/repositories/manga_providers.dart';
 import 'package:my_manga_editor/views/manga_page_widget.dart';
@@ -21,13 +22,24 @@ class MainPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        toolbarHeight: 64.r,
+        toolbarHeight: 84.r,
         title: switch (viewModel.valueOrNull) {
           MangaPageViewModel viewModel when viewModel.manga != null =>
             MangaTitle(manga: viewModel.manga!),
           _ => null,
         },
         actions: [
+          IconButton(
+            onPressed: () async {
+              if (viewModel.valueOrNull?.manga case final Manga manga) {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => MangaGridPage(
+                          mangaId: manga.id,
+                        )));
+              }
+            },
+            icon: const Icon(Icons.grid_view),
+          ),
           IconButton(
             onPressed: () async {
               if (context.mounted) {

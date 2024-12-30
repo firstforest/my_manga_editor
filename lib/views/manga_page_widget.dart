@@ -28,10 +28,8 @@ class MangaPageWidget extends HookConsumerWidget {
     final dialoguesDelta =
         ref.watch(deltaNotifierProvider(page.valueOrNull?.dialoguesDelta));
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        minHeight: 300.r,
-      ),
+    return SizedBox(
+      height: 300.r,
       child: page.map(
           data: (data) => Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,6 +55,7 @@ class MangaPageWidget extends HookConsumerWidget {
                         },
                         icon: const Icon(Icons.copy),
                       ),
+                      Spacer(),
                       IconButton(
                         onPressed: () {
                           ref.read(provider.notifier).delete();

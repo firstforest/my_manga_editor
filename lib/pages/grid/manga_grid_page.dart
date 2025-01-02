@@ -45,7 +45,7 @@ class MangaGridPage extends HookConsumerWidget {
                 index: index,
               )
             : SizedBox(
-                key: ValueKey('$index'),
+                key: ValueKey('no-$index'),
               ))
         .toList();
 

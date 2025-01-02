@@ -35,14 +35,7 @@ class MangaGridPage extends HookConsumerWidget {
             if (startPage == MangaStartPage.left) {
               pageIdList.insert(0, null);
             }
-            return (pageIdList)
-                .slices(crossAxisCount)
-                .map((e) => e.length != crossAxisCount
-                    ? e + List.filled(crossAxisCount - e.length, null)
-                    : e)
-                .map((e) => e.reversed)
-                .flattened
-                .toList();
+            return pageIdList;
           },
         );
 
@@ -51,7 +44,11 @@ class MangaGridPage extends HookConsumerWidget {
             ? MangaGridPageView(
                 key: ValueKey('$id'),
                 mangaPageId: id,
-                index: index,
+                pageNumber: switch (startPage) {
+                  MangaStartPage.left => index,
+                  MangaStartPage.right => index + 1,
+                },
+                startPage: startPage,
               )
             : SizedBox(
                 key: ValueKey('no-$index'),
@@ -75,27 +72,24 @@ class MangaGridPage extends HookConsumerWidget {
           scrollController: scrollController,
           onReorder: (ReorderedListFunction<MangaPageId?> reorder) {
             final newOrder = reorder(list);
-            ref.read(mangaNotifierProvider(mangaId).notifier).reorderPage(
-                newOrder
-                    .slices(crossAxisCount)
-                    .map((e) => e.reversed)
-                    .flattened
-                    .nonNulls
-                    .toList(),
-                0,
-                0);
+            ref
+                .read(mangaNotifierProvider(mangaId).notifier)
+                .reorderPage(newOrder.nonNulls.toList(), 0, 0);
           },
           enableLongPress: false,
           children: generatedChildren,
           builder: (children) {
-            return GridView(
-              key: _key,
-              controller: scrollController,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 8.r,
-                  mainAxisSpacing: 24.r),
-              children: children,
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: GridView(
+                key: _key,
+                controller: scrollController,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 8.r,
+                    mainAxisSpacing: 24.r),
+                children: children,
+              ),
             );
           }),
     );
@@ -106,18 +100,25 @@ class MangaGridPageView extends HookConsumerWidget {
   const MangaGridPageView({
     super.key,
     required this.mangaPageId,
-    required this.index,
+    required this.pageNumber,
+    required this.startPage,
   });
 
   final MangaPageId mangaPageId;
-  final int index;
+  final int pageNumber;
+  final MangaStartPage startPage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mangaPage = ref.watch(mangaPageNotifierProvider(mangaPageId));
 
     return Align(
-      alignment: index.isOdd ? Alignment.centerLeft : Alignment.centerRight,
+      alignment: switch (startPage) {
+        MangaStartPage.left =>
+          pageNumber.isOdd ? Alignment.centerRight : Alignment.centerLeft,
+        MangaStartPage.right =>
+          pageNumber.isOdd ? Alignment.centerLeft : Alignment.centerRight,
+      },
       child: AspectRatio(
         aspectRatio: 2 / 3,
         child: Card(
@@ -148,7 +149,7 @@ class MangaGridPageView extends HookConsumerWidget {
                         const Center(child: CircularProgressIndicator()),
                   ),
                 ),
-                Text('Page ${4 - (index % 4) + 4 * (index ~/ 4) - 1}'),
+                Text('Page $pageNumber'),
               ],
             ),
           ),

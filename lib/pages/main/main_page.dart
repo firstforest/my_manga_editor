@@ -8,6 +8,7 @@ import 'package:my_manga_editor/pages/grid/manga_grid_page.dart';
 import 'package:my_manga_editor/pages/main/manga_page_view_model.dart';
 import 'package:my_manga_editor/repositories/manga_providers.dart';
 import 'package:my_manga_editor/views/manga_page_widget.dart';
+import 'package:my_manga_editor/views/start_page_selector.dart';
 import 'package:my_manga_editor/views/workspace.dart';
 
 class MainPage extends HookConsumerWidget {
@@ -132,24 +133,7 @@ class MangaTitle extends HookConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildTitle(isNameEdit, nameEditController, ref),
-        DropdownButton(
-          value: manga.startPage,
-          items: MangaStartPage.values
-              .map((e) => DropdownMenuItem(
-                  value: e,
-                  child: Text('${switch (e) {
-                    MangaStartPage.left => '左',
-                    MangaStartPage.right => '右',
-                  }}始まり')))
-              .toList(),
-          onChanged: (value) {
-            if (value != null) {
-              ref
-                  .read(mangaNotifierProvider(manga.id).notifier)
-                  .updateStartPage(value);
-            }
-          },
-        ),
+        StartPageSelector(mangaId: manga.id),
       ],
     );
   }

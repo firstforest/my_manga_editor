@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/models/manga.dart';
 import 'package:my_manga_editor/repositories/manga_providers.dart';
+import 'package:my_manga_editor/views/start_page_selector.dart';
 import 'package:my_manga_editor/views/tategaki.dart';
 
 class MangaGridPage extends HookConsumerWidget {
@@ -24,17 +25,25 @@ class MangaGridPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final crossAxisCount = 4;
     final scrollController = useScrollController();
+    final startPage = ref.watch(mangaNotifierProvider(mangaId)).maybeMap(
+        orElse: () => MangaStartPage.left,
+        data: (data) => data.value?.startPage ?? MangaStartPage.left);
     final list = ref.watch(mangaPageIdListProvider(mangaId)).maybeMap(
           orElse: () => <MangaPageId?>[],
-          data: (data) => (data.value.map<MangaPageId?>((e) => e).toList()
-                ..insert(0, null))
-              .slices(crossAxisCount)
-              .map((e) => e.length != crossAxisCount
-                  ? e + List.filled(crossAxisCount - e.length, null)
-                  : e)
-              .map((e) => e.reversed)
-              .flattened
-              .toList(),
+          data: (data) {
+            final pageIdList = data.value.map<MangaPageId?>((e) => e).toList();
+            if (startPage == MangaStartPage.left) {
+              pageIdList.insert(0, null);
+            }
+            return (pageIdList)
+                .slices(crossAxisCount)
+                .map((e) => e.length != crossAxisCount
+                    ? e + List.filled(crossAxisCount - e.length, null)
+                    : e)
+                .map((e) => e.reversed)
+                .flattened
+                .toList();
+          },
         );
 
     final generatedChildren = list
@@ -51,7 +60,16 @@ class MangaGridPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manga Grid'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('ページ一覧表示'),
+            SizedBox(
+              width: 4.r,
+            ),
+            StartPageSelector(mangaId: mangaId),
+          ],
+        ),
       ),
       body: ReorderableBuilder<MangaPageId?>(
           scrollController: scrollController,

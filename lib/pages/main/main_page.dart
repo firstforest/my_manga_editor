@@ -29,17 +29,28 @@ class MainPage extends HookConsumerWidget {
           _ => null,
         },
         actions: [
-          IconButton(
-            onPressed: () async {
-              if (viewModel.valueOrNull?.manga case final Manga manga) {
+          if (viewModel.valueOrNull?.manga case final Manga manga)
+            IconButton(
+                onPressed: () async {
+                  await ref
+                      .read(mangaNotifierProvider(manga.id).notifier)
+                      .download();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${manga.name}をダウンロードしました')));
+                  }
+                },
+                icon: Icon(Icons.save_alt)),
+          if (viewModel.valueOrNull?.manga case final Manga manga)
+            IconButton(
+              onPressed: () async {
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => MangaGridPage(
                           mangaId: manga.id,
                         )));
-              }
-            },
-            icon: const Icon(Icons.grid_view),
-          ),
+              },
+              icon: const Icon(Icons.grid_view),
+            ),
           IconButton(
             onPressed: () async {
               if (context.mounted) {

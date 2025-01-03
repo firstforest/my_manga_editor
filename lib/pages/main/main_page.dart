@@ -7,6 +7,7 @@ import 'package:my_manga_editor/models/manga.dart';
 import 'package:my_manga_editor/pages/grid/manga_grid_page.dart';
 import 'package:my_manga_editor/pages/main/manga_page_view_model.dart';
 import 'package:my_manga_editor/repositories/manga_providers.dart';
+import 'package:my_manga_editor/views/manga_name_widget.dart';
 import 'package:my_manga_editor/views/manga_page_widget.dart';
 import 'package:my_manga_editor/views/start_page_selector.dart';
 import 'package:my_manga_editor/views/workspace.dart';
@@ -23,12 +24,15 @@ class MainPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        toolbarHeight: 84.r,
-        title: switch (viewModel.valueOrNull) {
-          MangaPageViewModel viewModel when viewModel.manga != null =>
-            MangaTitle(manga: viewModel.manga!),
-          _ => null,
-        },
+        toolbarHeight: 100.r,
+        title: SizedBox(
+          height: 100.r,
+          child: switch (viewModel.valueOrNull) {
+            MangaPageViewModel viewModel when viewModel.manga != null =>
+              MangaTitle(manga: viewModel.manga!),
+            _ => null,
+          },
+        ),
         actions: [
           if (viewModel.valueOrNull?.manga case final Manga manga)
             IconButton(
@@ -126,68 +130,13 @@ class MangaTitle extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final nameEditController = useTextEditingController(text: manga.name);
-    final isNameEdit = useState(false);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildTitle(isNameEdit, nameEditController, ref),
+        Expanded(child: MangaNameWidget(manga: manga)),
         StartPageSelector(mangaId: manga.id),
       ],
     );
-  }
-
-  RenderObjectWidget _buildTitle(ValueNotifier<bool> isNameEdit,
-      TextEditingController nameEditController, WidgetRef ref) {
-    return isNameEdit.value
-        ? Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: 200.r,
-                  maxWidth: 500.r,
-                ),
-                child: TextField(
-                  controller: nameEditController,
-                  style: TextStyle(fontSize: 24.r),
-                  onSubmitted: (value) {
-                    ref
-                        .read(mangaNotifierProvider(manga.id).notifier)
-                        .updateName(value);
-                    isNameEdit.value = false;
-                  },
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  ref
-                      .read(mangaNotifierProvider(manga.id).notifier)
-                      .updateName(nameEditController.text);
-                  isNameEdit.value = false;
-                },
-                icon: const Icon(Icons.done),
-              ),
-            ],
-          )
-        : ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: 200.r,
-              maxWidth: 500.r,
-            ),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                isNameEdit.value = true;
-              },
-              child: Text(
-                manga.name,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 24.r),
-              ),
-            ),
-          );
   }
 }
 

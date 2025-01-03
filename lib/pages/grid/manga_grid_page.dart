@@ -83,11 +83,14 @@ class MangaGridPage extends HookConsumerWidget {
               textDirection: TextDirection.rtl,
               child: GridView(
                 key: _key,
+                padding: EdgeInsets.all(16.r),
                 controller: scrollController,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 8.r,
-                    mainAxisSpacing: 24.r),
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 8.r,
+                  mainAxisSpacing: 24.r,
+                  childAspectRatio: 2 / 3,
+                ),
                 children: children,
               ),
             );
@@ -112,12 +115,14 @@ class MangaGridPageView extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mangaPage = ref.watch(mangaPageNotifierProvider(mangaPageId));
 
-    return Align(
-      alignment: switch (startPage) {
-        MangaStartPage.left =>
-          pageNumber.isOdd ? Alignment.centerRight : Alignment.centerLeft,
-        MangaStartPage.right =>
-          pageNumber.isOdd ? Alignment.centerLeft : Alignment.centerRight,
+    return Padding(
+      padding: switch (startPage) {
+        MangaStartPage.left => pageNumber.isOdd
+            ? EdgeInsets.only(left: 16.r)
+            : EdgeInsets.only(right: 16.r),
+        MangaStartPage.right => pageNumber.isOdd
+            ? EdgeInsets.only(right: 16.r)
+            : EdgeInsets.only(left: 16.r),
       },
       child: AspectRatio(
         aspectRatio: 2 / 3,

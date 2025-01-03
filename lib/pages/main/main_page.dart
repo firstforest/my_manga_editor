@@ -71,16 +71,8 @@ class MainPage extends HookConsumerWidget {
         ],
       ),
       body: switch (viewModel.valueOrNull?.manga) {
-        Manga manga => Column(
-            children: [
-              Text('selectedMangaId = ${viewModel.valueOrNull?.manga}',
-                  style: TextStyle(fontSize: 4.sp)),
-              Expanded(
-                child: _MangaEditWidget(
-                    manga: manga, scrollController: scrollController),
-              ),
-            ],
-          ),
+        Manga manga =>
+          _MangaEditWidget(manga: manga, scrollController: scrollController),
         // 自動で作るかボタンを用意する
         null => Center(
             child: TextButton(

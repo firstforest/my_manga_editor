@@ -101,6 +101,8 @@ class Workspace extends HookConsumerWidget {
             showClipboardCut: false,
             showClipboardCopy: false,
             showClipboardPaste: false,
+            showRedo: false,
+            showUndo: false,
             embedButtons: FlutterQuillEmbeds.toolbarButtons(),
           ),
         ),

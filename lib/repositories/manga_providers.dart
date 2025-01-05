@@ -153,7 +153,10 @@ class DeltaNotifier extends _$DeltaNotifier {
   Future<String> exportPlainText() async {
     final delta = await future;
     return switch (delta) {
-      Delta d when d.isNotEmpty => Document.fromDelta(delta).toPlainText(),
+      Delta d when d.isNotEmpty => Document.fromDelta(delta)
+          .toPlainText()
+          .replaceAll(RegExp(r'\n\s*\n\s*\n\s*'), '\n\n')
+          .trim(),
       _ => '',
     };
   }

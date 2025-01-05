@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/models/manga.dart';
@@ -25,8 +24,6 @@ class MangaPageWidget extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = mangaPageNotifierProvider(mangaPageId);
     final page = ref.watch(provider);
-    final dialoguesDelta =
-        ref.watch(deltaNotifierProvider(page.valueOrNull?.dialoguesDelta));
 
     return SizedBox(
       height: 300.r,
@@ -43,14 +40,11 @@ class MangaPageWidget extends HookConsumerWidget {
                       ),
                       IconButton(
                         onPressed: () async {
-                          if (dialoguesDelta.valueOrNull != null) {
-                            await _copyToClipboard(dialoguesDelta.value!);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content:
-                                          Text('Page $pageIndex をコピーしました')));
-                            }
+                          await _copyToClipboard(
+                              ref, data.value.dialoguesDelta);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text('Page $pageIndex をコピーしました')));
                           }
                         },
                         icon: const Icon(Icons.copy),
@@ -134,13 +128,16 @@ class MangaPageWidget extends HookConsumerWidget {
     };
   }
 
-  Future<void> _copyToClipboard(Delta delta) async {
+  Future<void> _copyToClipboard(WidgetRef ref, DeltaId deltaId) async {
+    final delta = await ref
+        .read(deltaNotifierProvider(deltaId).notifier)
+        .exportPlainText();
     final clipboard = SystemClipboard.instance;
-    if (clipboard == null) {
+    if (clipboard == null || delta.isEmpty) {
       return; // Clipboard API is not supported on this platform.
     }
     final item = DataWriterItem();
-    item.add(Formats.plainText(Document.fromDelta(delta).toPlainText()));
+    item.add(Formats.plainText(delta));
     await clipboard.write([item]);
   }
 }

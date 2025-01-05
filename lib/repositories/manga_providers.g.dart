@@ -175,7 +175,7 @@ class _MangaPageIdListProviderElement
   int get mangaId => (origin as MangaPageIdListProvider).mangaId;
 }
 
-String _$mangaNotifierHash() => r'b51c7a79f38223dad9a8f48ff90e71ecb5f8fbd6';
+String _$mangaNotifierHash() => r'4dafefd7a32a31dc0d24977603ca77b5f3d0790c';
 
 abstract class _$MangaNotifier
     extends BuildlessAutoDisposeStreamNotifier<Manga?> {
@@ -467,7 +467,7 @@ class _MangaPageNotifierProviderElement
   int get pageId => (origin as MangaPageNotifierProvider).pageId;
 }
 
-String _$deltaNotifierHash() => r'4b1e02040d9a3629d7fb5bb796eb01c687d6beca';
+String _$deltaNotifierHash() => r'0269c9e1e2bf67447e5f9de19e0913cf1f636a8f';
 
 abstract class _$DeltaNotifier
     extends BuildlessAutoDisposeStreamNotifier<Delta?> {

@@ -1,7 +1,11 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/models/manga.dart';
@@ -111,9 +115,12 @@ class Workspace extends HookConsumerWidget {
             controller: controller,
             focusNode: focusNode,
             configurations: QuillEditorConfigurations(
-                padding: const EdgeInsets.all(8.0),
-                placeholder: '何でも書ける場所',
-                embedBuilders: FlutterQuillEmbeds.editorBuilders()),
+              padding: EdgeInsets.symmetric(vertical: 8.r, horizontal: 16.r),
+              placeholder: '何でも書ける場所',
+              embedBuilders: kIsWeb
+                  ? FlutterQuillEmbeds.editorWebBuilders()
+                  : FlutterQuillEmbeds.editorBuilders(),
+            ),
           ),
         ),
       ],

@@ -149,7 +149,7 @@ class _MangaEditWidget extends HookConsumerWidget {
     return Row(
       key: ValueKey(manga.id),
       children: [
-        Expanded(flex: 1, child: _MemoArea(manga: manga)),
+        Expanded(flex: 2, child: _MemoArea(manga: manga)),
         Expanded(
           flex: 3,
           child: ColoredBox(

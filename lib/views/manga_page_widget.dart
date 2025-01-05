@@ -81,7 +81,7 @@ class MangaPageWidget extends HookConsumerWidget {
                     width: 4.r,
                   ),
                   Expanded(
-                    flex: 2,
+                    flex: 3,
                     child: Container(
                       constraints: BoxConstraints(
                         minHeight: 300.r,

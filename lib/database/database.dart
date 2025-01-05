@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/models/manga.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -80,7 +81,21 @@ class AppDatabase extends _$AppDatabase {
       );
 
   static QueryExecutor _openConnection() {
-    return driftDatabase(name: 'my_database');
+    return driftDatabase(
+      name: 'my_database',
+      web: DriftWebOptions(
+        sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+        driftWorker: Uri.parse('drift_worker.js'),
+        onResult: (result) {
+          if (result.missingFeatures.isNotEmpty) {
+            logger.d(
+              'Using ${result.chosenImplementation} due to unsupported '
+              'browser features: ${result.missingFeatures}',
+            );
+          }
+        },
+      ),
+    );
   }
 }
 

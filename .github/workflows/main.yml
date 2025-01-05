@@ -1,0 +1,33 @@
+name: Build & Deploy Flutter Web to GitHub Pages
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Setup mise
+        uses: jdx/mise-action@v2.0.2
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Setup base-href
+        id: base-href
+        run: |
+          REPOSITORY=$(echo ${{ github.repository }} | sed -e "s#.*/##")
+          echo "repository=$REPOSITORY" >> $GITHUB_OUTPUT
+      - name: Build Flutter Web
+        run: flutter build web --release --base-href /${{ steps.base-href.outputs.repository }}/
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: './build/web'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

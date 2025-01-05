@@ -5,6 +5,7 @@ import 'package:file_saver/file_saver.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markdown_quill/markdown_quill.dart';
 import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/models/manga.dart';
 import 'package:my_manga_editor/repositories/manga_repository.dart';
@@ -78,19 +79,20 @@ class MangaNotifier extends _$MangaNotifier {
     if (manga == null) {
       return '';
     }
+
     final repo = ref.watch(mangaRepositoryProvider);
     final pageIdList = await repo.watchAllMangaPageIdList(id).first;
     final pageContents = (await Future.wait(pageIdList.map((id) async {
       final page = await ref.read(mangaPageNotifierProvider(id).future);
       final memo = await ref
           .read(deltaNotifierProvider(page.memoDelta).notifier)
-          .exportPlainText();
+          .exportMarkdown();
       final dialogue = await ref
           .read(deltaNotifierProvider(page.dialoguesDelta).notifier)
-          .exportPlainText();
+          .exportMarkdown();
       final stageDirection = await ref
           .read(deltaNotifierProvider(page.stageDirectionDelta).notifier)
-          .exportPlainText();
+          .exportMarkdown();
       final builder = StringBuffer();
       builder.writeln('### 描きたいこと');
       builder.writeln();
@@ -108,7 +110,7 @@ class MangaNotifier extends _$MangaNotifier {
     builder.writeln();
     builder.writeln(await ref
         .read(deltaNotifierProvider(manga.ideaMemo).notifier)
-        .exportPlainText());
+        .exportMarkdown());
     for (int i = 0; i < pageContents.nonNulls.length; i++) {
       builder.writeln('## Page ${i + 1}');
       builder.writeln();
@@ -152,6 +154,15 @@ class DeltaNotifier extends _$DeltaNotifier {
     final delta = await future;
     return switch (delta) {
       Delta d when d.isNotEmpty => Document.fromDelta(delta).toPlainText(),
+      _ => '',
+    };
+  }
+
+  Future<String> exportMarkdown() async {
+    final delta = await future;
+    final deltaToMd = DeltaToMarkdown();
+    return switch (delta) {
+      Delta d when d.isNotEmpty => deltaToMd.convert(d),
       _ => '',
     };
   }

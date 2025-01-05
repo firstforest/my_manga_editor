@@ -858,6 +858,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.2.2"
+  markdown_quill:
+    dependency: "direct main"
+    description:
+      name: markdown_quill
+      sha256: d9b070ad2356d4dfcbc7ab602c77c8c253714d886d0098e2379884036aa42061
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.0"
   matcher:
     dependency: transitive
     description:

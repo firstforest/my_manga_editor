@@ -7,10 +7,9 @@ import 'package:my_manga_editor/models/manga.dart';
 import 'package:my_manga_editor/pages/grid/manga_grid_page.dart';
 import 'package:my_manga_editor/pages/main/manga_page_view_model.dart';
 import 'package:my_manga_editor/repositories/manga_providers.dart';
+import 'package:my_manga_editor/views/manga_edit_widget.dart';
 import 'package:my_manga_editor/views/manga_name_widget.dart';
-import 'package:my_manga_editor/views/manga_page_widget.dart';
 import 'package:my_manga_editor/views/start_page_selector.dart';
-import 'package:my_manga_editor/views/workspace.dart';
 
 class MainPage extends HookConsumerWidget {
   const MainPage({super.key});
@@ -72,7 +71,7 @@ class MainPage extends HookConsumerWidget {
       ),
       body: switch (viewModel.valueOrNull?.manga) {
         Manga manga =>
-          _MangaEditWidget(manga: manga, scrollController: scrollController),
+          MangaEditWidget(manga: manga, scrollController: scrollController),
         // 自動で作るかボタンを用意する
         null => Center(
             child: TextButton(
@@ -128,99 +127,6 @@ class MangaTitle extends HookConsumerWidget {
         Expanded(child: MangaNameWidget(manga: manga)),
         StartPageSelector(mangaId: manga.id),
       ],
-    );
-  }
-}
-
-class _MangaEditWidget extends HookConsumerWidget {
-  const _MangaEditWidget({
-    required this.manga,
-    required this.scrollController,
-  });
-
-  final Manga manga;
-  final ScrollController scrollController;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final pageIdList =
-        ref.watch(mangaPageIdListProvider(manga.id)).valueOrNull ?? [];
-
-    return Row(
-      key: ValueKey(manga.id),
-      children: [
-        Expanded(flex: 2, child: _MemoArea(manga: manga)),
-        Expanded(
-          flex: 3,
-          child: ColoredBox(
-            color: Colors.black12,
-            child: ReorderableListView.builder(
-              padding: EdgeInsets.all(8.r),
-              itemBuilder: (context, index) {
-                final pageId = pageIdList[index];
-                return Card(
-                  key: ValueKey(pageId),
-                  child: Container(
-                    padding: EdgeInsets.only(
-                      top: 8.r,
-                      bottom: 8.r,
-                      left: 24.r,
-                      right: 24.r + 8.r,
-                    ),
-                    child: Column(
-                      children: [
-                        MangaPageWidget(
-                          pageIndex: index + 1,
-                          startPage: manga.startPage,
-                          mangaPageId: pageId,
-                        ),
-                        SizedBox(
-                          height: 4.r,
-                        ),
-                        Align(
-                          alignment: Alignment.bottomCenter,
-                          child: IconButton(
-                            onPressed: () {
-                              ref
-                                  .read(
-                                      mangaNotifierProvider(manga.id).notifier)
-                                  .addNewPage(index + 1);
-                            },
-                            icon: const Icon(Icons.add),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-              itemCount: pageIdList.length,
-              onReorder: (oldIndex, newIndex) {
-                ref
-                    .read(mangaNotifierProvider(manga.id).notifier)
-                    .reorderPage(pageIdList, oldIndex, newIndex);
-              },
-              scrollController: scrollController,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _MemoArea extends HookConsumerWidget {
-  const _MemoArea({
-    required this.manga,
-  });
-
-  final Manga manga;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Workspace(
-      key: ValueKey(manga.id),
-      deltaId: manga.ideaMemo,
     );
   }
 }

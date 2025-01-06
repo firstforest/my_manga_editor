@@ -25,6 +25,10 @@ class MangaPageWidget extends HookConsumerWidget {
     final page = ref.watch(mangaPageNotifierProvider(mangaPageId));
 
     final tabController = useTabController(initialLength: 3);
+    final currentPageIndex = useState(1);
+    final pageController =
+        usePageController(initialPage: currentPageIndex.value);
+
     return SizedBox(
       height: 300.r,
       child: page.when(
@@ -32,11 +36,13 @@ class MangaPageWidget extends HookConsumerWidget {
                 return switch (constraints.maxWidth) {
                   < 480 => Column(
                       children: [
-                        _buildToolBar(ref, value, context, tabController),
+                        _buildToolBar(ref, value, context),
                         Expanded(
                           child: PageView(
+                            controller: pageController,
                             onPageChanged: (index) {
                               tabController.index = index;
+                              currentPageIndex.value = index;
                             },
                             children: [
                               _buildMemo(value),
@@ -45,11 +51,43 @@ class MangaPageWidget extends HookConsumerWidget {
                             ],
                           ),
                         ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              onPressed: 0 < currentPageIndex.value
+                                  ? () {
+                                      pageController.previousPage(
+                                        duration:
+                                            const Duration(milliseconds: 400),
+                                        curve: Curves.easeInOut,
+                                      );
+                                    }
+                                  : null,
+                              icon: Icon(Icons.arrow_left_rounded),
+                            ),
+                            TabPageSelector(
+                              controller: tabController,
+                            ),
+                            IconButton(
+                              onPressed: currentPageIndex.value < 3 - 1
+                                  ? () {
+                                      pageController.nextPage(
+                                        duration:
+                                            const Duration(milliseconds: 400),
+                                        curve: Curves.easeInOut,
+                                      );
+                                    }
+                                  : null,
+                              icon: Icon(Icons.arrow_right_rounded),
+                            ),
+                          ],
+                        )
                       ],
                     ),
                   _ => Column(
                       children: [
-                        _buildToolBar(ref, value, context, null),
+                        _buildToolBar(ref, value, context),
                         Expanded(
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,8 +119,7 @@ class MangaPageWidget extends HookConsumerWidget {
     );
   }
 
-  Row _buildToolBar(WidgetRef ref, MangaPage value, BuildContext context,
-      TabController? tabController) {
+  Row _buildToolBar(WidgetRef ref, MangaPage value, BuildContext context) {
     return Row(
       children: [
         _buildPageIndicator(),
@@ -99,12 +136,6 @@ class MangaPageWidget extends HookConsumerWidget {
           },
           icon: const Icon(Icons.copy),
         ),
-        if (tabController != null) ...[
-          Spacer(),
-          TabPageSelector(
-            controller: tabController,
-          ),
-        ],
         Spacer(),
         IconButton(
           onPressed: () {

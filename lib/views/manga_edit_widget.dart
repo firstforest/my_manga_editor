@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/models/manga.dart';
 import 'package:my_manga_editor/views/manga_page_list.dart';
@@ -16,27 +17,58 @@ class MangaEditWidget extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Row(
+    return LayoutBuilder(
       key: ValueKey(manga.id),
-      children: [
-        Expanded(
-          flex: 2,
-          child: Workspace(
-            key: ValueKey(manga.id),
-            deltaId: manga.ideaMemo,
-          ),
-        ),
-        Expanded(
-          flex: 3,
-          child: ColoredBox(
-            color: Colors.black12,
-            child: MangaPageList(
-              manga: manga,
-              scrollController: scrollController,
+      builder: (context, constraints) => switch (constraints.maxWidth) {
+        < 640 => DefaultTabController(
+            length: 2,
+            child: Column(
+              children: [
+                TabBar(
+                  tabs: [
+                    Tab(child: Text('全体メモ')),
+                    Tab(child: Text('ページリスト')),
+                  ],
+                ),
+                SizedBox(
+                  height: 8.r,
+                ),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      Workspace(deltaId: manga.ideaMemo),
+                      MangaPageList(
+                        manga: manga,
+                        scrollController: scrollController,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+        _ => Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Workspace(
+                  key: ValueKey(manga.id),
+                  deltaId: manga.ideaMemo,
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: ColoredBox(
+                  color: Colors.black12,
+                  child: MangaPageList(
+                    manga: manga,
+                    scrollController: scrollController,
+                  ),
+                ),
+              ),
+            ],
+          )
+      },
     );
   }
 }

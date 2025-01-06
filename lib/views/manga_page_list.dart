@@ -31,7 +31,7 @@ class MangaPageList extends HookConsumerWidget {
               top: 8.r,
               bottom: 8.r,
               left: 24.r,
-              right: 24.r + 8.r,
+              right: 24.r + 8.w,
             ),
             child: Column(
               children: [

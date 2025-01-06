@@ -22,93 +22,135 @@ class MangaPageWidget extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = mangaPageNotifierProvider(mangaPageId);
-    final page = ref.watch(provider);
+    final page = ref.watch(mangaPageNotifierProvider(mangaPageId));
 
+    final tabController = useTabController(initialLength: 3);
     return SizedBox(
       height: 300.r,
-      child: page.map(
-          data: (data) => Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildPageIndicator(),
-                      SizedBox(
-                        height: 4.r,
-                      ),
-                      IconButton(
-                        onPressed: () async {
-                          await _copyToClipboard(
-                              ref, data.value.dialoguesDelta);
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text('Page $pageIndex をコピーしました')));
-                          }
-                        },
-                        icon: const Icon(Icons.copy),
-                      ),
-                      Spacer(),
-                      IconButton(
-                        onPressed: () {
-                          ref.read(provider.notifier).delete();
-                        },
-                        icon: const Icon(Icons.delete),
-                      ),
-                    ],
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      constraints: BoxConstraints(
-                        minHeight: 300.r,
-                      ),
-                      color: Colors.indigo.shade100,
-                      child: _QuillTextAreaWidget(
-                        deltaId: data.value.memoDelta,
-                        placeholder: 'このページで描きたいこと',
-                      ),
+      child: page.when(
+          data: (value) => LayoutBuilder(builder: (context, constraints) {
+                return switch (constraints.maxWidth) {
+                  < 480 => Column(
+                      children: [
+                        _buildToolBar(ref, value, context, tabController),
+                        Expanded(
+                          child: PageView(
+                            onPageChanged: (index) {
+                              tabController.index = index;
+                            },
+                            children: [
+                              _buildMemo(value),
+                              _buildDialogues(value),
+                              _buildStageDirection(value),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  SizedBox(
-                    width: 4.r,
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Container(
-                      constraints: BoxConstraints(
-                        minHeight: 300.r,
-                      ),
-                      color: Colors.black12,
-                      child: _QuillTextAreaWidget(
-                        key: ValueKey(data.value.dialoguesDelta),
-                        deltaId: data.value.dialoguesDelta,
-                        placeholder: 'セリフ',
-                      ),
+                  _ => Column(
+                      children: [
+                        _buildToolBar(ref, value, context, null),
+                        Expanded(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // buildColumn(ref, value, context, deletePage),
+                              Expanded(
+                                flex: 1,
+                                child: _buildMemo(value),
+                              ),
+                              SizedBox(width: 4.r),
+                              Expanded(
+                                flex: 3,
+                                child: _buildDialogues(value),
+                              ),
+                              SizedBox(width: 2.r),
+                              Expanded(
+                                flex: 2,
+                                child: _buildStageDirection(value),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  SizedBox(
-                    width: 2.r,
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Container(
-                      constraints: BoxConstraints(
-                        minHeight: 300.r,
-                      ),
-                      color: Colors.black12,
-                      child: _QuillTextAreaWidget(
-                        key: ValueKey(data.value.stageDirectionDelta),
-                        deltaId: data.value.stageDirectionDelta,
-                        placeholder: 'ト書き',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-          error: (error) => Text('error'),
-          loading: (loading) => const CircularProgressIndicator()),
+                };
+              }),
+          error: (_, __) => Text('error'),
+          loading: () => const CircularProgressIndicator()),
+    );
+  }
+
+  Row _buildToolBar(WidgetRef ref, MangaPage value, BuildContext context,
+      TabController? tabController) {
+    return Row(
+      children: [
+        _buildPageIndicator(),
+        SizedBox(
+          width: 4.r,
+        ),
+        IconButton(
+          onPressed: () async {
+            await _copyToClipboard(ref, value.dialoguesDelta);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Page $pageIndex をコピーしました')));
+            }
+          },
+          icon: const Icon(Icons.copy),
+        ),
+        if (tabController != null) ...[
+          Spacer(),
+          TabPageSelector(
+            controller: tabController,
+          ),
+        ],
+        Spacer(),
+        IconButton(
+          onPressed: () {
+            ref.read(mangaPageNotifierProvider(mangaPageId).notifier).delete();
+          },
+          icon: const Icon(Icons.delete),
+        ),
+      ],
+    );
+  }
+
+  Container _buildStageDirection(MangaPage value) {
+    return Container(
+      height: double.infinity,
+      constraints: BoxConstraints(minWidth: 300.r),
+      color: Colors.black12,
+      child: _QuillTextAreaWidget(
+        key: ValueKey(value.stageDirectionDelta),
+        deltaId: value.stageDirectionDelta,
+        placeholder: 'ト書き',
+      ),
+    );
+  }
+
+  Container _buildDialogues(MangaPage value) {
+    return Container(
+      height: double.infinity,
+      constraints: BoxConstraints(minWidth: 300.r),
+      color: Colors.black12,
+      child: _QuillTextAreaWidget(
+        key: ValueKey(value.dialoguesDelta),
+        deltaId: value.dialoguesDelta,
+        placeholder: 'セリフ',
+      ),
+    );
+  }
+
+  Container _buildMemo(MangaPage value) {
+    return Container(
+      height: double.infinity,
+      constraints: BoxConstraints(minWidth: 300.r),
+      color: Colors.indigo.shade100,
+      child: _QuillTextAreaWidget(
+        deltaId: value.memoDelta,
+        placeholder: 'このページで描きたいこと',
+      ),
     );
   }
 

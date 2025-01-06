@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class Tategaki extends StatelessWidget {
   const Tategaki(
     this.text, {
+    super.key,
     this.style,
     this.space = 12,
   });

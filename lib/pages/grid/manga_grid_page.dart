@@ -23,7 +23,8 @@ class MangaGridPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final crossAxisCount = 4;
+    final mediaQuery = MediaQuery.of(context);
+    final crossAxisCount = mediaQuery.size.width < 920 ? 2 : 4;
     final scrollController = useScrollController();
     final startPage = ref.watch(mangaNotifierProvider(mangaId)).maybeMap(
         orElse: () => MangaStartPage.left,

@@ -80,9 +80,9 @@ class Workspace extends HookConsumerWidget {
 
     return Column(
       children: [
-        QuillToolbar.simple(
+        QuillSimpleToolbar(
           controller: controller,
-          configurations: QuillSimpleToolbarConfigurations(
+          config: QuillSimpleToolbarConfig(
             showFontFamily: false,
             showFontSize: false,
             showBoldButton: false,
@@ -112,7 +112,7 @@ class Workspace extends HookConsumerWidget {
           child: QuillEditor.basic(
             controller: controller,
             focusNode: focusNode,
-            configurations: QuillEditorConfigurations(
+            config: QuillEditorConfig(
               padding: EdgeInsets.symmetric(vertical: 8.r, horizontal: 16.r),
               placeholder: '何でも書ける場所',
               embedBuilders: kIsWeb

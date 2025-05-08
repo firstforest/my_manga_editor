@@ -129,7 +129,7 @@ class MangaGridPageView extends HookConsumerWidget {
         aspectRatio: 2 / 3,
         child: Card(
           child: Padding(
-            padding: EdgeInsets.all(8.r),
+            padding: EdgeInsets.symmetric(vertical: 16.r, horizontal: 8.r),
             child: Column(
               children: [
                 Expanded(
@@ -139,12 +139,9 @@ class MangaGridPageView extends HookConsumerWidget {
                           mangaPage.value.dialoguesDelta));
                       return switch (delta.valueOrNull) {
                         Delta d when d.isNotEmpty => SingleChildScrollView(
-                            child: Padding(
-                              padding: EdgeInsets.all(8.r),
-                              child: Tategaki(
-                                Document.fromDelta(d).toPlainText(),
-                                style: GoogleFonts.shipporiAntique(height: 1.0),
-                              ),
+                            child: Tategaki(
+                              Document.fromDelta(d).toPlainText(),
+                              style: GoogleFonts.shipporiAntique(height: 1.0),
                             ),
                           ),
                         _ => Text('セリフなし'),

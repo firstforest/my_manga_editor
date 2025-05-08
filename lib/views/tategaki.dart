@@ -18,7 +18,7 @@ class Tategaki extends StatelessWidget {
     final splitText = text.split("\n");
     return Wrap(
       textDirection: TextDirection.rtl,
-      runSpacing: 12.r,
+      runSpacing: 24.r,
       children: [
         for (var s in splitText) _textBox(s.runes),
       ],

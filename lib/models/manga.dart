@@ -19,7 +19,7 @@ typedef MangaPageId = int;
 typedef DeltaId = int;
 
 @freezed
-class Manga with _$Manga {
+abstract class Manga with _$Manga {
   const factory Manga({
     required MangaId id,
     required String name,
@@ -31,7 +31,7 @@ class Manga with _$Manga {
 }
 
 @freezed
-class MangaPage with _$MangaPage {
+abstract class MangaPage with _$MangaPage {
   const factory MangaPage({
     required MangaPageId id,
     required DeltaId memoDelta,

@@ -17,7 +17,6 @@ class $DbDeltasTable extends DbDeltas with TableInfo<$DbDeltasTable, DbDelta> {
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _deltaMeta = const VerificationMeta('delta');
   @override
   late final GeneratedColumnWithTypeConverter<Delta, String> delta =
       GeneratedColumn<String>('delta', aliasedName, false,
@@ -38,7 +37,6 @@ class $DbDeltasTable extends DbDeltas with TableInfo<$DbDeltasTable, DbDelta> {
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    context.handle(_deltaMeta, const VerificationResult.success());
     return context;
   }
 
@@ -203,8 +201,6 @@ class $DbMangasTable extends DbMangas with TableInfo<$DbMangasTable, DbManga> {
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _startPageMeta =
-      const VerificationMeta('startPage');
   @override
   late final GeneratedColumnWithTypeConverter<MangaStartPage, int> startPage =
       GeneratedColumn<int>('start_page', aliasedName, false,
@@ -240,7 +236,6 @@ class $DbMangasTable extends DbMangas with TableInfo<$DbMangasTable, DbManga> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    context.handle(_startPageMeta, const VerificationResult.success());
     if (data.containsKey('idea_memo')) {
       context.handle(_ideaMemoMeta,
           ideaMemo.isAcceptableOrUnknown(data['idea_memo']!, _ideaMemoMeta));
@@ -855,7 +850,7 @@ final class $$DbDeltasTableReferences
 
   $$DbMangasTableProcessedTableManager get dbMangasRefs {
     final manager = $$DbMangasTableTableManager($_db, $_db.dbMangas)
-        .filter((f) => f.ideaMemo.id($_item.id));
+        .filter((f) => f.ideaMemo.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_dbMangasRefsTable($_db));
     return ProcessedTableManager(
@@ -870,7 +865,7 @@ final class $$DbDeltasTableReferences
 
   $$DbMangaPagesTableProcessedTableManager get memoDelta {
     final manager = $$DbMangaPagesTableTableManager($_db, $_db.dbMangaPages)
-        .filter((f) => f.memoDelta.id($_item.id));
+        .filter((f) => f.memoDelta.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_memoDeltaTable($_db));
     return ProcessedTableManager(
@@ -885,7 +880,8 @@ final class $$DbDeltasTableReferences
 
   $$DbMangaPagesTableProcessedTableManager get stageDirectionDelta {
     final manager = $$DbMangaPagesTableTableManager($_db, $_db.dbMangaPages)
-        .filter((f) => f.stageDirectionDelta.id($_item.id));
+        .filter((f) =>
+            f.stageDirectionDelta.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache =
         $_typedResult.readTableOrNull(_stageDirectionDeltaTable($_db));
@@ -901,7 +897,7 @@ final class $$DbDeltasTableReferences
 
   $$DbMangaPagesTableProcessedTableManager get dialoguesDelta {
     final manager = $$DbMangaPagesTableTableManager($_db, $_db.dbMangaPages)
-        .filter((f) => f.dialoguesDelta.id($_item.id));
+        .filter((f) => f.dialoguesDelta.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_dialoguesDeltaTable($_db));
     return ProcessedTableManager(
@@ -1190,7 +1186,7 @@ class $$DbDeltasTableTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (dbMangasRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<DbDelta, $DbDeltasTable, DbManga>(
                         currentTable: table,
                         referencedTable:
                             $$DbDeltasTableReferences._dbMangasRefsTable(db),
@@ -1202,7 +1198,8 @@ class $$DbDeltasTableTableManager extends RootTableManager<
                             referencedItems.where((e) => e.ideaMemo == item.id),
                         typedResults: items),
                   if (memoDelta)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<DbDelta, $DbDeltasTable,
+                            DbMangaPage>(
                         currentTable: table,
                         referencedTable:
                             $$DbDeltasTableReferences._memoDeltaTable(db),
@@ -1213,7 +1210,8 @@ class $$DbDeltasTableTableManager extends RootTableManager<
                                 .where((e) => e.memoDelta == item.id),
                         typedResults: items),
                   if (stageDirectionDelta)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<DbDelta, $DbDeltasTable,
+                            DbMangaPage>(
                         currentTable: table,
                         referencedTable: $$DbDeltasTableReferences
                             ._stageDirectionDeltaTable(db),
@@ -1225,7 +1223,8 @@ class $$DbDeltasTableTableManager extends RootTableManager<
                                 .where((e) => e.stageDirectionDelta == item.id),
                         typedResults: items),
                   if (dialoguesDelta)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<DbDelta, $DbDeltasTable,
+                            DbMangaPage>(
                         currentTable: table,
                         referencedTable:
                             $$DbDeltasTableReferences._dialoguesDeltaTable(db),
@@ -1280,8 +1279,10 @@ final class $$DbMangasTableReferences
       .createAlias($_aliasNameGenerator(db.dbMangas.ideaMemo, db.dbDeltas.id));
 
   $$DbDeltasTableProcessedTableManager get ideaMemo {
+    final $_column = $_itemColumn<int>('idea_memo')!;
+
     final manager = $$DbDeltasTableTableManager($_db, $_db.dbDeltas)
-        .filter((f) => f.id($_item.ideaMemo!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_ideaMemoTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -1296,7 +1297,7 @@ final class $$DbMangasTableReferences
 
   $$DbMangaPagesTableProcessedTableManager get dbMangaPagesRefs {
     final manager = $$DbMangaPagesTableTableManager($_db, $_db.dbMangaPages)
-        .filter((f) => f.mangaId.id($_item.id));
+        .filter((f) => f.mangaId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_dbMangaPagesRefsTable($_db));
     return ProcessedTableManager(
@@ -1549,7 +1550,8 @@ class $$DbMangasTableTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (dbMangaPagesRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<DbManga, $DbMangasTable,
+                            DbMangaPage>(
                         currentTable: table,
                         referencedTable: $$DbMangasTableReferences
                             ._dbMangaPagesRefsTable(db),
@@ -1607,8 +1609,10 @@ final class $$DbMangaPagesTableReferences
           $_aliasNameGenerator(db.dbMangaPages.mangaId, db.dbMangas.id));
 
   $$DbMangasTableProcessedTableManager get mangaId {
+    final $_column = $_itemColumn<int>('manga_id')!;
+
     final manager = $$DbMangasTableTableManager($_db, $_db.dbMangas)
-        .filter((f) => f.id($_item.mangaId!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_mangaIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -1620,8 +1624,10 @@ final class $$DbMangaPagesTableReferences
           $_aliasNameGenerator(db.dbMangaPages.memoDelta, db.dbDeltas.id));
 
   $$DbDeltasTableProcessedTableManager get memoDelta {
+    final $_column = $_itemColumn<int>('memo_delta')!;
+
     final manager = $$DbDeltasTableTableManager($_db, $_db.dbDeltas)
-        .filter((f) => f.id($_item.memoDelta!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_memoDeltaTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -1633,8 +1639,10 @@ final class $$DbMangaPagesTableReferences
           db.dbMangaPages.stageDirectionDelta, db.dbDeltas.id));
 
   $$DbDeltasTableProcessedTableManager get stageDirectionDelta {
+    final $_column = $_itemColumn<int>('stage_direction_delta')!;
+
     final manager = $$DbDeltasTableTableManager($_db, $_db.dbDeltas)
-        .filter((f) => f.id($_item.stageDirectionDelta!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_stageDirectionDeltaTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -1646,8 +1654,10 @@ final class $$DbMangaPagesTableReferences
           $_aliasNameGenerator(db.dbMangaPages.dialoguesDelta, db.dbDeltas.id));
 
   $$DbDeltasTableProcessedTableManager get dialoguesDelta {
+    final $_column = $_itemColumn<int>('dialogues_delta')!;
+
     final manager = $$DbDeltasTableTableManager($_db, $_db.dbDeltas)
-        .filter((f) => f.id($_item.dialoguesDelta!));
+        .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_dialoguesDeltaTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(

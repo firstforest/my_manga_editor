@@ -8,7 +8,7 @@ part 'manga_page_view_model.freezed.dart';
 part 'manga_page_view_model.g.dart';
 
 @freezed
-class MangaPageViewModel with _$MangaPageViewModel {
+abstract class MangaPageViewModel with _$MangaPageViewModel {
   const factory MangaPageViewModel({
     required Manga? manga,
   }) = _MangaPageViewModel;

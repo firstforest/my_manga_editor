@@ -467,7 +467,7 @@ class _MangaPageNotifierProviderElement
   int get pageId => (origin as MangaPageNotifierProvider).pageId;
 }
 
-String _$deltaNotifierHash() => r'0269c9e1e2bf67447e5f9de19e0913cf1f636a8f';
+String _$deltaNotifierHash() => r'98e6ed6ecd0cf6fef935369ba190a707aa2d8085';
 
 abstract class _$DeltaNotifier
     extends BuildlessAutoDisposeStreamNotifier<Delta?> {

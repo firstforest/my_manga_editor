@@ -6,15 +6,14 @@ part of 'manga.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$MangaImpl _$$MangaImplFromJson(Map<String, dynamic> json) => _$MangaImpl(
+_Manga _$MangaFromJson(Map<String, dynamic> json) => _Manga(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       startPage: $enumDecode(_$MangaStartPageEnumMap, json['startPage']),
       ideaMemo: (json['ideaMemo'] as num).toInt(),
     );
 
-Map<String, dynamic> _$$MangaImplToJson(_$MangaImpl instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$MangaToJson(_Manga instance) => <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
       'startPage': _$MangaStartPageEnumMap[instance.startPage]!,
@@ -26,15 +25,14 @@ const _$MangaStartPageEnumMap = {
   MangaStartPage.right: 'right',
 };
 
-_$MangaPageImpl _$$MangaPageImplFromJson(Map<String, dynamic> json) =>
-    _$MangaPageImpl(
+_MangaPage _$MangaPageFromJson(Map<String, dynamic> json) => _MangaPage(
       id: (json['id'] as num).toInt(),
       memoDelta: (json['memoDelta'] as num).toInt(),
       stageDirectionDelta: (json['stageDirectionDelta'] as num).toInt(),
       dialoguesDelta: (json['dialoguesDelta'] as num).toInt(),
     );
 
-Map<String, dynamic> _$$MangaPageImplToJson(_$MangaPageImpl instance) =>
+Map<String, dynamic> _$MangaPageToJson(_MangaPage instance) =>
     <String, dynamic>{
       'id': instance.id,
       'memoDelta': instance.memoDelta,

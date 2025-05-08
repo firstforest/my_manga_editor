@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/models/manga.dart';
+import 'package:my_manga_editor/views/ai_comment_area.dart';
 import 'package:my_manga_editor/views/manga_page_list.dart';
 import 'package:my_manga_editor/views/workspace.dart';
 
@@ -51,9 +52,16 @@ class MangaEditWidget extends HookConsumerWidget {
             children: [
               Expanded(
                 flex: 2,
-                child: Workspace(
-                  key: ValueKey(manga.id),
-                  deltaId: manga.ideaMemo,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Workspace(
+                        key: ValueKey(manga.id),
+                        deltaId: manga.ideaMemo,
+                      ),
+                    ),
+                    SizedBox(height: 120.r, child: AiCommentArea(manga.id)),
+                  ],
                 ),
               ),
               Expanded(

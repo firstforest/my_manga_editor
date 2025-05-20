@@ -157,7 +157,7 @@ class _MangaDescriptionProviderElement
   int get mangaId => (origin as MangaDescriptionProvider).mangaId;
 }
 
-String _$aiCommentListHash() => r'aa5b76b17cf3164d24094fa002838bc8ea412be8';
+String _$aiCommentListHash() => r'b3be1f858aa0ae9b701ece4ca1905ca1dde4e218';
 
 abstract class _$AiCommentList
     extends BuildlessAutoDisposeNotifier<List<AiComment>> {

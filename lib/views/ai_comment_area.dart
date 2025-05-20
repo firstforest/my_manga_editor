@@ -6,10 +6,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/models/manga.dart';
 import 'package:my_manga_editor/repositories/manga_providers.dart';
+import 'package:my_manga_editor/src/rust/api/simple.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'ai_comment_area.freezed.dart';
-
 part 'ai_comment_area.g.dart';
 
 @riverpod
@@ -27,14 +27,21 @@ class AiCommentList extends _$AiCommentList {
   @override
   List<AiComment> build(MangaId mangaId) {
     final timer = Timer.periodic(Duration(seconds: 3), (_) {
-      state = state.toList()..add(AiComment(text: 'HOGE'));
+      _createComment();
     });
     ref.onDispose(() {
       timer.cancel();
     });
-    return [
-      AiComment(text: 'HOGE'),
-    ];
+    return [];
+  }
+
+  void _createComment() async {
+    final description =
+        await ref.read(mangaDescriptionProvider(mangaId).future);
+    final message = await prompt(
+      message: "以下はマンガのメモです。これを元に読者が期待しそうなコメントをしてください。\n\n$description",
+    );
+    state = state.toList()..add(AiComment(text: message));
   }
 }
 

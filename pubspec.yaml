@@ -57,9 +57,6 @@ dependencies:
   google_fonts: ^6.2.1
   file_saver: ^0.2.14
   markdown_quill: ^4.2.0
-  rust_lib_my_manga_editor:
-    path: rust_builder
-  flutter_rust_bridge: 2.9.0
 
 dev_dependencies:
   flutter_test:
@@ -79,8 +76,6 @@ dev_dependencies:
   json_serializable: ^6.9.0
   drift_dev: ^2.22.1
   mockito: ^5.4.5
-  integration_test:
-    sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

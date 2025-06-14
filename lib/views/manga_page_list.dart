@@ -17,8 +17,7 @@ class MangaPageList extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pageIdList =
-        ref.watch(mangaPageIdListProvider(manga.id)).valueOrNull ?? [];
+    final pageIdList = ref.watch(mangaPageIdListProvider(manga.id)).value ?? [];
 
     return ReorderableListView.builder(
       padding: EdgeInsets.all(8.r),

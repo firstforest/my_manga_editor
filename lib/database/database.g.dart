@@ -2129,37 +2129,86 @@ mixin _$MangaDaoMixin on DatabaseAccessor<AppDatabase> {
 // RiverpodGenerator
 // **************************************************************************
 
+@ProviderFor(database)
+const databaseProvider = DatabaseProvider._();
+
+final class DatabaseProvider
+    extends $FunctionalProvider<AppDatabase, AppDatabase>
+    with $Provider<AppDatabase> {
+  const DatabaseProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'databaseProvider',
+          isAutoDispose: false,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$databaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<AppDatabase> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  AppDatabase create(Ref ref) {
+    return database(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AppDatabase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $ValueProvider<AppDatabase>(value),
+    );
+  }
+}
+
 String _$databaseHash() => r'e5a1fa0e8ff9aa131f847f28519ec2098e6d0f76';
 
-/// See also [database].
-@ProviderFor(database)
-final databaseProvider = Provider<AppDatabase>.internal(
-  database,
-  name: r'databaseProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$databaseHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(mangaDao)
+const mangaDaoProvider = MangaDaoProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef DatabaseRef = ProviderRef<AppDatabase>;
+final class MangaDaoProvider extends $FunctionalProvider<MangaDao, MangaDao>
+    with $Provider<MangaDao> {
+  const MangaDaoProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'mangaDaoProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$mangaDaoHash();
+
+  @$internal
+  @override
+  $ProviderElement<MangaDao> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  MangaDao create(Ref ref) {
+    return mangaDao(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(MangaDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $ValueProvider<MangaDao>(value),
+    );
+  }
+}
+
 String _$mangaDaoHash() => r'b414ae23e61df1fccf30bc57e1c9bbd715d87fcf';
 
-/// See also [mangaDao].
-@ProviderFor(mangaDao)
-final mangaDaoProvider = AutoDisposeProvider<MangaDao>.internal(
-  mangaDao,
-  name: r'mangaDaoProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$mangaDaoHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef MangaDaoRef = AutoDisposeProviderRef<MangaDao>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

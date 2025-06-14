@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$MangaPageViewModel {
-  Manga? get manga;
+  MangaId? get mangaId;
 
   /// Create a copy of MangaPageViewModel
   /// with the given fields replaced by the non-null parameter values.
@@ -30,15 +30,15 @@ mixin _$MangaPageViewModel {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is MangaPageViewModel &&
-            (identical(other.manga, manga) || other.manga == manga));
+            (identical(other.mangaId, mangaId) || other.mangaId == mangaId));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, manga);
+  int get hashCode => Object.hash(runtimeType, mangaId);
 
   @override
   String toString() {
-    return 'MangaPageViewModel(manga: $manga)';
+    return 'MangaPageViewModel(mangaId: $mangaId)';
   }
 }
 
@@ -48,9 +48,7 @@ abstract mixin class $MangaPageViewModelCopyWith<$Res> {
           MangaPageViewModel value, $Res Function(MangaPageViewModel) _then) =
       _$MangaPageViewModelCopyWithImpl;
   @useResult
-  $Res call({Manga? manga});
-
-  $MangaCopyWith<$Res>? get manga;
+  $Res call({MangaId? mangaId});
 }
 
 /// @nodoc
@@ -66,38 +64,24 @@ class _$MangaPageViewModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? manga = freezed,
+    Object? mangaId = freezed,
   }) {
     return _then(_self.copyWith(
-      manga: freezed == manga
-          ? _self.manga
-          : manga // ignore: cast_nullable_to_non_nullable
-              as Manga?,
+      mangaId: freezed == mangaId
+          ? _self.mangaId
+          : mangaId // ignore: cast_nullable_to_non_nullable
+              as MangaId?,
     ));
-  }
-
-  /// Create a copy of MangaPageViewModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $MangaCopyWith<$Res>? get manga {
-    if (_self.manga == null) {
-      return null;
-    }
-
-    return $MangaCopyWith<$Res>(_self.manga!, (value) {
-      return _then(_self.copyWith(manga: value));
-    });
   }
 }
 
 /// @nodoc
 
 class _MangaPageViewModel implements MangaPageViewModel {
-  const _MangaPageViewModel({required this.manga});
+  const _MangaPageViewModel({required this.mangaId});
 
   @override
-  final Manga? manga;
+  final MangaId? mangaId;
 
   /// Create a copy of MangaPageViewModel
   /// with the given fields replaced by the non-null parameter values.
@@ -112,15 +96,15 @@ class _MangaPageViewModel implements MangaPageViewModel {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _MangaPageViewModel &&
-            (identical(other.manga, manga) || other.manga == manga));
+            (identical(other.mangaId, mangaId) || other.mangaId == mangaId));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, manga);
+  int get hashCode => Object.hash(runtimeType, mangaId);
 
   @override
   String toString() {
-    return 'MangaPageViewModel(manga: $manga)';
+    return 'MangaPageViewModel(mangaId: $mangaId)';
   }
 }
 
@@ -132,10 +116,7 @@ abstract mixin class _$MangaPageViewModelCopyWith<$Res>
       __$MangaPageViewModelCopyWithImpl;
   @override
   @useResult
-  $Res call({Manga? manga});
-
-  @override
-  $MangaCopyWith<$Res>? get manga;
+  $Res call({MangaId? mangaId});
 }
 
 /// @nodoc
@@ -151,28 +132,14 @@ class __$MangaPageViewModelCopyWithImpl<$Res>
   @override
   @pragma('vm:prefer-inline')
   $Res call({
-    Object? manga = freezed,
+    Object? mangaId = freezed,
   }) {
     return _then(_MangaPageViewModel(
-      manga: freezed == manga
-          ? _self.manga
-          : manga // ignore: cast_nullable_to_non_nullable
-              as Manga?,
+      mangaId: freezed == mangaId
+          ? _self.mangaId
+          : mangaId // ignore: cast_nullable_to_non_nullable
+              as MangaId?,
     ));
-  }
-
-  /// Create a copy of MangaPageViewModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $MangaCopyWith<$Res>? get manga {
-    if (_self.manga == null) {
-      return null;
-    }
-
-    return $MangaCopyWith<$Res>(_self.manga!, (value) {
-      return _then(_self.copyWith(manga: value));
-    });
   }
 }
 

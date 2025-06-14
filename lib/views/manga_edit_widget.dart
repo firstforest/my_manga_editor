@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/models/manga.dart';
+import 'package:my_manga_editor/repositories/manga_providers.dart';
 import 'package:my_manga_editor/views/ai_comment_area.dart';
 import 'package:my_manga_editor/views/manga_page_list.dart';
 import 'package:my_manga_editor/views/workspace.dart';
@@ -9,17 +10,21 @@ import 'package:my_manga_editor/views/workspace.dart';
 class MangaEditWidget extends HookConsumerWidget {
   const MangaEditWidget({
     super.key,
-    required this.manga,
+    required this.mangaId,
     required this.scrollController,
   });
 
-  final Manga manga;
+  final MangaId mangaId;
   final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final manga = ref.watch(mangaNotifierProvider(mangaId)).value;
+    if (manga == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return LayoutBuilder(
-      key: ValueKey(manga.id),
+      key: ValueKey(mangaId),
       builder: (context, constraints) => switch (constraints.maxWidth) {
         < 640 => DefaultTabController(
             length: 2,

@@ -26,31 +26,31 @@ class MainPage extends HookConsumerWidget {
         toolbarHeight: 100.r,
         title: SizedBox(
           height: 100.r,
-          child: switch (viewModel.valueOrNull) {
-            MangaPageViewModel viewModel when viewModel.manga != null =>
-              MangaTitle(manga: viewModel.manga!),
+          child: switch (viewModel.value?.mangaId) {
+            MangaId mangaId => MangaTitle(mangaId: mangaId),
             _ => null,
           },
         ),
         actions: [
-          if (viewModel.valueOrNull?.manga case final Manga manga)
+          if (viewModel.value?.mangaId case final MangaId mangaId)
             IconButton(
                 onPressed: () async {
                   await ref
-                      .read(mangaNotifierProvider(manga.id).notifier)
+                      .read(mangaNotifierProvider(mangaId).notifier)
                       .download();
+                  final manga = ref.read(mangaNotifierProvider(mangaId)).value;
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${manga.name}をダウンロードしました')));
+                        SnackBar(content: Text('${manga?.name}をダウンロードしました')));
                   }
                 },
                 icon: Icon(Icons.save_alt)),
-          if (viewModel.valueOrNull?.manga case final Manga manga)
+          if (viewModel.value?.mangaId case final MangaId mangaId)
             IconButton(
               onPressed: () async {
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => MangaGridPage(
-                          mangaId: manga.id,
+                          mangaId: mangaId,
                         )));
               },
               icon: const Icon(Icons.grid_view),
@@ -69,9 +69,9 @@ class MainPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: switch (viewModel.valueOrNull?.manga) {
-        Manga manga =>
-          MangaEditWidget(manga: manga, scrollController: scrollController),
+      body: switch (viewModel.value?.mangaId) {
+        MangaId mangaId =>
+          MangaEditWidget(mangaId: mangaId, scrollController: scrollController),
         // 自動で作るかボタンを用意する
         null => Center(
             child: TextButton(
@@ -87,7 +87,7 @@ class MainPage extends HookConsumerWidget {
             ),
           ),
       },
-      floatingActionButton: switch (viewModel.valueOrNull?.manga?.id) {
+      floatingActionButton: switch (viewModel.value?.mangaId) {
         MangaId mangaId => FloatingActionButton(
             onPressed: () async {
               final pageIdList =
@@ -114,13 +114,17 @@ class MainPage extends HookConsumerWidget {
 class MangaTitle extends HookConsumerWidget {
   const MangaTitle({
     super.key,
-    required this.manga,
+    required this.mangaId,
   });
 
-  final Manga manga;
+  final MangaId mangaId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final manga = ref.watch(mangaNotifierProvider(mangaId)).value;
+    if (manga == null) {
+      return const SizedBox.shrink();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -138,7 +142,7 @@ class MangaSelectDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mangaList = ref.watch(allMangaListProvider).valueOrNull ?? [];
+    final mangaList = ref.watch(allMangaListProvider).value ?? [];
 
     return AlertDialog(
       title: Text('漫画を選択'),
@@ -162,9 +166,8 @@ class MangaSelectDialog extends HookConsumerWidget {
                   );
                 }
                 final manga = mangaList[index - 1];
-                final delta = ref
-                    .watch(deltaNotifierProvider(manga.ideaMemo))
-                    .valueOrNull;
+                final delta =
+                    ref.watch(deltaNotifierProvider(manga.ideaMemo)).value;
                 return ListTile(
                   title: Text(manga.name),
                   subtitle: Text(

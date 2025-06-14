@@ -1,2 +1,5 @@
 [tools]
 flutter = "3.32.4"
+
+[tasks.gen]
+run = "dart run build_runner build -d"

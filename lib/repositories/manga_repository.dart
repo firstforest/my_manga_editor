@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_quill/quill_delta.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_manga_editor/database/database.dart';
 import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/models/manga.dart';
@@ -14,10 +13,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 part 'manga_repository.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 MangaRepository mangaRepository(Ref ref) {
   return MangaRepository(
-      ref: ref, sharedPreferences: SharedPreferences.getInstance());
+    ref: ref,
+    sharedPreferences: SharedPreferences.getInstance(),
+  );
 }
 
 const directoryName = 'MangaEditor';
@@ -44,14 +45,14 @@ class MangaRepository {
   }
 
   Future<MangaId> createNewManga() async {
-    final ideaMemoId = await _ref
-        .watch(mangaDaoProvider)
-        .upsertDelta(DbDeltasCompanion.insert(delta: Delta()));
-    return _ref.watch(mangaDaoProvider).insertManga(DbMangasCompanion.insert(
-          name: '無名の傑作',
-          startPage: MangaStartPage.left,
-          ideaMemo: ideaMemoId,
-        ));
+    final mangaDao = _ref.watch(mangaDaoProvider);
+    final ideaMemoId =
+        await mangaDao.upsertDelta(DbDeltasCompanion.insert(delta: Delta()));
+    return mangaDao.insertManga(DbMangasCompanion.insert(
+      name: '無名の傑作',
+      startPage: MangaStartPage.left,
+      ideaMemo: ideaMemoId,
+    ));
   }
 
   Future<Manga?> loadManga(String fileName) async {

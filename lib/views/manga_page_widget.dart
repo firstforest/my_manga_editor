@@ -230,16 +230,14 @@ class _QuillTextAreaWidget extends HookConsumerWidget {
     final quillController = useQuillController(null);
     final focusNode = useFocusNode();
 
-    useEffect(() {
-      () async {
-        final initialText =
-            await ref.read(deltaNotifierProvider(deltaId).future);
-        if (initialText != null && initialText.isNotEmpty && context.mounted) {
+    ref.listen(deltaNotifierProvider(deltaId), (previous, next) {
+      if (previous?.hasValue != true && next.hasValue) {
+        final initialText = next.requireValue;
+        if (initialText != null && initialText.isNotEmpty) {
           quillController.document = Document.fromDelta(initialText);
         }
-      }();
-      return null;
-    }, [deltaId]);
+      }
+    });
 
     final onTextChanged = useCallback(() {
       final delta = quillController.document.toDelta();

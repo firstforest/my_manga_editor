@@ -49,16 +49,14 @@ class Workspace extends HookConsumerWidget {
     final controller = useQuillController(null);
     final focusNode = useFocusNode();
 
-    useEffect(() {
-      () async {
-        final initialText =
-            await ref.read(deltaNotifierProvider(deltaId).future);
-        if (initialText != null && initialText.isNotEmpty && context.mounted) {
+    ref.listen(deltaNotifierProvider(deltaId), (previous, next) {
+      if (previous?.hasValue != true && next.hasValue) {
+        final initialText = next.requireValue;
+        if (initialText != null && initialText.isNotEmpty) {
           controller.document = Document.fromDelta(initialText);
         }
-      }();
-      return null;
-    }, [deltaId]);
+      }
+    });
 
     final onTextChanged = useCallback(() {
       final delta = controller.document.toDelta();

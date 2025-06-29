@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/models/manga.dart';
-import 'package:my_manga_editor/repositories/manga_providers.dart';
+import 'package:my_manga_editor/repositories/manga_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'ai_comment_area.freezed.dart';
@@ -14,7 +14,7 @@ part 'ai_comment_area.g.dart';
 
 @riverpod
 Future<String> mangaDescription(Ref ref, MangaId mangaId) async {
-  return await ref.watch(mangaNotifierProvider(mangaId).notifier).toMarkdown();
+  return await ref.read(mangaRepositoryProvider).toMarkdown(mangaId);
 }
 
 @freezed
@@ -26,8 +26,8 @@ abstract class AiComment with _$AiComment {
 class AiCommentList extends _$AiCommentList {
   @override
   List<AiComment> build(MangaId mangaId) {
-    final timer = Timer.periodic(Duration(seconds: 3), (_) {
-      state = state.toList()..add(AiComment(text: 'HOGE'));
+    final timer = Timer.periodic(Duration(seconds: 3), (_) async {
+      state = state.toList()..add(await getAiComment(mangaId));
     });
     ref.onDispose(() {
       timer.cancel();
@@ -35,6 +35,12 @@ class AiCommentList extends _$AiCommentList {
     return [
       AiComment(text: 'HOGE'),
     ];
+  }
+
+  Future<AiComment> getAiComment(MangaId mangaId) async {
+    final description =
+        await ref.read(mangaDescriptionProvider(mangaId).future);
+    return AiComment(text: description);
   }
 }
 

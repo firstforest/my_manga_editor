@@ -63,7 +63,7 @@ class MangaNotifier extends _$MangaNotifier {
     final manga = await future;
     if (manga != null) {
       logger.d('download $manga}');
-      final content = await toMarkdown();
+      final content = await ref.read(mangaRepositoryProvider).toMarkdown(id);
       await FileSaver.instance.saveFile(
         name: 'komatto_${manga.name}',
         ext: 'txt',
@@ -74,48 +74,7 @@ class MangaNotifier extends _$MangaNotifier {
   }
 
   Future<String> toMarkdown() async {
-    final manga = await future;
-    if (manga == null) {
-      return '';
-    }
-
-    final repo = ref.watch(mangaRepositoryProvider);
-    final pageIdList = await repo.watchAllMangaPageIdList(id).first;
-    final pageContents = (await Future.wait(pageIdList.map((id) async {
-      final page = await ref.read(mangaPageNotifierProvider(id).future);
-      final memo = await ref
-          .read(deltaNotifierProvider(page.memoDelta).notifier)
-          .exportMarkdown();
-      final dialogue = await ref
-          .read(deltaNotifierProvider(page.dialoguesDelta).notifier)
-          .exportMarkdown();
-      final stageDirection = await ref
-          .read(deltaNotifierProvider(page.stageDirectionDelta).notifier)
-          .exportMarkdown();
-      final builder = StringBuffer();
-      builder.writeln('### 描きたいこと');
-      builder.writeln();
-      builder.writeln(memo);
-      builder.writeln('### セリフ');
-      builder.writeln();
-      builder.writeln(dialogue);
-      builder.writeln('### ト書き');
-      builder.writeln();
-      builder.writeln(stageDirection);
-      return builder.toString();
-    })));
-    final builder = StringBuffer();
-    builder.writeln('# ${manga.name}');
-    builder.writeln();
-    builder.writeln(await ref
-        .read(deltaNotifierProvider(manga.ideaMemo).notifier)
-        .exportMarkdown());
-    for (int i = 0; i < pageContents.nonNulls.length; i++) {
-      builder.writeln('## Page ${i + 1}');
-      builder.writeln();
-      builder.writeln(pageContents[i]);
-    }
-    return builder.toString();
+    return await ref.read(mangaRepositoryProvider).toMarkdown(id);
   }
 }
 

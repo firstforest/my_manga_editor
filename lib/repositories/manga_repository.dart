@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_quill/quill_delta.dart';
+import 'package:markdown_quill/markdown_quill.dart';
 import 'package:my_manga_editor/database/database.dart';
 import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/models/manga.dart';
@@ -161,6 +162,57 @@ class MangaRepository {
     return _ref
         .read(mangaDaoProvider)
         .updateManga(id, DbMangasCompanion(startPage: Value(value)));
+  }
+
+  Future<String> toMarkdown(MangaId mangaId) async {
+    final manga = await getMangaStream(mangaId).first;
+    if (manga == null) {
+      return '';
+    }
+
+    final pageIdList = await watchAllMangaPageIdList(mangaId).first;
+    final pageContents = (await Future.wait(pageIdList.map((pageId) async {
+      final page = await getMangaPageStream(pageId).first;
+      if (page == null) return '';
+      
+      final memo = await _exportDeltaToMarkdown(page.memoDelta);
+      final dialogue = await _exportDeltaToMarkdown(page.dialoguesDelta);
+      final stageDirection = await _exportDeltaToMarkdown(page.stageDirectionDelta);
+      
+      final builder = StringBuffer();
+      builder.writeln('### 描きたいこと');
+      builder.writeln();
+      builder.writeln(memo);
+      builder.writeln('### セリフ');
+      builder.writeln();
+      builder.writeln(dialogue);
+      builder.writeln('### ト書き');
+      builder.writeln();
+      builder.writeln(stageDirection);
+      return builder.toString();
+    })));
+    
+    final builder = StringBuffer();
+    builder.writeln('# ${manga.name}');
+    builder.writeln();
+    builder.writeln(await _exportDeltaToMarkdown(manga.ideaMemo));
+    for (int i = 0; i < pageContents.nonNulls.length; i++) {
+      builder.writeln('## Page ${i + 1}');
+      builder.writeln();
+      builder.writeln(pageContents[i]);
+    }
+    return builder.toString();
+  }
+
+  Future<String> _exportDeltaToMarkdown(DeltaId? deltaId) async {
+    if (deltaId == null) return '';
+    
+    final delta = await getDeltaStream(deltaId).first;
+    final deltaToMd = DeltaToMarkdown();
+    return switch (delta) {
+      Delta d when d.isNotEmpty => deltaToMd.convert(d),
+      _ => '',
+    };
   }
 }
 

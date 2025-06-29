@@ -58,7 +58,7 @@ final class MangaDescriptionProvider
   }
 }
 
-String _$mangaDescriptionHash() => r'd9d91d46c7bc748d32dfb0aacda7eea04142dc69';
+String _$mangaDescriptionHash() => r'af379cc6a3925f9f2d123e0fc8dfa9f2130970c0';
 
 final class MangaDescriptionFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<String>, MangaId> {

@@ -16,6 +16,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AiComment {
   String get text;
+  DateTime get createdAt;
+  String? get errorMessage;
 
   /// Create a copy of AiComment
   /// with the given fields replaced by the non-null parameter values.
@@ -29,15 +31,19 @@ mixin _$AiComment {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is AiComment &&
-            (identical(other.text, text) || other.text == text));
+            (identical(other.text, text) || other.text == text) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.errorMessage, errorMessage) ||
+                other.errorMessage == errorMessage));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, text);
+  int get hashCode => Object.hash(runtimeType, text, createdAt, errorMessage);
 
   @override
   String toString() {
-    return 'AiComment(text: $text)';
+    return 'AiComment(text: $text, createdAt: $createdAt, errorMessage: $errorMessage)';
   }
 }
 
@@ -46,7 +52,7 @@ abstract mixin class $AiCommentCopyWith<$Res> {
   factory $AiCommentCopyWith(AiComment value, $Res Function(AiComment) _then) =
       _$AiCommentCopyWithImpl;
   @useResult
-  $Res call({String text});
+  $Res call({String text, DateTime createdAt, String? errorMessage});
 }
 
 /// @nodoc
@@ -62,12 +68,22 @@ class _$AiCommentCopyWithImpl<$Res> implements $AiCommentCopyWith<$Res> {
   @override
   $Res call({
     Object? text = null,
+    Object? createdAt = null,
+    Object? errorMessage = freezed,
   }) {
     return _then(_self.copyWith(
       text: null == text
           ? _self.text
           : text // ignore: cast_nullable_to_non_nullable
               as String,
+      createdAt: null == createdAt
+          ? _self.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      errorMessage: freezed == errorMessage
+          ? _self.errorMessage
+          : errorMessage // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -75,10 +91,15 @@ class _$AiCommentCopyWithImpl<$Res> implements $AiCommentCopyWith<$Res> {
 /// @nodoc
 
 class _AiComment implements AiComment {
-  const _AiComment({required this.text});
+  const _AiComment(
+      {required this.text, required this.createdAt, this.errorMessage});
 
   @override
   final String text;
+  @override
+  final DateTime createdAt;
+  @override
+  final String? errorMessage;
 
   /// Create a copy of AiComment
   /// with the given fields replaced by the non-null parameter values.
@@ -93,15 +114,19 @@ class _AiComment implements AiComment {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _AiComment &&
-            (identical(other.text, text) || other.text == text));
+            (identical(other.text, text) || other.text == text) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.errorMessage, errorMessage) ||
+                other.errorMessage == errorMessage));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, text);
+  int get hashCode => Object.hash(runtimeType, text, createdAt, errorMessage);
 
   @override
   String toString() {
-    return 'AiComment(text: $text)';
+    return 'AiComment(text: $text, createdAt: $createdAt, errorMessage: $errorMessage)';
   }
 }
 
@@ -113,7 +138,7 @@ abstract mixin class _$AiCommentCopyWith<$Res>
       __$AiCommentCopyWithImpl;
   @override
   @useResult
-  $Res call({String text});
+  $Res call({String text, DateTime createdAt, String? errorMessage});
 }
 
 /// @nodoc
@@ -129,12 +154,22 @@ class __$AiCommentCopyWithImpl<$Res> implements _$AiCommentCopyWith<$Res> {
   @pragma('vm:prefer-inline')
   $Res call({
     Object? text = null,
+    Object? createdAt = null,
+    Object? errorMessage = freezed,
   }) {
     return _then(_AiComment(
       text: null == text
           ? _self.text
           : text // ignore: cast_nullable_to_non_nullable
               as String,
+      createdAt: null == createdAt
+          ? _self.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      errorMessage: freezed == errorMessage
+          ? _self.errorMessage
+          : errorMessage // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }

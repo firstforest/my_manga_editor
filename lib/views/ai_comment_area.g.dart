@@ -6,6 +6,47 @@ part of 'ai_comment_area.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+@ProviderFor(aiRepository)
+const aiRepositoryProvider = AiRepositoryProvider._();
+
+final class AiRepositoryProvider
+    extends $FunctionalProvider<AiRepository, AiRepository>
+    with $Provider<AiRepository> {
+  const AiRepositoryProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'aiRepositoryProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$aiRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<AiRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  AiRepository create(Ref ref) {
+    return aiRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AiRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $ValueProvider<AiRepository>(value),
+    );
+  }
+}
+
+String _$aiRepositoryHash() => r'10fcba34df2ef43be2c7da9f20d88ecb59908d61';
+
 @ProviderFor(mangaDescription)
 const mangaDescriptionProvider = MangaDescriptionFamily._();
 
@@ -135,7 +176,7 @@ final class AiCommentListProvider
   }
 }
 
-String _$aiCommentListHash() => r'aa5b76b17cf3164d24094fa002838bc8ea412be8';
+String _$aiCommentListHash() => r'e0f6a6e345946b4ca05c113c4a236499b9d0b57c';
 
 final class AiCommentListFamily extends $Family
     with

@@ -6,11 +6,18 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/models/manga.dart';
 import 'package:my_manga_editor/repositories/manga_repository.dart';
+import 'package:my_manga_editor/repositories/ai_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'ai_comment_area.freezed.dart';
 
 part 'ai_comment_area.g.dart';
+
+@riverpod
+AiRepository aiRepository(Ref ref) {
+  const apiKey = String.fromEnvironment('OPENAI_API_KEY');
+  return AiRepository(apiKey: apiKey);
+}
 
 @riverpod
 Future<String> mangaDescription(Ref ref, MangaId mangaId) async {
@@ -19,7 +26,11 @@ Future<String> mangaDescription(Ref ref, MangaId mangaId) async {
 
 @freezed
 abstract class AiComment with _$AiComment {
-  const factory AiComment({required String text}) = _AiComment;
+  const factory AiComment({
+    required String text,
+    required DateTime createdAt,
+    String? errorMessage,
+  }) = _AiComment;
 }
 
 @riverpod
@@ -36,9 +47,23 @@ class AiCommentList extends _$AiCommentList {
   }
 
   Future<AiComment> getAiComment(MangaId mangaId) async {
-    final description =
-        await ref.read(mangaDescriptionProvider(mangaId).future);
-    return AiComment(text: description);
+    try {
+      final description =
+          await ref.read(mangaDescriptionProvider(mangaId).future);
+      final aiRepository = ref.read(aiRepositoryProvider);
+      final aiResponse = await aiRepository.generateComment(description);
+      
+      return AiComment(
+        text: aiResponse,
+        createdAt: DateTime.now(),
+      );
+    } catch (e) {
+      return AiComment(
+        text: 'AIコメントの生成に失敗しました',
+        createdAt: DateTime.now(),
+        errorMessage: e.toString(),
+      );
+    }
   }
 }
 

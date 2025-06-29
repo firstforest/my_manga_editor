@@ -32,9 +32,7 @@ class AiCommentList extends _$AiCommentList {
     ref.onDispose(() {
       timer.cancel();
     });
-    return [
-      AiComment(text: 'HOGE'),
-    ];
+    return [];
   }
 
   Future<AiComment> getAiComment(MangaId mangaId) async {

@@ -2129,11 +2129,14 @@ mixin _$MangaDaoMixin on DatabaseAccessor<AppDatabase> {
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(database)
 const databaseProvider = DatabaseProvider._();
 
 final class DatabaseProvider
-    extends $FunctionalProvider<AppDatabase, AppDatabase>
+    extends $FunctionalProvider<AppDatabase, AppDatabase, AppDatabase>
     with $Provider<AppDatabase> {
   const DatabaseProvider._()
       : super(
@@ -2163,7 +2166,7 @@ final class DatabaseProvider
   Override overrideWithValue(AppDatabase value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $ValueProvider<AppDatabase>(value),
+      providerOverride: $SyncValueProvider<AppDatabase>(value),
     );
   }
 }
@@ -2173,7 +2176,8 @@ String _$databaseHash() => r'e5a1fa0e8ff9aa131f847f28519ec2098e6d0f76';
 @ProviderFor(mangaDao)
 const mangaDaoProvider = MangaDaoProvider._();
 
-final class MangaDaoProvider extends $FunctionalProvider<MangaDao, MangaDao>
+final class MangaDaoProvider
+    extends $FunctionalProvider<MangaDao, MangaDao, MangaDao>
     with $Provider<MangaDao> {
   const MangaDaoProvider._()
       : super(
@@ -2203,12 +2207,9 @@ final class MangaDaoProvider extends $FunctionalProvider<MangaDao, MangaDao>
   Override overrideWithValue(MangaDao value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $ValueProvider<MangaDao>(value),
+      providerOverride: $SyncValueProvider<MangaDao>(value),
     );
   }
 }
 
 String _$mangaDaoHash() => r'b414ae23e61df1fccf30bc57e1c9bbd715d87fcf';
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

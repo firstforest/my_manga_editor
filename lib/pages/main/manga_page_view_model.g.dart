@@ -6,9 +6,11 @@ part of 'manga_page_view_model.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(MangaPageViewModelNotifier)
-const mangaPageViewModelNotifierProvider =
-    MangaPageViewModelNotifierProvider._();
+const mangaPageViewModelProvider = MangaPageViewModelNotifierProvider._();
 
 final class MangaPageViewModelNotifierProvider extends $AsyncNotifierProvider<
     MangaPageViewModelNotifier, MangaPageViewModel> {
@@ -17,7 +19,7 @@ final class MangaPageViewModelNotifierProvider extends $AsyncNotifierProvider<
           from: null,
           argument: null,
           retry: null,
-          name: r'mangaPageViewModelNotifierProvider',
+          name: r'mangaPageViewModelProvider',
           isAutoDispose: true,
           dependencies: null,
           $allTransitiveDependencies: null,
@@ -29,12 +31,6 @@ final class MangaPageViewModelNotifierProvider extends $AsyncNotifierProvider<
   @$internal
   @override
   MangaPageViewModelNotifier create() => MangaPageViewModelNotifier();
-
-  @$internal
-  @override
-  $AsyncNotifierProviderElement<MangaPageViewModelNotifier, MangaPageViewModel>
-      $createElement($ProviderPointer pointer) =>
-          $AsyncNotifierProviderElement(pointer);
 }
 
 String _$mangaPageViewModelNotifierHash() =>
@@ -47,15 +43,13 @@ abstract class _$MangaPageViewModelNotifier
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<AsyncValue<MangaPageViewModel>>;
+    final ref =
+        this.ref as $Ref<AsyncValue<MangaPageViewModel>, MangaPageViewModel>;
     final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<MangaPageViewModel>>,
+        AnyNotifier<AsyncValue<MangaPageViewModel>, MangaPageViewModel>,
         AsyncValue<MangaPageViewModel>,
         Object?,
         Object?>;
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -6,11 +6,14 @@ part of 'ai_comment_area.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(aiRepository)
 const aiRepositoryProvider = AiRepositoryProvider._();
 
 final class AiRepositoryProvider
-    extends $FunctionalProvider<AiRepository, AiRepository>
+    extends $FunctionalProvider<AiRepository, AiRepository, AiRepository>
     with $Provider<AiRepository> {
   const AiRepositoryProvider._()
       : super(
@@ -40,7 +43,7 @@ final class AiRepositoryProvider
   Override overrideWithValue(AiRepository value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $ValueProvider<AiRepository>(value),
+      providerOverride: $SyncValueProvider<AiRepository>(value),
     );
   }
 }
@@ -51,7 +54,7 @@ String _$aiRepositoryHash() => r'10fcba34df2ef43be2c7da9f20d88ecb59908d61';
 const mangaDescriptionProvider = MangaDescriptionFamily._();
 
 final class MangaDescriptionProvider
-    extends $FunctionalProvider<AsyncValue<String>, FutureOr<String>>
+    extends $FunctionalProvider<AsyncValue<String>, String, FutureOr<String>>
     with $FutureModifier<String>, $FutureProvider<String> {
   const MangaDescriptionProvider._(
       {required MangaDescriptionFamily super.from,
@@ -151,17 +154,11 @@ final class AiCommentListProvider
   @override
   AiCommentList create() => AiCommentList();
 
-  @$internal
-  @override
-  $NotifierProviderElement<AiCommentList, List<AiComment>> $createElement(
-          $ProviderPointer pointer) =>
-      $NotifierProviderElement(pointer);
-
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(List<AiComment> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $ValueProvider<List<AiComment>>(value),
+      providerOverride: $SyncValueProvider<List<AiComment>>(value),
     );
   }
 
@@ -213,12 +210,12 @@ abstract class _$AiCommentList extends $Notifier<List<AiComment>> {
     final created = build(
       _$args,
     );
-    final ref = this.ref as $Ref<List<AiComment>>;
+    final ref = this.ref as $Ref<List<AiComment>, List<AiComment>>;
     final element = ref.element as $ClassProviderElement<
-        AnyNotifier<List<AiComment>>, List<AiComment>, Object?, Object?>;
+        AnyNotifier<List<AiComment>, List<AiComment>>,
+        List<AiComment>,
+        Object?,
+        Object?>;
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

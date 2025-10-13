@@ -49,7 +49,7 @@ class Workspace extends HookConsumerWidget {
     final controller = useQuillController(null);
     final focusNode = useFocusNode();
 
-    ref.listen(deltaNotifierProvider(deltaId), (previous, next) {
+    ref.listen(deltaProvider(deltaId), (previous, next) {
       if (previous?.hasValue != true && next.hasValue) {
         final initialText = next.requireValue;
         if (initialText != null && initialText.isNotEmpty) {
@@ -60,7 +60,7 @@ class Workspace extends HookConsumerWidget {
 
     final onTextChanged = useCallback(() {
       final delta = controller.document.toDelta();
-      ref.read(deltaNotifierProvider(deltaId).notifier).updateDelta(delta);
+      ref.read(deltaProvider(deltaId).notifier).updateDelta(delta);
     }, [deltaId]);
 
     final formatText = useCallback(() {

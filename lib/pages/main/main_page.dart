@@ -16,7 +16,7 @@ class MainPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(mangaPageViewModelNotifierProvider);
+    final viewModel = ref.watch(mangaPageViewModelProvider);
 
     final scrollController = useScrollController();
 
@@ -36,9 +36,9 @@ class MainPage extends HookConsumerWidget {
             IconButton(
                 onPressed: () async {
                   await ref
-                      .read(mangaNotifierProvider(mangaId).notifier)
+                      .read(mangaProvider(mangaId).notifier)
                       .download();
-                  final manga = ref.read(mangaNotifierProvider(mangaId)).value;
+                  final manga = ref.read(mangaProvider(mangaId)).value;
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('${manga?.name}をダウンロードしました')));
@@ -77,7 +77,7 @@ class MainPage extends HookConsumerWidget {
             child: TextButton(
               onPressed: () {
                 ref
-                    .read(mangaPageViewModelNotifierProvider.notifier)
+                    .read(mangaPageViewModelProvider.notifier)
                     .createNewManga();
               },
               child: Text(
@@ -93,7 +93,7 @@ class MainPage extends HookConsumerWidget {
               final pageIdList =
                   await ref.read(mangaPageIdListProvider(mangaId).future);
               await ref
-                  .read(mangaNotifierProvider(mangaId).notifier)
+                  .read(mangaProvider(mangaId).notifier)
                   .addNewPage(pageIdList.length);
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 scrollController.animateTo(
@@ -121,7 +121,7 @@ class MangaTitle extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final manga = ref.watch(mangaNotifierProvider(mangaId)).value;
+    final manga = ref.watch(mangaProvider(mangaId)).value;
     if (manga == null) {
       return const SizedBox.shrink();
     }
@@ -157,7 +157,7 @@ class MangaSelectDialog extends HookConsumerWidget {
                     subtitle: const Text('新しい漫画を作成します'),
                     onTap: () async {
                       await ref
-                          .read(mangaPageViewModelNotifierProvider.notifier)
+                          .read(mangaPageViewModelProvider.notifier)
                           .createNewManga();
                       if (context.mounted) {
                         Navigator.pop(context);
@@ -167,7 +167,7 @@ class MangaSelectDialog extends HookConsumerWidget {
                 }
                 final manga = mangaList[index - 1];
                 final delta =
-                    ref.watch(deltaNotifierProvider(manga.ideaMemo)).value;
+                    ref.watch(deltaProvider(manga.ideaMemo)).value;
                 return ListTile(
                   title: Text(manga.name),
                   subtitle: Text(
@@ -178,14 +178,14 @@ class MangaSelectDialog extends HookConsumerWidget {
                       overflow: TextOverflow.ellipsis),
                   onTap: () {
                     ref
-                        .read(mangaPageViewModelNotifierProvider.notifier)
+                        .read(mangaPageViewModelProvider.notifier)
                         .selectManga(manga.id);
                     Navigator.pop(context);
                   },
                   trailing: IconButton(
                     onPressed: () {
                       ref
-                          .read(mangaNotifierProvider(manga.id).notifier)
+                          .read(mangaProvider(manga.id).notifier)
                           .delete();
                     },
                     icon: Icon(Icons.delete),

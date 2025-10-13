@@ -22,7 +22,7 @@ class MangaPageWidget extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final page = ref.watch(mangaPageNotifierProvider(mangaPageId));
+    final page = ref.watch(mangaPageProvider(mangaPageId));
 
     final tabController = useTabController(initialLength: 3);
     final currentPageIndex = useState(1);
@@ -139,7 +139,7 @@ class MangaPageWidget extends HookConsumerWidget {
         Spacer(),
         IconButton(
           onPressed: () {
-            ref.read(mangaPageNotifierProvider(mangaPageId).notifier).delete();
+            ref.read(mangaPageProvider(mangaPageId).notifier).delete();
           },
           icon: const Icon(Icons.delete),
         ),
@@ -203,7 +203,7 @@ class MangaPageWidget extends HookConsumerWidget {
 
   Future<void> _copyToClipboard(WidgetRef ref, DeltaId deltaId) async {
     final delta = await ref
-        .read(deltaNotifierProvider(deltaId).notifier)
+        .read(deltaProvider(deltaId).notifier)
         .exportPlainText();
     final clipboard = SystemClipboard.instance;
     if (clipboard == null || delta.isEmpty) {
@@ -230,7 +230,7 @@ class _QuillTextAreaWidget extends HookConsumerWidget {
     final quillController = useQuillController(null);
     final focusNode = useFocusNode();
 
-    ref.listen(deltaNotifierProvider(deltaId), (previous, next) {
+    ref.listen(deltaProvider(deltaId), (previous, next) {
       if (previous?.hasValue != true && next.hasValue) {
         final initialText = next.requireValue;
         if (initialText != null && initialText.isNotEmpty) {
@@ -241,7 +241,7 @@ class _QuillTextAreaWidget extends HookConsumerWidget {
 
     final onTextChanged = useCallback(() {
       final delta = quillController.document.toDelta();
-      ref.read(deltaNotifierProvider(deltaId).notifier).updateDelta(delta);
+      ref.read(deltaProvider(deltaId).notifier).updateDelta(delta);
     }, [deltaId]);
 
     useEffect(() {

@@ -13,7 +13,7 @@ class StartPageSelector extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final manga = ref.watch(mangaNotifierProvider(mangaId));
+    final manga = ref.watch(mangaProvider(mangaId));
 
     return switch (manga) {
       AsyncData(:final value) when value != null => DropdownButton(
@@ -29,7 +29,7 @@ class StartPageSelector extends HookConsumerWidget {
           onChanged: (value) {
             if (value != null) {
               ref
-                  .read(mangaNotifierProvider(mangaId).notifier)
+                  .read(mangaProvider(mangaId).notifier)
                   .updateStartPage(value);
             }
           },

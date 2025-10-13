@@ -26,7 +26,7 @@ class MangaGridPage extends HookConsumerWidget {
     final mediaQuery = MediaQuery.of(context);
     final crossAxisCount = mediaQuery.size.width < 920 ? 2 : 4;
     final scrollController = useScrollController();
-    final startPage = ref.watch(mangaNotifierProvider(mangaId)).maybeMap(
+    final startPage = ref.watch(mangaProvider(mangaId)).maybeMap(
         orElse: () => MangaStartPage.left,
         data: (data) => data.value?.startPage ?? MangaStartPage.left);
     final list = ref.watch(mangaPageIdListProvider(mangaId)).maybeMap(
@@ -74,7 +74,7 @@ class MangaGridPage extends HookConsumerWidget {
           onReorder: (ReorderedListFunction<MangaPageId?> reorder) {
             final newOrder = reorder(list);
             ref
-                .read(mangaNotifierProvider(mangaId).notifier)
+                .read(mangaProvider(mangaId).notifier)
                 .reorderPage(newOrder.nonNulls.toList(), 0, 0);
           },
           enableLongPress: false,
@@ -114,7 +114,7 @@ class MangaGridPageView extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mangaPage = ref.watch(mangaPageNotifierProvider(mangaPageId));
+    final mangaPage = ref.watch(mangaPageProvider(mangaPageId));
 
     return Padding(
       padding: switch (startPage) {
@@ -135,7 +135,7 @@ class MangaGridPageView extends HookConsumerWidget {
                 Expanded(
                   child: mangaPage.map(
                     data: (mangaPage) {
-                      final delta = ref.watch(deltaNotifierProvider(
+                      final delta = ref.watch(deltaProvider(
                           mangaPage.value.dialoguesDelta));
                       return switch (delta.value) {
                         Delta d when d.isNotEmpty => SingleChildScrollView(

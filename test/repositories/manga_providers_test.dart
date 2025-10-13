@@ -49,7 +49,7 @@ void main() {
           .thenAnswer((_) => Stream.value(Delta()..insert(testDialogues)));
 
       final exported = await providerContainer
-          .read(deltaNotifierProvider(deltaId).notifier)
+          .read(deltaProvider(deltaId).notifier)
           .exportPlainText();
 
       expect(exported, dataForClipStudio);

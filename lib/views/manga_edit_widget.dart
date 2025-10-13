@@ -19,7 +19,7 @@ class MangaEditWidget extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final manga = ref.watch(mangaNotifierProvider(mangaId)).value;
+    final manga = ref.watch(mangaProvider(mangaId)).value;
     if (manga == null) {
       return const Center(child: CircularProgressIndicator());
     }

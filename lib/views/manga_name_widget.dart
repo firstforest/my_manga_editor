@@ -22,7 +22,7 @@ class MangaNameWidget extends HookConsumerWidget {
     final onFocusChanged = useCallback(() {
       if (!focusNode.hasFocus) {
         ref
-            .read(mangaNotifierProvider(manga.id).notifier)
+            .read(mangaProvider(manga.id).notifier)
             .updateName(nameEditController.text);
         isNameEdit.value = false;
       }
@@ -54,7 +54,7 @@ class MangaNameWidget extends HookConsumerWidget {
                     style: TextStyle(fontSize: 24.r),
                     onSubmitted: (value) {
                       ref
-                          .read(mangaNotifierProvider(manga.id).notifier)
+                          .read(mangaProvider(manga.id).notifier)
                           .updateName(value);
                       isNameEdit.value = false;
                     },
@@ -63,7 +63,7 @@ class MangaNameWidget extends HookConsumerWidget {
                 IconButton(
                   onPressed: () {
                     ref
-                        .read(mangaNotifierProvider(manga.id).notifier)
+                        .read(mangaProvider(manga.id).notifier)
                         .updateName(nameEditController.text);
                     isNameEdit.value = false;
                   },

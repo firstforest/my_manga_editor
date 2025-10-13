@@ -66,7 +66,7 @@ class MangaNotifier extends _$MangaNotifier {
       final content = await ref.read(mangaRepositoryProvider).toMarkdown(id);
       await FileSaver.instance.saveFile(
         name: 'komatto_${manga.name}',
-        ext: 'txt',
+        fileExtension: 'txt',
         mimeType: MimeType.text,
         bytes: Uint8List.fromList(utf8.encode(content)),
       );

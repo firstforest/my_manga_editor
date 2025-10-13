@@ -47,7 +47,7 @@ class MangaPageList extends HookConsumerWidget {
                   child: IconButton(
                     onPressed: () {
                       ref
-                          .read(mangaNotifierProvider(manga.id).notifier)
+                          .read(mangaProvider(manga.id).notifier)
                           .addNewPage(index + 1);
                     },
                     icon: const Icon(Icons.add),
@@ -61,7 +61,7 @@ class MangaPageList extends HookConsumerWidget {
       itemCount: pageIdList.length,
       onReorder: (oldIndex, newIndex) {
         ref
-            .read(mangaNotifierProvider(manga.id).notifier)
+            .read(mangaProvider(manga.id).notifier)
             .reorderPage(pageIdList, oldIndex, newIndex);
       },
       scrollController: scrollController,

@@ -7,7 +7,7 @@ import 'package:flutter_quill/quill_delta.dart';
 import 'package:markdown_quill/markdown_quill.dart';
 import 'package:my_manga_editor/database/database.dart';
 import 'package:my_manga_editor/logger.dart';
-import 'package:my_manga_editor/models/manga.dart';
+import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';

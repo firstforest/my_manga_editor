@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/models/manga.dart';
-import 'package:my_manga_editor/repositories/manga_providers.dart';
+import 'package:my_manga_editor/feature/manga/model/manga.dart';
+import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 
 class StartPageSelector extends HookConsumerWidget {
   const StartPageSelector({

@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:my_manga_editor/models/manga.dart';
-import 'package:my_manga_editor/repositories/manga_repository.dart';
+import 'package:my_manga_editor/feature/manga/model/manga.dart';
+import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'manga_page_view_model.freezed.dart';

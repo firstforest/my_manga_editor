@@ -7,10 +7,10 @@ import 'package:flutter_reorderable_grid_view/widgets/reorderable_builder.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/models/manga.dart';
-import 'package:my_manga_editor/repositories/manga_providers.dart';
-import 'package:my_manga_editor/views/start_page_selector.dart';
-import 'package:my_manga_editor/views/tategaki.dart';
+import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
+import 'package:my_manga_editor/feature/manga/model/manga.dart';
+import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/feature/manga/view/tategaki.dart';
 
 class MangaGridPage extends HookConsumerWidget {
   MangaGridPage({

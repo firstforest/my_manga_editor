@@ -3,9 +3,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/models/manga.dart';
+import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:my_manga_editor/quill_controller_hook.dart';
-import 'package:my_manga_editor/repositories/manga_providers.dart';
+import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 
 class MangaPageWidget extends HookConsumerWidget {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/models/manga.dart';
-import 'package:my_manga_editor/repositories/manga_providers.dart';
-import 'package:my_manga_editor/views/ai_comment_area.dart';
-import 'package:my_manga_editor/views/manga_page_list.dart';
-import 'package:my_manga_editor/views/workspace.dart';
+import 'package:my_manga_editor/feature/manga/view/workspace.dart';
+import 'package:my_manga_editor/feature/manga/model/manga.dart';
+import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/feature/ai_comment/view/ai_comment_area.dart';
+import 'package:my_manga_editor/feature/manga/view/manga_page_list.dart';
 
 class MangaEditWidget extends HookConsumerWidget {
   const MangaEditWidget({

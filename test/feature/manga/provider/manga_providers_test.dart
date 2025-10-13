@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:my_manga_editor/repositories/manga_providers.dart';
-import 'package:my_manga_editor/repositories/manga_repository.dart';
+import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart';
 
 @GenerateNiceMocks([MockSpec<MangaRepository>()])
 import 'manga_providers_test.mocks.dart';

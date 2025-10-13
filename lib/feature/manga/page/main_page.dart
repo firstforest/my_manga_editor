@@ -3,13 +3,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/models/manga.dart';
-import 'package:my_manga_editor/pages/grid/manga_grid_page.dart';
-import 'package:my_manga_editor/pages/main/manga_page_view_model.dart';
-import 'package:my_manga_editor/repositories/manga_providers.dart';
-import 'package:my_manga_editor/views/manga_edit_widget.dart';
-import 'package:my_manga_editor/views/manga_name_widget.dart';
-import 'package:my_manga_editor/views/start_page_selector.dart';
+import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
+import 'package:my_manga_editor/feature/manga/model/manga.dart';
+import 'package:my_manga_editor/feature/manga/page/manga_grid_page.dart';
+import 'package:my_manga_editor/feature/manga/provider/manga_page_view_model.dart';
+import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/feature/manga/view/manga_edit_widget.dart';
+import 'package:my_manga_editor/feature/manga/view/manga_name_widget.dart';
 
 class MainPage extends HookConsumerWidget {
   const MainPage({super.key});

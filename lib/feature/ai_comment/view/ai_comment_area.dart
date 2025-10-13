@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/models/manga.dart';
-import 'package:my_manga_editor/repositories/manga_repository.dart';
-import 'package:my_manga_editor/repositories/ai_repository.dart';
+import 'package:my_manga_editor/feature/manga/model/manga.dart';
+import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart';
+import 'package:my_manga_editor/feature/ai_comment/repository/ai_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'ai_comment_area.freezed.dart';

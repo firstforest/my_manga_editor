@@ -4,7 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:my_manga_editor/logger.dart';
-import 'package:my_manga_editor/models/manga.dart';
+import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'database.g.dart';

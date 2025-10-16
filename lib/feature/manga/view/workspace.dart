@@ -1,3 +1,4 @@
+import 'package:dart_quill_delta/src/delta/delta.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -5,10 +6,10 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
-import 'package:my_manga_editor/quill_controller_hook.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/logger.dart';
+import 'package:my_manga_editor/quill_controller_hook.dart';
 
 class Workspace extends HookConsumerWidget {
   const Workspace({
@@ -17,6 +18,31 @@ class Workspace extends HookConsumerWidget {
   });
 
   final DeltaId deltaId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final deltaAsync = ref.watch(deltaProvider(deltaId));
+
+    return switch (deltaAsync) {
+      AsyncData<Delta?>(:final value) => _QuillEditor(
+          initialText: value,
+          onTextChanged: (delta) {
+            ref.read(deltaProvider(deltaId).notifier).updateDelta(delta);
+          },
+        ),
+      _ => SizedBox.shrink(),
+    };
+  }
+}
+
+class _QuillEditor extends HookConsumerWidget {
+  const _QuillEditor({
+    required this.initialText,
+    required this.onTextChanged,
+  });
+
+  final Delta? initialText;
+  final Function(Delta delta) onTextChanged;
 
   void _onTextChanged(QuillController controller) {
     final selection = controller.selection;
@@ -46,22 +72,17 @@ class Workspace extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = useQuillController(null);
+    final controller = useQuillController(
+      initialText?.isNotEmpty == true ? initialText : null,
+    );
     final focusNode = useFocusNode();
 
-    ref.listen(deltaProvider(deltaId), (previous, next) {
-      if (previous?.hasValue != true && next.hasValue) {
-        final initialText = next.requireValue;
-        if (initialText != null && initialText.isNotEmpty) {
-          controller.document = Document.fromDelta(initialText);
-        }
-      }
-    });
-
-    final onTextChanged = useCallback(() {
-      final delta = controller.document.toDelta();
-      ref.read(deltaProvider(deltaId).notifier).updateDelta(delta);
-    }, [deltaId]);
+    final onTextChanged = useCallback(
+      () {
+        this.onTextChanged(controller.document.toDelta());
+      },
+      [],
+    );
 
     final formatText = useCallback(() {
       _onTextChanged(controller);
@@ -74,8 +95,7 @@ class Workspace extends HookConsumerWidget {
         controller.removeListener(onTextChanged);
         controller.removeListener(formatText);
       };
-    }, [deltaId]);
-
+    }, []);
     return Column(
       children: [
         QuillSimpleToolbar(

@@ -6,8 +6,8 @@ import 'package:drift/drift.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:markdown_quill/markdown_quill.dart';
 import 'package:my_manga_editor/database/database.dart';
-import 'package:my_manga_editor/logger.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
+import 'package:my_manga_editor/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -99,6 +99,12 @@ class MangaRepository {
         .map((mangaList) => mangaList.map((e) => e.toManga()).toList());
   }
 
+  Future<Delta?> loadDelta(DeltaId id) async {
+    logger.d('loadDelta: $id');
+    final dbDelta = await _ref.read(mangaDaoProvider).watchDelta(id).first;
+    return dbDelta?.toDelta();
+  }
+
   Stream<Delta?> getDeltaStream(DeltaId id) {
     logger.d('getDeltaStream: $id');
     return _ref.watch(mangaDaoProvider).watchDelta(id).map((dbDelta) {
@@ -174,11 +180,12 @@ class MangaRepository {
     final pageContents = (await Future.wait(pageIdList.map((pageId) async {
       final page = await getMangaPageStream(pageId).first;
       if (page == null) return '';
-      
+
       final memo = await _exportDeltaToMarkdown(page.memoDelta);
       final dialogue = await _exportDeltaToMarkdown(page.dialoguesDelta);
-      final stageDirection = await _exportDeltaToMarkdown(page.stageDirectionDelta);
-      
+      final stageDirection =
+          await _exportDeltaToMarkdown(page.stageDirectionDelta);
+
       final builder = StringBuffer();
       builder.writeln('### 描きたいこと');
       builder.writeln();
@@ -191,7 +198,7 @@ class MangaRepository {
       builder.writeln(stageDirection);
       return builder.toString();
     })));
-    
+
     final builder = StringBuffer();
     builder.writeln('# ${manga.name}');
     builder.writeln();
@@ -206,7 +213,7 @@ class MangaRepository {
 
   Future<String> _exportDeltaToMarkdown(DeltaId? deltaId) async {
     if (deltaId == null) return '';
-    
+
     final delta = await getDeltaStream(deltaId).first;
     final deltaToMd = DeltaToMarkdown();
     return switch (delta) {

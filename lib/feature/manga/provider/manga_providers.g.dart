@@ -301,7 +301,7 @@ abstract class _$MangaPageNotifier extends $StreamNotifier<MangaPage> {
 const deltaProvider = DeltaNotifierFamily._();
 
 final class DeltaNotifierProvider
-    extends $StreamNotifierProvider<DeltaNotifier, Delta?> {
+    extends $AsyncNotifierProvider<DeltaNotifier, Delta?> {
   const DeltaNotifierProvider._(
       {required DeltaNotifierFamily super.from,
       required DeltaId? super.argument})
@@ -338,12 +338,12 @@ final class DeltaNotifierProvider
   }
 }
 
-String _$deltaNotifierHash() => r'98e6ed6ecd0cf6fef935369ba190a707aa2d8085';
+String _$deltaNotifierHash() => r'0e9125ff92c135ca9900a4f6c546ae9a3dfe6b91';
 
 final class DeltaNotifierFamily extends $Family
     with
         $ClassFamilyOverride<DeltaNotifier, AsyncValue<Delta?>, Delta?,
-            Stream<Delta?>, DeltaId?> {
+            FutureOr<Delta?>, DeltaId?> {
   const DeltaNotifierFamily._()
       : super(
           retry: null,
@@ -362,11 +362,11 @@ final class DeltaNotifierFamily extends $Family
   String toString() => r'deltaProvider';
 }
 
-abstract class _$DeltaNotifier extends $StreamNotifier<Delta?> {
+abstract class _$DeltaNotifier extends $AsyncNotifier<Delta?> {
   late final _$args = ref.$arg as DeltaId?;
   DeltaId? get id => _$args;
 
-  Stream<Delta?> build(
+  FutureOr<Delta?> build(
     DeltaId? id,
   );
   @$mustCallSuper

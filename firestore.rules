@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User documents
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      // Manga documents
+      match /mangas/{mangaId} {
+        allow read, write: if isOwner(userId);
+
+        // Validate manga fields on create
+        allow create: if request.resource.data.name is string
+                      && request.resource.data.name.size() > 0
+                      && request.resource.data.name.size() <= 200
+                      && request.resource.data.startPage in ['left', 'right']
+                      && request.resource.data.createdAt is timestamp
+                      && request.resource.data.updatedAt is timestamp;
+
+        // Manga pages subcollection
+        match /pages/{pageId} {
+          allow read, write: if isOwner(userId);
+
+          // Validate page fields on create
+          allow create: if request.resource.data.pageIndex is int
+                        && request.resource.data.pageIndex >= 0
+                        && request.resource.data.memoDelta is map
+                        && request.resource.data.memoDelta.ops is list
+                        && request.resource.data.stageDirectionDelta is map
+                        && request.resource.data.stageDirectionDelta.ops is list
+                        && request.resource.data.dialoguesDelta is map
+                        && request.resource.data.dialoguesDelta.ops is list
+                        && request.resource.data.createdAt is timestamp
+                        && request.resource.data.updatedAt is timestamp;
+        }
+
+        // Deltas subcollection (optional, for idea memos or versioning)
+        match /deltas/{deltaId} {
+          allow read, write: if isOwner(userId);
+
+          allow create: if request.resource.data.delta is map
+                        && request.resource.data.delta.ops is list;
+        }
+      }
+    }
+  }
+}

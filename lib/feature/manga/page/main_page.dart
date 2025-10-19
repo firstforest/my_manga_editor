@@ -10,6 +10,7 @@ import 'package:my_manga_editor/feature/manga/provider/manga_page_view_model.dar
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_edit_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_name_widget.dart';
+import 'package:my_manga_editor/feature/manga/view/sign_in_button.dart';
 
 class MainPage extends HookConsumerWidget {
   const MainPage({super.key});
@@ -66,6 +67,11 @@ class MainPage extends HookConsumerWidget {
               }
             },
             icon: const Icon(Icons.list),
+          ),
+          // Firebase Authentication Button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: const SignInButton(),
           ),
         ],
       ),

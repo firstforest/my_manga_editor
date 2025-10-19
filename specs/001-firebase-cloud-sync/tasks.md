@@ -61,12 +61,6 @@
 - [ ] T020 Create lib/feature/manga/model/sync_status.dart with SyncStatus and SyncState enum per data-model.md section 3.1
 - [ ] T021 Run code generation: `dart run build_runner build -d`
 
-### Sync Queue Database Schema
-
-- [ ] T022 Add sync_queue table to lib/service/database/database.dart per data-model.md section 3.2 SQL schema
-- [ ] T023 Create lib/service/database/model/db_sync_queue.dart for Drift table definition
-- [ ] T024 Run code generation: `dart run build_runner build -d`
-
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
 ---
@@ -139,7 +133,7 @@
 
 #### Testing
 
-- [ ] T055 [US2] Test offline manga creation: create manga offline, verify queued in sync_queue table
+- [ ] T055 [US2] Test offline manga creation: create manga offline, verify Firebase offline persistence handles queueing
 - [ ] T056 [US2] Test sync processing: go online, trigger sync, verify manga uploaded to Firestore Console
 - [ ] T057 [US2] Test sync status transitions: pending → syncing → synced
 - [ ] T058 [US2] Test partial sync failure: force network error, verify retry with backoff
@@ -392,7 +386,6 @@ Run `dart run build_runner build -d` after completing:
 - T012 (after Firebase init)
 - T019 (after service layer models)
 - T021 (after domain models)
-- T024 (after database schema)
 - T028 (after auth providers)
 - T039 (after Firebase service)
 - T047 (after sync state notifier)

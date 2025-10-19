@@ -215,7 +215,7 @@ test/
 - Firestore document structure: `/users/{uid}/mangas/{mangaId}` vs `/mangas/{mangaId}`
 - Delta JSON storage: nested map vs serialized string
 - Edit lock TTL and renewal strategy
-- Sync queue persistence: in-memory vs local DB
+- Sync queue persistence: in-memory (Firebase offline persistence handles local caching)
 
 ### Phase 2: Task Breakdown
 

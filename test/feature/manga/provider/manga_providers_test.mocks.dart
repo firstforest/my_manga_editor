@@ -274,4 +274,28 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
           ),
         )),
       ) as _i4.Future<String>);
+
+  @override
+  _i4.Future<Map<String, dynamic>> getDeltaAsMap(int? id) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getDeltaAsMap,
+          [id],
+        ),
+        returnValue:
+            _i4.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+        returnValueForMissingStub:
+            _i4.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i4.Future<Map<String, dynamic>>);
+
+  @override
+  _i4.Future<int> upsertDeltaFromMap(Map<String, dynamic>? deltaMap) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #upsertDeltaFromMap,
+          [deltaMap],
+        ),
+        returnValue: _i4.Future<int>.value(0),
+        returnValueForMissingStub: _i4.Future<int>.value(0),
+      ) as _i4.Future<int>);
 }

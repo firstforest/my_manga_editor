@@ -22,10 +22,10 @@
 
 **Purpose**: Firebase project setup and dependency installation
 
-- [ ] T001 Create Firebase project in console and enable Firestore + Authentication (Email/Password provider)
-- [ ] T002 Install Firebase CLI and FlutterFire CLI, run `flutterfire configure` to generate lib/firebase_options.dart
-- [ ] T003 Add Firebase dependencies to pubspec.yaml (firebase_core, firebase_auth, cloud_firestore, connectivity_plus)
-- [ ] T004 Run `flutter pub get` to install dependencies
+- [X] T001 Create Firebase project in console and enable Firestore + Authentication (Email/Password provider)
+- [X] T002 Install Firebase CLI and FlutterFire CLI, run `flutterfire configure` to generate lib/firebase_options.dart
+- [X] T003 Add Firebase dependencies to pubspec.yaml (firebase_core, firebase_auth, cloud_firestore, connectivity_plus)
+- [X] T004 Run `flutter pub get` to install dependencies
 
 ---
 
@@ -35,14 +35,14 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Initialize Firebase in lib/main.dart with `Firebase.initializeApp()` and configure Firestore offline persistence
-- [ ] T006 [P] Update Manga model in lib/models/manga.dart with @TimestampConverter and Firestore serialization
-- [ ] T007 [P] Update MangaPage model in lib/models/manga.dart with @DeltaConverter for Quill Delta storage
-- [ ] T008 [P] Create DeltaConverter class in lib/models/manga.dart for Quill Delta JSON conversion
-- [ ] T009 [P] Create TimestampConverter class in lib/models/manga.dart for Firestore Timestamp conversion
-- [ ] T010 Run `dart run build_runner build -d` to generate Freezed and JSON serialization code
-- [ ] T011 Create Firestore security rules in firestore.rules with user isolation and field validation
-- [ ] T012 Deploy Firestore security rules with `firebase deploy --only firestore:rules`
+- [X] T005 Initialize Firebase in lib/main.dart with `Firebase.initializeApp()` and configure Firestore offline persistence
+- [X] T006 [P] Update Manga model in lib/models/manga.dart with @TimestampConverter and Firestore serialization
+- [X] T007 [P] Update MangaPage model in lib/models/manga.dart with @DeltaConverter for Quill Delta storage
+- [X] T008 [P] Create DeltaConverter class in lib/models/manga.dart for Quill Delta JSON conversion
+- [X] T009 [P] Create TimestampConverter class in lib/models/manga.dart for Firestore Timestamp conversion
+- [X] T010 Run `dart run build_runner build -d` to generate Freezed and JSON serialization code
+- [X] T011 Create Firestore security rules in firestore.rules with user isolation and field validation
+- [X] T012 Deploy Firestore security rules with `firebase deploy --only firestore:rules`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

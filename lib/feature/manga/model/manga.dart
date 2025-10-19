@@ -1,7 +1,39 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_quill/quill_delta.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'manga.freezed.dart';
 part 'manga.g.dart';
+
+// Custom JsonConverter for Quill Delta
+class DeltaConverter implements JsonConverter<Delta, Map<String, dynamic>> {
+  const DeltaConverter();
+
+  @override
+  Delta fromJson(Map<String, dynamic> json) {
+    return Delta.fromJson(json['ops'] ?? []);
+  }
+
+  @override
+  Map<String, dynamic> toJson(Delta delta) {
+    return {'ops': delta.toJson()};
+  }
+}
+
+// Custom JsonConverter for Firestore Timestamp
+class TimestampConverter implements JsonConverter<DateTime, Timestamp> {
+  const TimestampConverter();
+
+  @override
+  DateTime fromJson(Timestamp timestamp) {
+    return timestamp.toDate();
+  }
+
+  @override
+  Timestamp toJson(DateTime dateTime) {
+    return Timestamp.fromDate(dateTime);
+  }
+}
 
 enum MangaStartPage {
   left,
@@ -14,9 +46,9 @@ enum MangaStartPage {
       };
 }
 
-typedef MangaId = int;
-typedef MangaPageId = int;
-typedef DeltaId = int;
+typedef MangaId = String;
+typedef MangaPageId = String;
+typedef DeltaId = int; // Temporary: for Drift compatibility during migration
 
 @freezed
 abstract class Manga with _$Manga {
@@ -24,7 +56,8 @@ abstract class Manga with _$Manga {
     required MangaId id,
     required String name,
     required MangaStartPage startPage,
-    required DeltaId ideaMemo,
+    @TimestampConverter() required DateTime createdAt,
+    @TimestampConverter() required DateTime updatedAt,
   }) = _Manga;
 
   factory Manga.fromJson(Map<String, dynamic> json) => _$MangaFromJson(json);
@@ -34,9 +67,12 @@ abstract class Manga with _$Manga {
 abstract class MangaPage with _$MangaPage {
   const factory MangaPage({
     required MangaPageId id,
-    required DeltaId memoDelta,
-    required DeltaId stageDirectionDelta,
-    required DeltaId dialoguesDelta,
+    required int pageIndex,
+    @DeltaConverter() required Delta memoDelta,
+    @DeltaConverter() required Delta stageDirectionDelta,
+    @DeltaConverter() required Delta dialoguesDelta,
+    @TimestampConverter() required DateTime createdAt,
+    @TimestampConverter() required DateTime updatedAt,
   }) = _MangaPage;
 
   factory MangaPage.fromJson(Map<String, dynamic> json) =>

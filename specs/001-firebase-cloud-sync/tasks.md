@@ -198,18 +198,18 @@
 
 #### Periodic Sync Timer
 
-- [ ] T078 [P] [US4] Add periodic timer to SyncStateNotifier to trigger sync every 30-60 seconds per research.md section 4
-- [ ] T079 [P] [US4] Implement bidirectional sync: upload local changes + download remote changes
-- [ ] T080 [US4] Add network connectivity check before starting periodic sync (prevent wasted battery when offline)
-- [ ] T081 [US4] Pause periodic sync when app backgrounded, resume when foregrounded
+- [X] T078 [P] [US4] Add periodic timer to SyncStateNotifier to trigger sync every 30-60 seconds per research.md section 4
+- [X] T079 [P] [US4] Implement bidirectional sync: upload local changes + download remote changes
+- [X] T080 [US4] Add network connectivity check before starting periodic sync (prevent wasted battery when offline)
+- [X] T081 [US4] Pause periodic sync when app backgrounded, resume when foregrounded
 
 #### Edit Lock Management
 
-- [ ] T082 [US4] Create lib/service/firebase/lock_manager.dart for lock acquisition/release/renewal
-- [ ] T083 [US4] Implement acquireLock() with Firestore transaction per research.md section 5 lock acquisition pattern
-- [ ] T084 [US4] Implement releaseLock() to delete editLock field from manga document
-- [ ] T085 [US4] Implement renewLock() heartbeat to refresh expiresAt timestamp every 30 seconds
-- [ ] T086 [US4] Add lock expiration check: isExpired property on EditLock model (already in data-model.md)
+- [X] T082 [US4] Create lib/service/firebase/lock_manager.dart for lock acquisition/release/renewal
+- [X] T083 [US4] Implement acquireLock() with Firestore transaction per research.md section 5 lock acquisition pattern
+- [X] T084 [US4] Implement releaseLock() to delete editLock field from manga document
+- [X] T085 [US4] Implement renewLock() heartbeat to refresh expiresAt timestamp every 30 seconds
+- [X] T086 [US4] Add lock expiration check: isExpired property on EditLock model (already in data-model.md)
 
 #### Repository Lock Integration
 
@@ -220,9 +220,9 @@
 
 #### Lock Status UI
 
-- [ ] T091 [P] [US4] Create lib/feature/manga/view/lock_indicator.dart widget to show lock status per plan.md
-- [ ] T092 [US4] Display read-only mode in manga editor when locked by another device
-- [ ] T093 [US4] Add "Request Lock" button for read-only mode to attempt acquisition
+- [X] T091 [P] [US4] Create lib/feature/manga/view/lock_indicator.dart widget to show lock status per plan.md
+- [X] T092 [US4] Display read-only mode in manga editor when locked by another device
+- [X] T093 [US4] Add "Request Lock" button for read-only mode to attempt acquisition
 
 #### Edge Case Handling
 

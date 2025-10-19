@@ -11,6 +11,9 @@ import 'package:mockito/src/dummies.dart' as _i6;
 import 'package:my_manga_editor/feature/manga/model/manga.dart' as _i3;
 import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart'
     as _i2;
+import 'package:my_manga_editor/service/firebase/model/cloud_manga.dart' as _i7;
+import 'package:my_manga_editor/service/firebase/model/cloud_manga_page.dart'
+    as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -298,4 +301,32 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
         returnValue: _i4.Future<int>.value(0),
         returnValueForMissingStub: _i4.Future<int>.value(0),
       ) as _i4.Future<int>);
+
+  @override
+  _i4.Future<int> downloadCloudManga(_i7.CloudManga? cloudManga) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #downloadCloudManga,
+          [cloudManga],
+        ),
+        returnValue: _i4.Future<int>.value(0),
+        returnValueForMissingStub: _i4.Future<int>.value(0),
+      ) as _i4.Future<int>);
+
+  @override
+  _i4.Future<void> downloadCloudMangaPage(
+    _i8.CloudMangaPage? cloudPage,
+    int? mangaId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #downloadCloudMangaPage,
+          [
+            cloudPage,
+            mangaId,
+          ],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 }

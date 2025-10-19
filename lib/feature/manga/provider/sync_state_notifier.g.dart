@@ -47,7 +47,7 @@ final class SyncStateNotifierProvider
   }
 }
 
-String _$syncStateNotifierHash() => r'd9eff3d13d05814fa50536ed4d84ab0c2113f7d0';
+String _$syncStateNotifierHash() => r'7f2bdc8c562cc037266186567873decc9caaec97';
 
 /// Notifier for managing sync state and queue
 /// Handles periodic sync, retry logic, and sync status tracking
@@ -134,7 +134,7 @@ final class MangaSyncStatusProvider
   }
 }
 
-String _$mangaSyncStatusHash() => r'816af98ad76ac15bd9dbf74de913d7602f7ca825';
+String _$mangaSyncStatusHash() => r'38294c2df231c771643f95a6f9eb520f68e5f64f';
 
 /// Provider for sync status of a specific manga
 

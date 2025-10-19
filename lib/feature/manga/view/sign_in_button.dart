@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:my_manga_editor/feature/manga/provider/sync_state_notifier.dart';
 import 'package:my_manga_editor/feature/manga/repository/auth_repository.dart';
 import 'package:my_manga_editor/service/firebase/auth_service.dart';
 
@@ -23,6 +24,7 @@ class SignInButton extends HookConsumerWidget {
           // User is signed in - show user info and sign out button
           return _buildSignedInView(
             context,
+            ref,
             user,
             authRepository,
             isLoading,
@@ -32,6 +34,7 @@ class SignInButton extends HookConsumerWidget {
           // User is signed out - show sign in button
           return _buildSignInButton(
             context,
+            ref,
             authRepository,
             isLoading,
             errorMessage,
@@ -48,6 +51,7 @@ class SignInButton extends HookConsumerWidget {
 
   Widget _buildSignInButton(
     BuildContext context,
+    WidgetRef ref,
     AuthRepository authRepository,
     ValueNotifier<bool> isLoading,
     ValueNotifier<String?> errorMessage,
@@ -67,6 +71,11 @@ class SignInButton extends HookConsumerWidget {
                     if (user == null) {
                       // User cancelled sign-in
                       errorMessage.value = 'Sign-in was cancelled';
+                    } else {
+                      // Sign-in successful - trigger initial sync
+                      ref
+                          .read(syncStateProvider.notifier)
+                          .performInitialSync();
                     }
                   } on AuthException catch (e) {
                     errorMessage.value = e.message;
@@ -99,6 +108,7 @@ class SignInButton extends HookConsumerWidget {
 
   Widget _buildSignedInView(
     BuildContext context,
+    WidgetRef ref,
     User user,
     AuthRepository authRepository,
     ValueNotifier<bool> isLoading,

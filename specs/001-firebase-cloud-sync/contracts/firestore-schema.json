@@ -1,0 +1,284 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Firebase Cloud Sync Firestore Schema",
+  "description": "Defines the Firestore collections and document structure for manga cloud synchronization",
+  "version": "1.0.0",
+  "collections": {
+    "users": {
+      "path": "/users/{userId}",
+      "description": "Root collection for user-scoped data",
+      "documentId": "Firebase Auth UID",
+      "subcollections": {
+        "mangas": {
+          "path": "/users/{userId}/mangas/{mangaId}",
+          "description": "User's manga projects",
+          "documentId": "Auto-generated Firestore ID or user-specified",
+          "schema": {
+            "type": "object",
+            "required": [
+              "userId",
+              "name",
+              "startPageDirection",
+              "ideaMemo",
+              "createdAt",
+              "updatedAt"
+            ],
+            "properties": {
+              "userId": {
+                "type": "string",
+                "description": "Firebase Auth UID of the manga owner",
+                "pattern": "^[a-zA-Z0-9]{28}$"
+              },
+              "name": {
+                "type": "string",
+                "description": "Manga title",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "startPageDirection": {
+                "type": "string",
+                "description": "Reading direction (left-to-right or right-to-left)",
+                "enum": ["left", "right"]
+              },
+              "ideaMemo": {
+                "type": "object",
+                "description": "Quill Delta JSON for manga idea/concept memo",
+                "properties": {
+                  "ops": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                }
+              },
+              "createdAt": {
+                "type": "timestamp",
+                "description": "Document creation timestamp (server-side)"
+              },
+              "updatedAt": {
+                "type": "timestamp",
+                "description": "Last modification timestamp (server-side)"
+              },
+              "editLock": {
+                "type": "object",
+                "description": "Optional edit lock for preventing concurrent modifications",
+                "required": ["lockedBy", "lockedAt", "expiresAt", "deviceId"],
+                "properties": {
+                  "lockedBy": {
+                    "type": "string",
+                    "description": "Firebase Auth UID of lock holder",
+                    "pattern": "^[a-zA-Z0-9]{28}$"
+                  },
+                  "lockedAt": {
+                    "type": "timestamp",
+                    "description": "Lock acquisition timestamp"
+                  },
+                  "expiresAt": {
+                    "type": "timestamp",
+                    "description": "Lock expiration timestamp (60 seconds from acquisition)"
+                  },
+                  "deviceId": {
+                    "type": "string",
+                    "description": "Unique device identifier"
+                  }
+                }
+              }
+            }
+          },
+          "indexes": [
+            {
+              "fields": [
+                {"field": "updatedAt", "order": "DESCENDING"},
+                {"field": "__name__", "order": "ASCENDING"}
+              ],
+              "scope": "COLLECTION",
+              "purpose": "Sort mangas by last modified"
+            }
+          ],
+          "subcollections": {
+            "pages": {
+              "path": "/users/{userId}/mangas/{mangaId}/pages/{pageId}",
+              "description": "Manga pages within a manga project",
+              "documentId": "Auto-generated Firestore ID",
+              "schema": {
+                "type": "object",
+                "required": [
+                  "pageIndex",
+                  "memoDelta",
+                  "stageDirectionDelta",
+                  "dialoguesDelta",
+                  "createdAt",
+                  "updatedAt"
+                ],
+                "properties": {
+                  "pageIndex": {
+                    "type": "integer",
+                    "description": "Zero-based page order within manga",
+                    "minimum": 0
+                  },
+                  "memoDelta": {
+                    "type": "object",
+                    "description": "Quill Delta JSON for page memo field",
+                    "properties": {
+                      "ops": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  },
+                  "stageDirectionDelta": {
+                    "type": "object",
+                    "description": "Quill Delta JSON for stage directions",
+                    "properties": {
+                      "ops": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  },
+                  "dialoguesDelta": {
+                    "type": "object",
+                    "description": "Quill Delta JSON for dialogues",
+                    "properties": {
+                      "ops": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  },
+                  "createdAt": {
+                    "type": "timestamp",
+                    "description": "Document creation timestamp"
+                  },
+                  "updatedAt": {
+                    "type": "timestamp",
+                    "description": "Last modification timestamp"
+                  }
+                }
+              },
+              "indexes": [
+                {
+                  "fields": [
+                    {"field": "pageIndex", "order": "ASCENDING"}
+                  ],
+                  "scope": "COLLECTION",
+                  "purpose": "Retrieve pages in order"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "securityRules": {
+    "version": "rules_version = '2'",
+    "service": "cloud.firestore",
+    "rules": [
+      {
+        "match": "/users/{userId}/mangas/{mangaId}",
+        "allow": {
+          "read": "request.auth != null && request.auth.uid == userId",
+          "write": "request.auth != null && request.auth.uid == userId"
+        },
+        "validate": {
+          "create": "request.resource.data.keys().hasAll(['userId', 'name', 'startPageDirection', 'ideaMemo', 'createdAt', 'updatedAt'])",
+          "update": "request.resource.data.userId == resource.data.userId"
+        }
+      },
+      {
+        "match": "/users/{userId}/mangas/{mangaId}/pages/{pageId}",
+        "allow": {
+          "read": "request.auth != null && request.auth.uid == userId",
+          "write": "request.auth != null && request.auth.uid == userId"
+        },
+        "validate": {
+          "create": "request.resource.data.keys().hasAll(['pageIndex', 'memoDelta', 'stageDirectionDelta', 'dialoguesDelta', 'createdAt', 'updatedAt'])",
+          "update": "request.resource.data.pageIndex == resource.data.pageIndex"
+        }
+      }
+    ]
+  },
+  "dataFlow": {
+    "create": {
+      "description": "User creates a new manga or page",
+      "steps": [
+        "1. User creates manga/page locally in SQLite",
+        "2. Repository queues operation to sync_queue table",
+        "3. Periodic sync (30-60s) processes queue",
+        "4. FirebaseService.createManga() uploads to Firestore",
+        "5. Server assigns document ID and timestamps",
+        "6. Sync queue entry marked as completed"
+      ]
+    },
+    "read": {
+      "description": "User signs in on new device and downloads data",
+      "steps": [
+        "1. User signs in with Google",
+        "2. FirebaseService.fetchUserMangas() retrieves all mangas",
+        "3. Repository converts CloudManga to Manga",
+        "4. Repository inserts into local SQLite",
+        "5. UI displays mangas from SQLite",
+        "6. Firestore offline cache enables offline access"
+      ]
+    },
+    "update": {
+      "description": "User modifies existing manga/page",
+      "steps": [
+        "1. User edits manga/page in UI",
+        "2. Repository updates local SQLite immediately",
+        "3. Repository queues update operation",
+        "4. Periodic sync uploads changes to Firestore",
+        "5. updatedAt timestamp refreshed server-side",
+        "6. Other devices fetch update on next sync"
+      ]
+    },
+    "delete": {
+      "description": "User deletes manga or page",
+      "steps": [
+        "1. User deletes manga/page in UI",
+        "2. Repository deletes from local SQLite (CASCADE)",
+        "3. Repository queues delete operation",
+        "4. Periodic sync deletes from Firestore",
+        "5. Subcollections (pages) deleted recursively",
+        "6. Other devices sync deletion on next poll"
+      ]
+    },
+    "lock": {
+      "description": "User acquires edit lock before editing",
+      "steps": [
+        "1. User opens manga for editing",
+        "2. Repository.acquireLock() attempts to acquire",
+        "3. FirebaseService checks current editLock state",
+        "4. If unlocked/expired, set new editLock with 60s TTL",
+        "5. Heartbeat timer renews lock every 30s",
+        "6. On close/background, lock explicitly released"
+      ]
+    }
+  },
+  "errorHandling": {
+    "partialSyncFailure": {
+      "description": "Some operations succeed, others fail",
+      "strategy": "Each operation in sync queue is independent. Failed operations retry with exponential backoff (max 3 attempts). Successful operations marked completed immediately."
+    },
+    "lockConflict": {
+      "description": "Two users try to acquire lock simultaneously",
+      "strategy": "Firestore transaction ensures atomic read-modify-write. One user succeeds, other receives 'locked by [user]' message with retry option."
+    },
+    "offlineCreation": {
+      "description": "User creates manga while offline",
+      "strategy": "Data stored in local SQLite immediately. Sync queue accumulates operations. On reconnect, queue processed in FIFO order. Firestore assigns final document IDs."
+    },
+    "staleLock": {
+      "description": "User crashes/disconnects with active lock",
+      "strategy": "Lock expires after 60s (client-side check). Optional Cloud Function cleans up expired locks every 5 minutes."
+    }
+  }
+}

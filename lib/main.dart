@@ -1,10 +1,25 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/feature/manga/page/main_page.dart';
+import 'package:my_manga_editor/service/firebase/firebase_config.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+Future<void> main() async {
+  // Ensure Flutter bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Configure Firestore offline persistence
+  await configureFirestore();
+
   runApp(const ScreenUtilInit(child: ProviderScope(child: MyApp())));
 }
 

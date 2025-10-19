@@ -49,3 +49,16 @@ app.*.map.json
 
 # Claude
 /.claude/settings.local.json
+
+# Firebase related
+.firebase/
+**/google-services.json
+**/GoogleService-Info.plist
+firebase-debug.log
+firestore-debug.log
+pubspec.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local

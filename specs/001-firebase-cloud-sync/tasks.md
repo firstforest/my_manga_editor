@@ -24,16 +24,16 @@
 
 - [ ] T001 Complete Firebase project setup following specs/001-firebase-cloud-sync/quickstart.md Part 1-2
 - [ ] T002 [P] Install FlutterFire CLI and run `flutterfire configure` following quickstart.md Part 3
-- [ ] T003 [P] Add Firebase dependencies to pubspec.yaml (firebase_core, firebase_auth, google_sign_in, cloud_firestore)
-- [ ] T004 Run `flutter pub get` to install dependencies
+- [X] T003 [P] Add Firebase dependencies to pubspec.yaml (firebase_core, firebase_auth, google_sign_in, cloud_firestore)
+- [X] T004 Run `flutter pub get` to install dependencies
 - [ ] T005 [P] Configure iOS platform following quickstart.md Part 5.1 (Info.plist with REVERSED_CLIENT_ID)
 - [ ] T006 [P] Configure Android platform following quickstart.md Part 5.2 (build.gradle with minSdkVersion 21)
 - [ ] T007 [P] Configure macOS platform following quickstart.md Part 5.3 (entitlements)
 - [ ] T008 [P] Configure web platform following quickstart.md Part 5.4 (index.html with Firebase config)
-- [ ] T009 Initialize Firebase in lib/main.dart following quickstart.md Part 6.1
-- [ ] T010 Create lib/service/firebase/firebase_config.dart for offline persistence configuration
-- [ ] T011 Update lib/main.dart to call configureFirestore() after Firebase initialization
-- [ ] T012 Run code generation: `dart run build_runner build -d`
+- [X] T009 Initialize Firebase in lib/main.dart following quickstart.md Part 6.1
+- [X] T010 Create lib/service/firebase/firebase_config.dart for offline persistence configuration
+- [X] T011 Update lib/main.dart to call configureFirestore() after Firebase initialization
+- [X] T012 Run code generation: `dart run build_runner build -d`
 - [ ] T013 Verify Firebase initialization with test run on macOS: `flutter run -d macos`
 
 ---
@@ -50,16 +50,16 @@
 
 ### Core Service Layer Models
 
-- [ ] T015 [P] Create lib/service/firebase/model/cloud_manga.dart with @freezed CloudManga model per data-model.md section 2.1
-- [ ] T016 [P] Create lib/service/firebase/model/cloud_manga_page.dart with @freezed CloudMangaPage model per data-model.md section 2.2
-- [ ] T017 [P] Create lib/service/firebase/model/edit_lock.dart with @freezed EditLock model per data-model.md section 2.3
-- [ ] T018 [P] Create lib/service/firebase/model/sync_queue_entry.dart with @freezed SyncQueueEntry model per data-model.md section 3.2
-- [ ] T019 Run code generation: `dart run build_runner build -d`
+- [X] T015 [P] Create lib/service/firebase/model/cloud_manga.dart with @freezed CloudManga model per data-model.md section 2.1
+- [X] T016 [P] Create lib/service/firebase/model/cloud_manga_page.dart with @freezed CloudMangaPage model per data-model.md section 2.2
+- [X] T017 [P] Create lib/service/firebase/model/edit_lock.dart with @freezed EditLock model per data-model.md section 2.3
+- [X] T018 [P] Create lib/service/firebase/model/sync_queue_entry.dart with @freezed SyncQueueEntry model per data-model.md section 3.2
+- [X] T019 Run code generation: `dart run build_runner build -d`
 
 ### Domain Layer Models
 
-- [ ] T020 Create lib/feature/manga/model/sync_status.dart with SyncStatus and SyncState enum per data-model.md section 3.1
-- [ ] T021 Run code generation: `dart run build_runner build -d`
+- [X] T020 Create lib/feature/manga/model/sync_status.dart with SyncStatus and SyncState enum per data-model.md section 3.1
+- [X] T021 Run code generation: `dart run build_runner build -d`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -73,12 +73,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T025 [P] [US1] Create lib/service/firebase/auth_service.dart with GoogleSignIn wrapper per research.md section 3
-- [ ] T026 [P] [US1] Create lib/feature/manga/repository/auth_repository.dart for authentication operations per plan.md structure
-- [ ] T027 [US1] Add @riverpod providers to lib/feature/manga/provider/manga_providers.dart: authProvider, authStateStreamProvider per plan.md section IV
-- [ ] T028 [US1] Run code generation: `dart run build_runner build -d`
-- [ ] T029 [P] [US1] Create lib/feature/manga/view/sign_in_button.dart widget for Google sign-in UI
-- [ ] T030 [US1] Update lib/feature/manga/page/main_page.dart to integrate sign-in button and auth state display
+- [X] T025 [P] [US1] Create lib/service/firebase/auth_service.dart with GoogleSignIn wrapper per research.md section 3
+- [X] T026 [P] [US1] Create lib/feature/manga/repository/auth_repository.dart for authentication operations per plan.md structure
+- [X] T027 [US1] Add @riverpod providers to lib/feature/manga/provider/manga_providers.dart: authProvider, authStateStreamProvider per plan.md section IV
+- [X] T028 [US1] Run code generation: `dart run build_runner build -d`
+- [X] T029 [P] [US1] Create lib/feature/manga/view/sign_in_button.dart widget for Google sign-in UI
+- [X] T030 [US1] Update lib/feature/manga/page/main_page.dart to integrate sign-in button and auth state display
 - [ ] T031 [US1] Test Google Sign-In flow on macOS: `flutter run -d macos` and verify authentication
 - [ ] T032 [US1] Test session persistence: restart app and verify user remains signed in
 - [ ] T033 [US1] Test sign-out functionality and verify local data remains accessible
@@ -97,39 +97,39 @@
 
 #### Firebase Service CRUD Operations
 
-- [ ] T034 [US2] Create lib/service/firebase/firebase_service.dart with base structure and @Riverpod provider per plan.md
-- [ ] T035 [US2] Implement FirebaseService.uploadManga() method to create/update manga documents in Firestore
-- [ ] T036 [US2] Implement FirebaseService.uploadMangaPage() method to create/update page subcollections
-- [ ] T037 [US2] Implement FirebaseService.deleteManga() method with recursive page deletion
-- [ ] T038 [US2] Implement FirebaseService.deleteMangaPage() method
-- [ ] T039 [US2] Run code generation: `dart run build_runner build -d`
+- [X] T034 [US2] Create lib/service/firebase/firebase_service.dart with base structure and @Riverpod provider per plan.md
+- [X] T035 [US2] Implement FirebaseService.uploadManga() method to create/update manga documents in Firestore
+- [X] T036 [US2] Implement FirebaseService.uploadMangaPage() method to create/update page subcollections
+- [X] T037 [US2] Implement FirebaseService.deleteManga() method with recursive page deletion
+- [X] T038 [US2] Implement FirebaseService.deleteMangaPage() method
+- [X] T039 [US2] Run code generation: `dart run build_runner build -d`
 
 #### Entity Conversion Logic
 
-- [ ] T040 [P] [US2] Add CloudManga.toManga() extension in lib/feature/manga/repository/manga_repository.dart per data-model.md section 5.1
-- [ ] T041 [P] [US2] Add Manga.toCloudManga() extension in lib/feature/manga/repository/manga_repository.dart per data-model.md section 5.2
-- [ ] T042 [P] [US2] Add helper methods getDeltaAsMap() and upsertDeltaFromMap() in lib/feature/manga/repository/manga_repository.dart per data-model.md section 5.3
-- [ ] T043 [US2] Add CloudMangaPage conversion extensions following same pattern as CloudManga
+- [X] T040 [P] [US2] Add CloudManga.toManga() extension in lib/feature/manga/repository/manga_repository.dart per data-model.md section 5.1
+- [X] T041 [P] [US2] Add Manga.toCloudManga() extension in lib/feature/manga/repository/manga_repository.dart per data-model.md section 5.2
+- [X] T042 [P] [US2] Add helper methods getDeltaAsMap() and upsertDeltaFromMap() in lib/feature/manga/repository/manga_repository.dart per data-model.md section 5.3
+- [X] T043 [US2] Add CloudMangaPage conversion extensions following same pattern as CloudManga
 
 #### Sync Queue Management
 
-- [ ] T044 [US2] Create lib/feature/manga/provider/sync_state_notifier.dart with @riverpod class SyncStateNotifier per plan.md
-- [ ] T045 [US2] Implement sync queue insertion logic in SyncStateNotifier (create, update, delete operations)
-- [ ] T046 [US2] Implement sync queue processing logic with exponential backoff retry (max 3 attempts per research.md)
-- [ ] T047 [US2] Run code generation: `dart run build_runner build -d`
+- [X] T044 [US2] Create lib/feature/manga/provider/sync_state_notifier.dart with @riverpod class SyncStateNotifier per plan.md
+- [X] T045 [US2] Implement sync queue insertion logic in SyncStateNotifier (create, update, delete operations)
+- [X] T046 [US2] Implement sync queue processing logic with exponential backoff retry (max 3 attempts per research.md)
+- [X] T047 [US2] Run code generation: `dart run build_runner build -d`
 
 #### Repository Integration
 
-- [ ] T048 [US2] Update lib/feature/manga/repository/manga_repository.dart createNewManga() to queue sync operation after local insert
-- [ ] T049 [US2] Update lib/feature/manga/repository/manga_repository.dart updateManga() to queue sync operation
-- [ ] T050 [US2] Update lib/feature/manga/repository/manga_repository.dart deleteManga() to queue sync operation
-- [ ] T051 [US2] Update lib/feature/manga/repository/manga_repository.dart page methods (createPage, updatePage, deletePage) to queue sync operations
+- [X] T048 [US2] Update lib/feature/manga/repository/manga_repository.dart createNewManga() to queue sync operation after local insert
+- [X] T049 [US2] Update lib/feature/manga/repository/manga_repository.dart updateManga() to queue sync operation
+- [X] T050 [US2] Update lib/feature/manga/repository/manga_repository.dart deleteManga() to queue sync operation
+- [X] T051 [US2] Update lib/feature/manga/repository/manga_repository.dart page methods (createPage, updatePage, deletePage) to queue sync operations
 
 #### Sync Status UI
 
-- [ ] T052 [US2] Create lib/feature/manga/view/sync_status_indicator.dart widget to display sync state per SyncStatus model
-- [ ] T053 [US2] Integrate sync_status_indicator into manga list view to show per-manga sync state
-- [ ] T054 [US2] Add manual sync trigger button to UI calling SyncStateNotifier.processSyncQueue()
+- [X] T052 [US2] Create lib/feature/manga/view/sync_status_indicator.dart widget to display sync state per SyncStatus model
+- [X] T053 [US2] Integrate sync_status_indicator into manga list view to show per-manga sync state
+- [X] T054 [US2] Add manual sync trigger button to UI calling SyncStateNotifier.processSyncQueue()
 
 #### Testing
 
@@ -153,25 +153,25 @@
 
 #### Cloud Data Fetching
 
-- [ ] T060 [P] [US3] Implement FirebaseService.fetchUserMangas() to retrieve all manga documents from /users/{uid}/mangas/
-- [ ] T061 [P] [US3] Implement FirebaseService.fetchMangaPages() to retrieve page subcollection for a manga
+- [X] T060 [P] [US3] Implement FirebaseService.fetchUserMangas() to retrieve all manga documents from /users/{uid}/mangas/
+- [X] T061 [P] [US3] Implement FirebaseService.fetchMangaPages() to retrieve page subcollection for a manga
 - [ ] T062 [US3] Add pagination support to fetchUserMangas() for users with many manga projects
 
 #### Initial Sync Flow
 
-- [ ] T063 [US3] Create initial sync method in SyncStateNotifier.performInitialSync() to download all user data
+- [X] T063 [US3] Create initial sync method in SyncStateNotifier.performInitialSync() to download all user data
 - [ ] T064 [US3] Implement cloud-first merge strategy: warn user before overwriting local data per spec.md FR-013
 - [ ] T065 [US3] Add progress tracking for initial sync (downloaded X of Y mangas)
 
 #### Repository Download Logic
 
-- [ ] T066 [US3] Update lib/feature/manga/repository/manga_repository.dart with downloadCloudManga() method
-- [ ] T067 [US3] Implement CloudManga → Manga → DbManga conversion and local DB insertion
-- [ ] T068 [US3] Implement CloudMangaPage → MangaPage → DbMangaPage conversion with Delta upsert
+- [X] T066 [US3] Update lib/feature/manga/repository/manga_repository.dart with downloadCloudManga() method
+- [X] T067 [US3] Implement CloudManga → Manga → DbManga conversion and local DB insertion
+- [X] T068 [US3] Implement CloudMangaPage → MangaPage → DbMangaPage conversion with Delta upsert
 
 #### UI Integration
 
-- [ ] T069 [US3] Add initial sync trigger on first sign-in in auth_repository.dart
+- [X] T069 [US3] Add initial sync trigger on first sign-in in auth_repository.dart
 - [ ] T070 [US3] Create download progress indicator widget lib/feature/manga/view/download_progress.dart
 - [ ] T071 [US3] Display warning dialog before cloud-first merge if local data exists
 - [ ] T072 [US3] Allow user to cancel download in progress per spec.md US3 acceptance criteria 4

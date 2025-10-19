@@ -11,6 +11,7 @@ import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_edit_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_name_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/sign_in_button.dart';
+import 'package:my_manga_editor/feature/manga/view/sync_status_indicator.dart';
 
 class MainPage extends HookConsumerWidget {
   const MainPage({super.key});
@@ -68,6 +69,15 @@ class MainPage extends HookConsumerWidget {
             },
             icon: const Icon(Icons.list),
           ),
+          // Sync status indicator
+          if (viewModel.value?.mangaId case final MangaId mangaId)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: SyncStatusIndicator(mangaId: mangaId),
+            ),
+          // Manual sync button
+          if (viewModel.value?.mangaId case final MangaId mangaId)
+            ManualSyncButton(mangaId: mangaId),
           // Firebase Authentication Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),

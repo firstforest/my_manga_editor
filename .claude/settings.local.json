@@ -12,7 +12,8 @@
       "Bash(dart run build_runner build -d)",
       "Bash(flutter run -d macos --verbose)",
       "Bash(flutter run -d windows --verbose)",
-      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks)"
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks)",
+      "Bash(flutter analyze)"
     ],
     "deny": [],
     "ask": []

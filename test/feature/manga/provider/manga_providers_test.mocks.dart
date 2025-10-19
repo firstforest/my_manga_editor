@@ -5,9 +5,9 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
 
-import 'package:flutter_quill/quill_delta.dart' as _i5;
+import 'package:flutter_quill/quill_delta.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i6;
+import 'package:mockito/src/dummies.dart' as _i5;
 import 'package:my_manga_editor/feature/manga/model/manga.dart' as _i3;
 import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart'
     as _i2;
@@ -31,247 +31,199 @@ import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart'
 /// See the documentation for Mockito's code generation for more information.
 class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
   @override
-  Map<int, _i3.MangaPage> get pages => (super.noSuchMethod(
-        Invocation.getter(#pages),
-        returnValue: <int, _i3.MangaPage>{},
-        returnValueForMissingStub: <int, _i3.MangaPage>{},
-      ) as Map<int, _i3.MangaPage>);
-
-  @override
-  _i4.Future<void> saveManga(
-    String? fileName,
-    _i3.Manga? manga,
-  ) =>
+  Map<String, _i3.MangaPage> get pages =>
       (super.noSuchMethod(
-        Invocation.method(
-          #saveManga,
-          [
-            fileName,
-            manga,
-          ],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+            Invocation.getter(#pages),
+            returnValue: <String, _i3.MangaPage>{},
+            returnValueForMissingStub: <String, _i3.MangaPage>{},
+          )
+          as Map<String, _i3.MangaPage>);
 
   @override
-  _i4.Future<int> createNewManga() => (super.noSuchMethod(
-        Invocation.method(
-          #createNewManga,
-          [],
-        ),
-        returnValue: _i4.Future<int>.value(0),
-        returnValueForMissingStub: _i4.Future<int>.value(0),
-      ) as _i4.Future<int>);
-
-  @override
-  _i4.Future<_i3.Manga?> loadManga(String? fileName) => (super.noSuchMethod(
-        Invocation.method(
-          #loadManga,
-          [fileName],
-        ),
-        returnValue: _i4.Future<_i3.Manga?>.value(),
-        returnValueForMissingStub: _i4.Future<_i3.Manga?>.value(),
-      ) as _i4.Future<_i3.Manga?>);
-
-  @override
-  _i4.Stream<_i3.Manga?> watchManga(int? id) => (super.noSuchMethod(
-        Invocation.method(
-          #watchManga,
-          [id],
-        ),
-        returnValue: _i4.Stream<_i3.Manga?>.empty(),
-        returnValueForMissingStub: _i4.Stream<_i3.Manga?>.empty(),
-      ) as _i4.Stream<_i3.Manga?>);
-
-  @override
-  _i4.Future<void> clearData() => (super.noSuchMethod(
-        Invocation.method(
-          #clearData,
-          [],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
-
-  @override
-  _i4.Stream<_i3.MangaPage?> getMangaPageStream(int? id) => (super.noSuchMethod(
-        Invocation.method(
-          #getMangaPageStream,
-          [id],
-        ),
-        returnValue: _i4.Stream<_i3.MangaPage?>.empty(),
-        returnValueForMissingStub: _i4.Stream<_i3.MangaPage?>.empty(),
-      ) as _i4.Stream<_i3.MangaPage?>);
-
-  @override
-  _i4.Stream<_i3.Manga?> getMangaStream(int? id) => (super.noSuchMethod(
-        Invocation.method(
-          #getMangaStream,
-          [id],
-        ),
-        returnValue: _i4.Stream<_i3.Manga?>.empty(),
-        returnValueForMissingStub: _i4.Stream<_i3.Manga?>.empty(),
-      ) as _i4.Stream<_i3.Manga?>);
-
-  @override
-  _i4.Stream<List<_i3.Manga>> watchAllMangaList() => (super.noSuchMethod(
-        Invocation.method(
-          #watchAllMangaList,
-          [],
-        ),
-        returnValue: _i4.Stream<List<_i3.Manga>>.empty(),
-        returnValueForMissingStub: _i4.Stream<List<_i3.Manga>>.empty(),
-      ) as _i4.Stream<List<_i3.Manga>>);
-
-  @override
-  _i4.Future<_i5.Delta?> loadDelta(int? id) => (super.noSuchMethod(
-        Invocation.method(
-          #loadDelta,
-          [id],
-        ),
-        returnValue: _i4.Future<_i5.Delta?>.value(),
-        returnValueForMissingStub: _i4.Future<_i5.Delta?>.value(),
-      ) as _i4.Future<_i5.Delta?>);
-
-  @override
-  _i4.Stream<_i5.Delta?> getDeltaStream(int? id) => (super.noSuchMethod(
-        Invocation.method(
-          #getDeltaStream,
-          [id],
-        ),
-        returnValue: _i4.Stream<_i5.Delta?>.empty(),
-        returnValueForMissingStub: _i4.Stream<_i5.Delta?>.empty(),
-      ) as _i4.Stream<_i5.Delta?>);
-
-  @override
-  void saveDelta(
-    int? id,
-    _i5.Delta? delta,
-  ) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #saveDelta,
-          [
-            id,
-            delta,
-          ],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  _i4.Future<void> createNewMangaPage(int? mangaId) => (super.noSuchMethod(
-        Invocation.method(
-          #createNewMangaPage,
-          [mangaId],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
-
-  @override
-  _i4.Stream<List<int>> watchAllMangaPageIdList(int? mangaId) =>
+  _i4.Future<void> saveManga(String? fileName, _i3.Manga? manga) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #watchAllMangaPageIdList,
-          [mangaId],
-        ),
-        returnValue: _i4.Stream<List<int>>.empty(),
-        returnValueForMissingStub: _i4.Stream<List<int>>.empty(),
-      ) as _i4.Stream<List<int>>);
+            Invocation.method(#saveManga, [fileName, manga]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
 
   @override
-  _i4.Future<void> reorderPages(
-    int? id,
-    List<int>? pageIdList,
-  ) =>
+  _i4.Future<String> createNewManga() =>
       (super.noSuchMethod(
-        Invocation.method(
-          #reorderPages,
-          [
-            id,
-            pageIdList,
-          ],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+            Invocation.method(#createNewManga, []),
+            returnValue: _i4.Future<String>.value(
+              _i5.dummyValue<String>(
+                this,
+                Invocation.method(#createNewManga, []),
+              ),
+            ),
+            returnValueForMissingStub: _i4.Future<String>.value(
+              _i5.dummyValue<String>(
+                this,
+                Invocation.method(#createNewManga, []),
+              ),
+            ),
+          )
+          as _i4.Future<String>);
 
   @override
-  _i4.Future<void> updateMangaName(
-    int? id,
-    String? name,
-  ) =>
+  _i4.Future<_i3.Manga?> loadManga(String? fileName) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #updateMangaName,
-          [
-            id,
-            name,
-          ],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+            Invocation.method(#loadManga, [fileName]),
+            returnValue: _i4.Future<_i3.Manga?>.value(),
+            returnValueForMissingStub: _i4.Future<_i3.Manga?>.value(),
+          )
+          as _i4.Future<_i3.Manga?>);
 
   @override
-  _i4.Future<void> deleteMangaPage(int? pageId) => (super.noSuchMethod(
-        Invocation.method(
-          #deleteMangaPage,
-          [pageId],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
-
-  @override
-  _i4.Future<void> deleteManga(int? id) => (super.noSuchMethod(
-        Invocation.method(
-          #deleteManga,
-          [id],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
-
-  @override
-  _i4.Future<void> updateStartPage(
-    int? id,
-    _i3.MangaStartPage? value,
-  ) =>
+  _i4.Stream<_i3.Manga?> watchManga(int? id) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #updateStartPage,
-          [
-            id,
-            value,
-          ],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+            Invocation.method(#watchManga, [id]),
+            returnValue: _i4.Stream<_i3.Manga?>.empty(),
+            returnValueForMissingStub: _i4.Stream<_i3.Manga?>.empty(),
+          )
+          as _i4.Stream<_i3.Manga?>);
 
   @override
-  _i4.Future<String> toMarkdown(int? mangaId) => (super.noSuchMethod(
-        Invocation.method(
-          #toMarkdown,
-          [mangaId],
-        ),
-        returnValue: _i4.Future<String>.value(_i6.dummyValue<String>(
-          this,
-          Invocation.method(
-            #toMarkdown,
-            [mangaId],
-          ),
-        )),
-        returnValueForMissingStub:
-            _i4.Future<String>.value(_i6.dummyValue<String>(
-          this,
-          Invocation.method(
-            #toMarkdown,
-            [mangaId],
-          ),
-        )),
-      ) as _i4.Future<String>);
+  _i4.Future<void> clearData() =>
+      (super.noSuchMethod(
+            Invocation.method(#clearData, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Stream<_i3.MangaPage?> getMangaPageStream(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#getMangaPageStream, [id]),
+            returnValue: _i4.Stream<_i3.MangaPage?>.empty(),
+            returnValueForMissingStub: _i4.Stream<_i3.MangaPage?>.empty(),
+          )
+          as _i4.Stream<_i3.MangaPage?>);
+
+  @override
+  _i4.Stream<_i3.Manga?> getMangaStream(int? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#getMangaStream, [id]),
+            returnValue: _i4.Stream<_i3.Manga?>.empty(),
+            returnValueForMissingStub: _i4.Stream<_i3.Manga?>.empty(),
+          )
+          as _i4.Stream<_i3.Manga?>);
+
+  @override
+  _i4.Stream<List<_i3.Manga>> watchAllMangaList() =>
+      (super.noSuchMethod(
+            Invocation.method(#watchAllMangaList, []),
+            returnValue: _i4.Stream<List<_i3.Manga>>.empty(),
+            returnValueForMissingStub: _i4.Stream<List<_i3.Manga>>.empty(),
+          )
+          as _i4.Stream<List<_i3.Manga>>);
+
+  @override
+  _i4.Future<_i6.Delta?> loadDelta(int? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#loadDelta, [id]),
+            returnValue: _i4.Future<_i6.Delta?>.value(),
+            returnValueForMissingStub: _i4.Future<_i6.Delta?>.value(),
+          )
+          as _i4.Future<_i6.Delta?>);
+
+  @override
+  _i4.Stream<_i6.Delta?> getDeltaStream(int? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#getDeltaStream, [id]),
+            returnValue: _i4.Stream<_i6.Delta?>.empty(),
+            returnValueForMissingStub: _i4.Stream<_i6.Delta?>.empty(),
+          )
+          as _i4.Stream<_i6.Delta?>);
+
+  @override
+  void saveDelta(int? id, _i6.Delta? delta) => super.noSuchMethod(
+    Invocation.method(#saveDelta, [id, delta]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  _i4.Future<void> createNewMangaPage(String? mangaId) =>
+      (super.noSuchMethod(
+            Invocation.method(#createNewMangaPage, [mangaId]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Stream<List<String>> watchAllMangaPageIdList(String? mangaId) =>
+      (super.noSuchMethod(
+            Invocation.method(#watchAllMangaPageIdList, [mangaId]),
+            returnValue: _i4.Stream<List<String>>.empty(),
+            returnValueForMissingStub: _i4.Stream<List<String>>.empty(),
+          )
+          as _i4.Stream<List<String>>);
+
+  @override
+  _i4.Future<void> reorderPages(String? id, List<String>? pageIdList) =>
+      (super.noSuchMethod(
+            Invocation.method(#reorderPages, [id, pageIdList]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> updateMangaName(String? id, String? name) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateMangaName, [id, name]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> deleteMangaPage(int? pageId) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteMangaPage, [pageId]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> deleteManga(int? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteManga, [id]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> updateStartPage(int? id, _i3.MangaStartPage? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateStartPage, [id, value]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<String> toMarkdown(String? mangaId) =>
+      (super.noSuchMethod(
+            Invocation.method(#toMarkdown, [mangaId]),
+            returnValue: _i4.Future<String>.value(
+              _i5.dummyValue<String>(
+                this,
+                Invocation.method(#toMarkdown, [mangaId]),
+              ),
+            ),
+            returnValueForMissingStub: _i4.Future<String>.value(
+              _i5.dummyValue<String>(
+                this,
+                Invocation.method(#toMarkdown, [mangaId]),
+              ),
+            ),
+          )
+          as _i4.Future<String>);
 }

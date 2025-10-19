@@ -16,15 +16,15 @@ final class AiRepositoryProvider
     extends $FunctionalProvider<AiRepository, AiRepository, AiRepository>
     with $Provider<AiRepository> {
   const AiRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'aiRepositoryProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'aiRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$aiRepositoryHash();
@@ -56,16 +56,16 @@ const mangaDescriptionProvider = MangaDescriptionFamily._();
 final class MangaDescriptionProvider
     extends $FunctionalProvider<AsyncValue<String>, String, FutureOr<String>>
     with $FutureModifier<String>, $FutureProvider<String> {
-  const MangaDescriptionProvider._(
-      {required MangaDescriptionFamily super.from,
-      required MangaId super.argument})
-      : super(
-          retry: null,
-          name: r'mangaDescriptionProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+  const MangaDescriptionProvider._({
+    required MangaDescriptionFamily super.from,
+    required MangaId super.argument,
+  }) : super(
+         retry: null,
+         name: r'mangaDescriptionProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$mangaDescriptionHash();
@@ -85,10 +85,7 @@ final class MangaDescriptionProvider
   @override
   FutureOr<String> create(Ref ref) {
     final argument = this.argument as MangaId;
-    return mangaDescription(
-      ref,
-      argument,
-    );
+    return mangaDescription(ref, argument);
   }
 
   @override
@@ -107,17 +104,15 @@ String _$mangaDescriptionHash() => r'af379cc6a3925f9f2d123e0fc8dfa9f2130970c0';
 final class MangaDescriptionFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<String>, MangaId> {
   const MangaDescriptionFamily._()
-      : super(
-          retry: null,
-          name: r'mangaDescriptionProvider',
-          dependencies: null,
-          $allTransitiveDependencies: null,
-          isAutoDispose: true,
-        );
+    : super(
+        retry: null,
+        name: r'mangaDescriptionProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  MangaDescriptionProvider call(
-    MangaId mangaId,
-  ) =>
+  MangaDescriptionProvider call(MangaId mangaId) =>
       MangaDescriptionProvider._(argument: mangaId, from: this);
 
   @override
@@ -129,16 +124,16 @@ const aiCommentListProvider = AiCommentListFamily._();
 
 final class AiCommentListProvider
     extends $NotifierProvider<AiCommentList, List<AiComment>> {
-  const AiCommentListProvider._(
-      {required AiCommentListFamily super.from,
-      required MangaId super.argument})
-      : super(
-          retry: null,
-          name: r'aiCommentListProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+  const AiCommentListProvider._({
+    required AiCommentListFamily super.from,
+    required MangaId super.argument,
+  }) : super(
+         retry: null,
+         name: r'aiCommentListProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$aiCommentListHash();
@@ -177,20 +172,23 @@ String _$aiCommentListHash() => r'e0f6a6e345946b4ca05c113c4a236499b9d0b57c';
 
 final class AiCommentListFamily extends $Family
     with
-        $ClassFamilyOverride<AiCommentList, List<AiComment>, List<AiComment>,
-            List<AiComment>, MangaId> {
+        $ClassFamilyOverride<
+          AiCommentList,
+          List<AiComment>,
+          List<AiComment>,
+          List<AiComment>,
+          MangaId
+        > {
   const AiCommentListFamily._()
-      : super(
-          retry: null,
-          name: r'aiCommentListProvider',
-          dependencies: null,
-          $allTransitiveDependencies: null,
-          isAutoDispose: true,
-        );
+    : super(
+        retry: null,
+        name: r'aiCommentListProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  AiCommentListProvider call(
-    MangaId mangaId,
-  ) =>
+  AiCommentListProvider call(MangaId mangaId) =>
       AiCommentListProvider._(argument: mangaId, from: this);
 
   @override
@@ -201,21 +199,20 @@ abstract class _$AiCommentList extends $Notifier<List<AiComment>> {
   late final _$args = ref.$arg as MangaId;
   MangaId get mangaId => _$args;
 
-  List<AiComment> build(
-    MangaId mangaId,
-  );
+  List<AiComment> build(MangaId mangaId);
   @$mustCallSuper
   @override
   void runBuild() {
-    final created = build(
-      _$args,
-    );
+    final created = build(_$args);
     final ref = this.ref as $Ref<List<AiComment>, List<AiComment>>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<List<AiComment>, List<AiComment>>,
-        List<AiComment>,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<List<AiComment>, List<AiComment>>,
+              List<AiComment>,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

@@ -12,18 +12,20 @@ part of 'manga_repository.dart';
 @ProviderFor(mangaRepository)
 const mangaRepositoryProvider = MangaRepositoryProvider._();
 
-final class MangaRepositoryProvider extends $FunctionalProvider<MangaRepository,
-    MangaRepository, MangaRepository> with $Provider<MangaRepository> {
+final class MangaRepositoryProvider
+    extends
+        $FunctionalProvider<MangaRepository, MangaRepository, MangaRepository>
+    with $Provider<MangaRepository> {
   const MangaRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'mangaRepositoryProvider',
-          isAutoDispose: false,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'mangaRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$mangaRepositoryHash();

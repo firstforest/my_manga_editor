@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
+import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart';
 
 /// Widget that displays sync status for a manga
-/// Shows sync state icon based on online/sync status
+/// Shows sync state icon based on online/sync status using syncStatusProvider (T058)
 class SyncStatusIndicator extends ConsumerWidget {
   const SyncStatusIndicator({
     required this.mangaId,
@@ -15,18 +16,25 @@ class SyncStatusIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final syncStatusAsync = ref.watch(mangaRepositoryProvider).watchSyncStatus();
+    final syncStatusAsync = ref.watch(syncStatusProvider);
 
-    return StreamBuilder(
-      stream: syncStatusAsync,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const SizedBox.shrink();
-        }
-
-        final status = snapshot.data!;
-        return _buildStatusWidget(context, status);
-      },
+    return syncStatusAsync.when(
+      data: (status) => _buildStatusWidget(context, status),
+      loading: () => const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+        ),
+      ),
+      error: (error, _) => const Tooltip(
+        message: 'エラー',
+        child: Icon(
+          Icons.error,
+          color: Colors.red,
+          size: 20,
+        ),
+      ),
     );
   }
 
@@ -101,11 +109,20 @@ class ManualSyncButton extends ConsumerWidget {
       icon: const Icon(Icons.sync),
       tooltip: '手動同期',
       onPressed: () async {
-        await ref.read(mangaRepositoryProvider).forceSyncAll();
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('同期を開始しました')),
-          );
+        try {
+          final repo = ref.read(mangaRepositoryProvider);
+          await repo.forceSyncAll();
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('同期を開始しました')),
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('同期に失敗しました: $e')),
+            );
+          }
         }
       },
     );

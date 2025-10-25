@@ -10,6 +10,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/feature/manga/view/sync_status_indicator.dart';
 import 'package:my_manga_editor/feature/manga/view/tategaki.dart';
 
 class MangaGridPage extends HookConsumerWidget {
@@ -68,6 +69,10 @@ class MangaGridPage extends HookConsumerWidget {
             StartPageSelector(mangaId: mangaId),
           ],
         ),
+        actions: [
+          SyncStatusIndicator(mangaId: mangaId),
+          ManualSyncButton(mangaId: mangaId),
+        ],
       ),
       body: ReorderableBuilder<MangaPageId?>(
           scrollController: scrollController,

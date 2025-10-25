@@ -5,7 +5,7 @@ import 'package:file_saver/file_saver.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:markdown_quill/markdown_quill.dart';
-import 'package:my_manga_editor/logger.dart';
+import 'package:my_manga_editor/common/logger.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -94,18 +94,19 @@ class MangaPageNotifier extends _$MangaPageNotifier {
 @riverpod
 class DeltaNotifier extends _$DeltaNotifier {
   @override
-  Stream<Delta?> build(DeltaId? id) {
+  Future<Delta?> build(DeltaId? id) async {
     if (id == null) {
-      return Stream.value(null);
+      return null;
     }
-    final repo = ref.watch(mangaRepositoryProvider);
-    return repo.getDeltaStream(id);
+    final repo = ref.read(mangaRepositoryProvider);
+    return await repo.loadDelta(id);
   }
 
   void updateDelta(Delta delta) {
     if (id != null) {
       ref.read(mangaRepositoryProvider).saveDelta(id!, delta);
     }
+    state = AsyncValue.data(delta);
   }
 
   Future<String> exportPlainText() async {

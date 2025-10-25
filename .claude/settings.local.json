@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/create-new-feature.ps1 -Json -ShortName \"firebase-cloud-storage\")",
+      "WebSearch",
+      "WebFetch(domain:*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json)",
+      "Bash(npx firebase-tools login:list)",
+      "Bash(flutter pub get)",
+      "Bash(dart run build_runner build -d)",
+      "Bash(flutter run -d macos --verbose)",
+      "Bash(flutter run -d windows --verbose)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks)",
+      "Bash(flutter analyze)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json -PathsOnly)",
+      "Bash(git rev-parse --git-dir)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

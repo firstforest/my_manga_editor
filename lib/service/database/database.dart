@@ -1,68 +1,19 @@
-import 'dart:convert';
-
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_quill/quill_delta.dart';
-import 'package:my_manga_editor/logger.dart';
+import 'package:my_manga_editor/common/logger.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import 'model/db_delta.dart';
+import 'model/db_manga.dart';
+import 'model/db_manga_page.dart';
 
 part 'database.g.dart';
 
 @Riverpod(keepAlive: true)
 AppDatabase database(Ref ref) {
   return AppDatabase();
-}
-
-@DataClassName('DbManga')
-class DbMangas extends Table {
-  IntColumn get id => integer().autoIncrement()();
-
-  TextColumn get name => text()();
-
-  IntColumn get startPage => intEnum<MangaStartPage>()();
-
-  IntColumn get ideaMemo => integer().references(DbDeltas, #id)();
-}
-
-class DbMangaPages extends Table {
-  IntColumn get id => integer().autoIncrement()();
-
-  IntColumn get mangaId =>
-      integer().references(DbMangas, #id, onDelete: KeyAction.cascade)();
-
-  IntColumn get pageIndex => integer()();
-
-  @ReferenceName('memoDelta')
-  IntColumn get memoDelta => integer().references(DbDeltas, #id)();
-
-  @ReferenceName('stageDirectionDelta')
-  IntColumn get stageDirectionDelta => integer().references(DbDeltas, #id)();
-
-  @ReferenceName('dialoguesDelta')
-  IntColumn get dialoguesDelta => integer().references(DbDeltas, #id)();
-}
-
-@DataClassName('DbDelta')
-class DbDeltas extends Table {
-  IntColumn get id => integer().autoIncrement()();
-
-  TextColumn get delta => text().map(const QuillDeltaConverter())();
-}
-
-class QuillDeltaConverter extends TypeConverter<Delta, String>
-    with JsonTypeConverter<Delta, String> {
-  const QuillDeltaConverter();
-
-  @override
-  Delta fromSql(String fromDb) {
-    return Delta.fromJson(json.decode(fromDb));
-  }
-
-  @override
-  String toSql(Delta value) {
-    return json.encode(value.toJson());
-  }
 }
 
 @DriftDatabase(tables: [DbMangas, DbMangaPages, DbDeltas])
@@ -74,10 +25,10 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        beforeOpen: (details) async {
-          await customStatement('PRAGMA foreign_keys = ON');
-        },
-      );
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
 
   static QueryExecutor _openConnection() {
     return driftDatabase(
@@ -160,22 +111,24 @@ class MangaDao extends DatabaseAccessor<AppDatabase> with _$MangaDaoMixin {
   }
 
   Future updateManga(MangaId id, DbMangasCompanion dbMangasCompanion) async {
-    return (update(dbMangas)..where((t) => t.id.equals(id)))
-        .write(dbMangasCompanion);
+    return (update(
+      dbMangas,
+    )..where((t) => t.id.equals(id))).write(dbMangasCompanion);
   }
 
   Future<void> deleteMangaPage(int pageId) {
     return transaction(() async {
-      final page = await (select(dbMangaPages)
-            ..where((t) => t.id.equals(pageId)))
-          .getSingle();
+      final page = await (select(
+        dbMangaPages,
+      )..where((t) => t.id.equals(pageId))).getSingle();
       await (delete(dbMangaPages)..where((t) => t.id.equals(pageId))).go();
       await (delete(dbDeltas)..where((t) => t.id.equals(page.memoDelta))).go();
-      await (delete(dbDeltas)
-            ..where((t) => t.id.equals(page.stageDirectionDelta)))
-          .go();
-      await (delete(dbDeltas)..where((t) => t.id.equals(page.dialoguesDelta)))
-          .go();
+      await (delete(
+        dbDeltas,
+      )..where((t) => t.id.equals(page.stageDirectionDelta))).go();
+      await (delete(
+        dbDeltas,
+      )..where((t) => t.id.equals(page.dialoguesDelta))).go();
     });
   }
 

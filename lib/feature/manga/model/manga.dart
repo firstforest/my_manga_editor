@@ -38,6 +38,7 @@ abstract class Manga with _$Manga {
 abstract class MangaPage with _$MangaPage {
   const factory MangaPage({
     required MangaPageId id,
+    required MangaId mangaId,
     required DeltaId memoDelta,
     required DeltaId stageDirectionDelta,
     required DeltaId dialoguesDelta,

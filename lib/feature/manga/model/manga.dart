@@ -14,9 +14,16 @@ enum MangaStartPage {
       };
 }
 
-typedef MangaId = int;
-typedef MangaPageId = int;
-typedef DeltaId = int;
+/// Helper extension for MangaStartPage enum conversion
+extension MangaStartPageExt on MangaStartPage {
+  static MangaStartPage fromString(String value) {
+    return MangaStartPage.values.firstWhere((e) => e.name == value);
+  }
+}
+
+typedef MangaId = String; // Changed from int to String for Firestore compatibility
+typedef MangaPageId = String; // Changed from int to String for Firestore compatibility
+typedef DeltaId = int; // Kept as int for in-memory cache reference
 
 @freezed
 abstract class Manga with _$Manga {

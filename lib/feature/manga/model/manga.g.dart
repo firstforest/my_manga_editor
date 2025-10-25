@@ -7,7 +7,7 @@ part of 'manga.dart';
 // **************************************************************************
 
 _Manga _$MangaFromJson(Map<String, dynamic> json) => _Manga(
-      id: (json['id'] as num).toInt(),
+      id: json['id'] as String,
       name: json['name'] as String,
       startPage: $enumDecode(_$MangaStartPageEnumMap, json['startPage']),
       ideaMemo: (json['ideaMemo'] as num).toInt(),
@@ -26,7 +26,7 @@ const _$MangaStartPageEnumMap = {
 };
 
 _MangaPage _$MangaPageFromJson(Map<String, dynamic> json) => _MangaPage(
-      id: (json['id'] as num).toInt(),
+      id: json['id'] as String,
       memoDelta: (json['memoDelta'] as num).toInt(),
       stageDirectionDelta: (json['stageDirectionDelta'] as num).toInt(),
       dialoguesDelta: (json['dialoguesDelta'] as num).toInt(),

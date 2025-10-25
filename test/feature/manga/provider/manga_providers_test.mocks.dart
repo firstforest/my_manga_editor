@@ -5,9 +5,9 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
 
-import 'package:flutter_quill/quill_delta.dart' as _i5;
+import 'package:flutter_quill/quill_delta.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i6;
+import 'package:mockito/src/dummies.dart' as _i5;
 import 'package:my_manga_editor/feature/manga/model/manga.dart' as _i3;
 import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart'
     as _i2;
@@ -34,11 +34,11 @@ import 'package:my_manga_editor/service/firebase/model/cloud_manga_page.dart'
 /// See the documentation for Mockito's code generation for more information.
 class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
   @override
-  Map<int, _i3.MangaPage> get pages => (super.noSuchMethod(
+  Map<String, _i3.MangaPage> get pages => (super.noSuchMethod(
         Invocation.getter(#pages),
-        returnValue: <int, _i3.MangaPage>{},
-        returnValueForMissingStub: <int, _i3.MangaPage>{},
-      ) as Map<int, _i3.MangaPage>);
+        returnValue: <String, _i3.MangaPage>{},
+        returnValueForMissingStub: <String, _i3.MangaPage>{},
+      ) as Map<String, _i3.MangaPage>);
 
   @override
   _i4.Future<void> saveManga(
@@ -58,14 +58,27 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<int> createNewManga() => (super.noSuchMethod(
+  _i4.Future<String> createNewManga() => (super.noSuchMethod(
         Invocation.method(
           #createNewManga,
           [],
         ),
-        returnValue: _i4.Future<int>.value(0),
-        returnValueForMissingStub: _i4.Future<int>.value(0),
-      ) as _i4.Future<int>);
+        returnValue: _i4.Future<String>.value(_i5.dummyValue<String>(
+          this,
+          Invocation.method(
+            #createNewManga,
+            [],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i4.Future<String>.value(_i5.dummyValue<String>(
+          this,
+          Invocation.method(
+            #createNewManga,
+            [],
+          ),
+        )),
+      ) as _i4.Future<String>);
 
   @override
   _i4.Future<_i3.Manga?> loadManga(String? fileName) => (super.noSuchMethod(
@@ -98,7 +111,8 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Stream<_i3.MangaPage?> getMangaPageStream(int? id) => (super.noSuchMethod(
+  _i4.Stream<_i3.MangaPage?> getMangaPageStream(String? id) =>
+      (super.noSuchMethod(
         Invocation.method(
           #getMangaPageStream,
           [id],
@@ -128,29 +142,29 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i4.Stream<List<_i3.Manga>>);
 
   @override
-  _i4.Future<_i5.Delta?> loadDelta(int? id) => (super.noSuchMethod(
+  _i4.Future<_i6.Delta?> loadDelta(int? id) => (super.noSuchMethod(
         Invocation.method(
           #loadDelta,
           [id],
         ),
-        returnValue: _i4.Future<_i5.Delta?>.value(),
-        returnValueForMissingStub: _i4.Future<_i5.Delta?>.value(),
-      ) as _i4.Future<_i5.Delta?>);
+        returnValue: _i4.Future<_i6.Delta?>.value(),
+        returnValueForMissingStub: _i4.Future<_i6.Delta?>.value(),
+      ) as _i4.Future<_i6.Delta?>);
 
   @override
-  _i4.Stream<_i5.Delta?> getDeltaStream(int? id) => (super.noSuchMethod(
+  _i4.Stream<_i6.Delta?> getDeltaStream(int? id) => (super.noSuchMethod(
         Invocation.method(
           #getDeltaStream,
           [id],
         ),
-        returnValue: _i4.Stream<_i5.Delta?>.empty(),
-        returnValueForMissingStub: _i4.Stream<_i5.Delta?>.empty(),
-      ) as _i4.Stream<_i5.Delta?>);
+        returnValue: _i4.Stream<_i6.Delta?>.empty(),
+        returnValueForMissingStub: _i4.Stream<_i6.Delta?>.empty(),
+      ) as _i4.Stream<_i6.Delta?>);
 
   @override
   void saveDelta(
     int? id,
-    _i5.Delta? delta,
+    _i6.Delta? delta,
   ) =>
       super.noSuchMethod(
         Invocation.method(
@@ -164,7 +178,7 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       );
 
   @override
-  _i4.Future<void> createNewMangaPage(int? mangaId) => (super.noSuchMethod(
+  _i4.Future<void> createNewMangaPage(String? mangaId) => (super.noSuchMethod(
         Invocation.method(
           #createNewMangaPage,
           [mangaId],
@@ -174,20 +188,20 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Stream<List<int>> watchAllMangaPageIdList(int? mangaId) =>
+  _i4.Stream<List<String>> watchAllMangaPageIdList(String? mangaId) =>
       (super.noSuchMethod(
         Invocation.method(
           #watchAllMangaPageIdList,
           [mangaId],
         ),
-        returnValue: _i4.Stream<List<int>>.empty(),
-        returnValueForMissingStub: _i4.Stream<List<int>>.empty(),
-      ) as _i4.Stream<List<int>>);
+        returnValue: _i4.Stream<List<String>>.empty(),
+        returnValueForMissingStub: _i4.Stream<List<String>>.empty(),
+      ) as _i4.Stream<List<String>>);
 
   @override
   _i4.Future<void> reorderPages(
-    int? id,
-    List<int>? pageIdList,
+    String? id,
+    List<String>? pageIdList,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -203,7 +217,7 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
 
   @override
   _i4.Future<void> updateMangaName(
-    int? id,
+    String? id,
     String? name,
   ) =>
       (super.noSuchMethod(
@@ -256,12 +270,12 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<String> toMarkdown(int? mangaId) => (super.noSuchMethod(
+  _i4.Future<String> toMarkdown(String? mangaId) => (super.noSuchMethod(
         Invocation.method(
           #toMarkdown,
           [mangaId],
         ),
-        returnValue: _i4.Future<String>.value(_i6.dummyValue<String>(
+        returnValue: _i4.Future<String>.value(_i5.dummyValue<String>(
           this,
           Invocation.method(
             #toMarkdown,
@@ -269,7 +283,7 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
           ),
         )),
         returnValueForMissingStub:
-            _i4.Future<String>.value(_i6.dummyValue<String>(
+            _i4.Future<String>.value(_i5.dummyValue<String>(
           this,
           Invocation.method(
             #toMarkdown,
@@ -303,20 +317,33 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i4.Future<int>);
 
   @override
-  _i4.Future<int> downloadCloudManga(_i7.CloudManga? cloudManga) =>
+  _i4.Future<String> downloadCloudManga(_i7.CloudManga? cloudManga) =>
       (super.noSuchMethod(
         Invocation.method(
           #downloadCloudManga,
           [cloudManga],
         ),
-        returnValue: _i4.Future<int>.value(0),
-        returnValueForMissingStub: _i4.Future<int>.value(0),
-      ) as _i4.Future<int>);
+        returnValue: _i4.Future<String>.value(_i5.dummyValue<String>(
+          this,
+          Invocation.method(
+            #downloadCloudManga,
+            [cloudManga],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i4.Future<String>.value(_i5.dummyValue<String>(
+          this,
+          Invocation.method(
+            #downloadCloudManga,
+            [cloudManga],
+          ),
+        )),
+      ) as _i4.Future<String>);
 
   @override
   _i4.Future<void> downloadCloudMangaPage(
     _i8.CloudMangaPage? cloudPage,
-    int? mangaId,
+    String? mangaId,
   ) =>
       (super.noSuchMethod(
         Invocation.method(

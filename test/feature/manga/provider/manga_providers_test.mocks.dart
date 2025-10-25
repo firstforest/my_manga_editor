@@ -110,11 +110,11 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i3.Future<void>);
 
   @override
-  void saveDelta(
+  _i3.Future<void> saveDelta(
     _i4.DeltaId? id,
     _i6.Delta? delta,
   ) =>
-      super.noSuchMethod(
+      (super.noSuchMethod(
         Invocation.method(
           #saveDelta,
           [
@@ -122,8 +122,9 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
             delta,
           ],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 
   @override
   _i3.Future<_i6.Delta?> loadDelta(_i4.DeltaId? id) => (super.noSuchMethod(

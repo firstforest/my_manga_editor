@@ -2,22 +2,47 @@ import 'dart:async';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
 
+/// Metadata for tracking delta ownership and sync state
+class DeltaMetadata {
+  final DeltaId deltaId;
+  final MangaId? mangaId;       // Parent manga ID (for ideaMemo or page deltas)
+  final MangaPageId? pageId;     // Page ID (for page deltas like memoDelta, etc.)
+  final String fieldName;        // 'ideaMemo', 'memoDelta', 'stageDirectionDelta', 'dialoguesDelta'
+  bool needsSync = false;
+
+  DeltaMetadata({
+    required this.deltaId,
+    required this.fieldName,
+    this.mangaId,
+    this.pageId,
+  });
+}
+
 /// In-memory cache for Delta objects referenced by DeltaId
 ///
 /// This cache bridges between Firestore's embedded delta storage (Map)
 /// and the domain model's DeltaId reference pattern (int).
+/// Also tracks delta metadata for cloud sync.
 class DeltaCache {
   final Map<DeltaId, Delta> _cache = {};
   final Map<DeltaId, StreamController<Delta?>> _controllers = {};
+  final Map<DeltaId, DeltaMetadata> _metadata = {};
   DeltaId _nextId = DeltaId(1);
 
   /// Store a Delta and return its DeltaId
   ///
   /// The Delta is cached in memory and assigned an auto-incrementing integer ID.
   /// This ID can be used to retrieve the Delta later via [getDelta] or [getDeltaStream].
-  DeltaId storeDelta(Delta delta) {
+  /// Optional metadata tracks ownership for cloud sync.
+  DeltaId storeDelta(Delta delta, {DeltaMetadata? metadata}) {
     final id = DeltaId(_nextId.id + 1);
     _cache[id] = delta;
+
+    // Store metadata if provided
+    if (metadata != null) {
+      _metadata[id] = metadata;
+    }
+
     // If there's an existing stream controller for this ID, emit the delta
     if (_controllers.containsKey(id)) {
       _controllers[id]!.add(delta);
@@ -46,11 +71,43 @@ class DeltaCache {
   /// Update Delta and notify listeners
   ///
   /// Updates the cached delta and emits the new value to all stream listeners.
-  void updateDelta(DeltaId id, Delta delta) {
+  /// Marks delta as needing sync if provided.
+  void updateDelta(DeltaId id, Delta delta, {bool markForSync = true}) {
     _cache[id] = delta;
+
+    // Mark for sync if metadata exists
+    if (markForSync && _metadata.containsKey(id)) {
+      _metadata[id]!.needsSync = true;
+    }
+
     // Notify stream listeners
     if (_controllers.containsKey(id)) {
       _controllers[id]!.add(delta);
+    }
+  }
+
+  /// Get metadata for a delta
+  DeltaMetadata? getMetadata(DeltaId id) => _metadata[id];
+
+  /// Mark delta as needing sync
+  void markForSync(DeltaId id) {
+    if (_metadata.containsKey(id)) {
+      _metadata[id]!.needsSync = true;
+    }
+  }
+
+  /// Get all deltas that need sync
+  List<DeltaId> getDeltasNeedingSync() {
+    return _metadata.entries
+        .where((e) => e.value.needsSync)
+        .map((e) => e.key)
+        .toList();
+  }
+
+  /// Mark delta as synced
+  void markSynced(DeltaId id) {
+    if (_metadata.containsKey(id)) {
+      _metadata[id]!.needsSync = false;
     }
   }
 
@@ -60,6 +117,7 @@ class DeltaCache {
   /// This is primarily for testing purposes.
   void clearCache() {
     _cache.clear();
+    _metadata.clear();
     for (final controller in _controllers.values) {
       controller.close();
     }

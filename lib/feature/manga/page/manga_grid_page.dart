@@ -43,7 +43,7 @@ class MangaGridPage extends HookConsumerWidget {
     final generatedChildren = list
         .mapIndexed((index, id) => id != null
             ? MangaGridPageView(
-                key: ValueKey('$id'),
+                key: ValueKey(id),
                 mangaPageId: id,
                 pageNumber: switch (startPage) {
                   MangaStartPage.left => index,

@@ -12,7 +12,6 @@ abstract class CloudManga with _$CloudManga {
     required String userId, // Owner UID
     required String name, // Manga title
     required String startPageDirection, // 'left' or 'right'
-    required Map<String, dynamic> ideaMemo, // Quill Delta as Map
     required DateTime createdAt, // Creation timestamp
     required DateTime updatedAt, // Last modification timestamp
     @JsonKey(name: 'editLock') EditLock? editLock, // Optional edit lock
@@ -29,7 +28,6 @@ extension CloudMangaExt on CloudManga {
       'userId': userId,
       'name': name,
       'startPageDirection': startPageDirection,
-      'ideaMemo': ideaMemo,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
       if (editLock != null) 'editLock': editLock!.toJson(),
@@ -46,7 +44,6 @@ extension CloudMangaExt on CloudManga {
       userId: data['userId'] as String,
       name: data['name'] as String,
       startPageDirection: data['startPageDirection'] as String,
-      ideaMemo: data['ideaMemo'] as Map<String, dynamic>,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
       editLock: data['editLock'] != null

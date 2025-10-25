@@ -10,9 +10,6 @@ abstract class CloudMangaPage with _$CloudMangaPage {
     required String id, // Firestore document ID
     required String mangaId, // Parent manga ID
     required int pageIndex, // Page order (0-based)
-    required Map<String, dynamic> memoDelta, // Quill Delta for memo
-    required Map<String, dynamic> stageDirectionDelta, // Quill Delta for stage directions
-    required Map<String, dynamic> dialoguesDelta, // Quill Delta for dialogues
     required DateTime createdAt, // Creation timestamp
     required DateTime updatedAt, // Last modification timestamp
   }) = _CloudMangaPage;
@@ -25,9 +22,6 @@ extension CloudMangaPageExt on CloudMangaPage {
   Map<String, dynamic> toFirestore() {
     return {
       'pageIndex': pageIndex,
-      'memoDelta': memoDelta,
-      'stageDirectionDelta': stageDirectionDelta,
-      'dialoguesDelta': dialoguesDelta,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
@@ -42,9 +36,6 @@ extension CloudMangaPageExt on CloudMangaPage {
       id: snapshot.id,
       mangaId: mangaId,
       pageIndex: data['pageIndex'] as int,
-      memoDelta: data['memoDelta'] as Map<String, dynamic>,
-      stageDirectionDelta: data['stageDirectionDelta'] as Map<String, dynamic>,
-      dialoguesDelta: data['dialoguesDelta'] as Map<String, dynamic>,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );

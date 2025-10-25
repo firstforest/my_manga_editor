@@ -18,7 +18,6 @@ mixin _$CloudManga {
   String get userId; // Owner UID
   String get name; // Manga title
   String get startPageDirection; // 'left' or 'right'
-  Map<String, dynamic> get ideaMemo; // Quill Delta as Map
   DateTime get createdAt; // Creation timestamp
   DateTime get updatedAt; // Last modification timestamp
   @JsonKey(name: 'editLock')
@@ -44,7 +43,6 @@ mixin _$CloudManga {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.startPageDirection, startPageDirection) ||
                 other.startPageDirection == startPageDirection) &&
-            const DeepCollectionEquality().equals(other.ideaMemo, ideaMemo) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -55,20 +53,12 @@ mixin _$CloudManga {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      userId,
-      name,
-      startPageDirection,
-      const DeepCollectionEquality().hash(ideaMemo),
-      createdAt,
-      updatedAt,
-      editLock);
+  int get hashCode => Object.hash(runtimeType, id, userId, name,
+      startPageDirection, createdAt, updatedAt, editLock);
 
   @override
   String toString() {
-    return 'CloudManga(id: $id, userId: $userId, name: $name, startPageDirection: $startPageDirection, ideaMemo: $ideaMemo, createdAt: $createdAt, updatedAt: $updatedAt, editLock: $editLock)';
+    return 'CloudManga(id: $id, userId: $userId, name: $name, startPageDirection: $startPageDirection, createdAt: $createdAt, updatedAt: $updatedAt, editLock: $editLock)';
   }
 }
 
@@ -83,7 +73,6 @@ abstract mixin class $CloudMangaCopyWith<$Res> {
       String userId,
       String name,
       String startPageDirection,
-      Map<String, dynamic> ideaMemo,
       DateTime createdAt,
       DateTime updatedAt,
       @JsonKey(name: 'editLock') EditLock? editLock});
@@ -107,7 +96,6 @@ class _$CloudMangaCopyWithImpl<$Res> implements $CloudMangaCopyWith<$Res> {
     Object? userId = null,
     Object? name = null,
     Object? startPageDirection = null,
-    Object? ideaMemo = null,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? editLock = freezed,
@@ -129,10 +117,6 @@ class _$CloudMangaCopyWithImpl<$Res> implements $CloudMangaCopyWith<$Res> {
           ? _self.startPageDirection
           : startPageDirection // ignore: cast_nullable_to_non_nullable
               as String,
-      ideaMemo: null == ideaMemo
-          ? _self.ideaMemo
-          : ideaMemo // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -261,7 +245,6 @@ extension CloudMangaPatterns on CloudManga {
             String userId,
             String name,
             String startPageDirection,
-            Map<String, dynamic> ideaMemo,
             DateTime createdAt,
             DateTime updatedAt,
             @JsonKey(name: 'editLock') EditLock? editLock)?
@@ -276,7 +259,6 @@ extension CloudMangaPatterns on CloudManga {
             _that.userId,
             _that.name,
             _that.startPageDirection,
-            _that.ideaMemo,
             _that.createdAt,
             _that.updatedAt,
             _that.editLock);
@@ -305,7 +287,6 @@ extension CloudMangaPatterns on CloudManga {
             String userId,
             String name,
             String startPageDirection,
-            Map<String, dynamic> ideaMemo,
             DateTime createdAt,
             DateTime updatedAt,
             @JsonKey(name: 'editLock') EditLock? editLock)
@@ -319,7 +300,6 @@ extension CloudMangaPatterns on CloudManga {
             _that.userId,
             _that.name,
             _that.startPageDirection,
-            _that.ideaMemo,
             _that.createdAt,
             _that.updatedAt,
             _that.editLock);
@@ -347,7 +327,6 @@ extension CloudMangaPatterns on CloudManga {
             String userId,
             String name,
             String startPageDirection,
-            Map<String, dynamic> ideaMemo,
             DateTime createdAt,
             DateTime updatedAt,
             @JsonKey(name: 'editLock') EditLock? editLock)?
@@ -361,7 +340,6 @@ extension CloudMangaPatterns on CloudManga {
             _that.userId,
             _that.name,
             _that.startPageDirection,
-            _that.ideaMemo,
             _that.createdAt,
             _that.updatedAt,
             _that.editLock);
@@ -379,11 +357,9 @@ class _CloudManga implements CloudManga {
       required this.userId,
       required this.name,
       required this.startPageDirection,
-      required final Map<String, dynamic> ideaMemo,
       required this.createdAt,
       required this.updatedAt,
-      @JsonKey(name: 'editLock') this.editLock})
-      : _ideaMemo = ideaMemo;
+      @JsonKey(name: 'editLock') this.editLock});
   factory _CloudManga.fromJson(Map<String, dynamic> json) =>
       _$CloudMangaFromJson(json);
 
@@ -399,16 +375,6 @@ class _CloudManga implements CloudManga {
   @override
   final String startPageDirection;
 // 'left' or 'right'
-  final Map<String, dynamic> _ideaMemo;
-// 'left' or 'right'
-  @override
-  Map<String, dynamic> get ideaMemo {
-    if (_ideaMemo is EqualUnmodifiableMapView) return _ideaMemo;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_ideaMemo);
-  }
-
-// Quill Delta as Map
   @override
   final DateTime createdAt;
 // Creation timestamp
@@ -444,7 +410,6 @@ class _CloudManga implements CloudManga {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.startPageDirection, startPageDirection) ||
                 other.startPageDirection == startPageDirection) &&
-            const DeepCollectionEquality().equals(other._ideaMemo, _ideaMemo) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -455,20 +420,12 @@ class _CloudManga implements CloudManga {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      userId,
-      name,
-      startPageDirection,
-      const DeepCollectionEquality().hash(_ideaMemo),
-      createdAt,
-      updatedAt,
-      editLock);
+  int get hashCode => Object.hash(runtimeType, id, userId, name,
+      startPageDirection, createdAt, updatedAt, editLock);
 
   @override
   String toString() {
-    return 'CloudManga(id: $id, userId: $userId, name: $name, startPageDirection: $startPageDirection, ideaMemo: $ideaMemo, createdAt: $createdAt, updatedAt: $updatedAt, editLock: $editLock)';
+    return 'CloudManga(id: $id, userId: $userId, name: $name, startPageDirection: $startPageDirection, createdAt: $createdAt, updatedAt: $updatedAt, editLock: $editLock)';
   }
 }
 
@@ -485,7 +442,6 @@ abstract mixin class _$CloudMangaCopyWith<$Res>
       String userId,
       String name,
       String startPageDirection,
-      Map<String, dynamic> ideaMemo,
       DateTime createdAt,
       DateTime updatedAt,
       @JsonKey(name: 'editLock') EditLock? editLock});
@@ -510,7 +466,6 @@ class __$CloudMangaCopyWithImpl<$Res> implements _$CloudMangaCopyWith<$Res> {
     Object? userId = null,
     Object? name = null,
     Object? startPageDirection = null,
-    Object? ideaMemo = null,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? editLock = freezed,
@@ -532,10 +487,6 @@ class __$CloudMangaCopyWithImpl<$Res> implements _$CloudMangaCopyWith<$Res> {
           ? _self.startPageDirection
           : startPageDirection // ignore: cast_nullable_to_non_nullable
               as String,
-      ideaMemo: null == ideaMemo
-          ? _self._ideaMemo
-          : ideaMemo // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable

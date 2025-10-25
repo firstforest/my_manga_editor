@@ -11,7 +11,6 @@ _CloudManga _$CloudMangaFromJson(Map<String, dynamic> json) => _CloudManga(
       userId: json['userId'] as String,
       name: json['name'] as String,
       startPageDirection: json['startPageDirection'] as String,
-      ideaMemo: json['ideaMemo'] as Map<String, dynamic>,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       editLock: json['editLock'] == null
@@ -25,7 +24,6 @@ Map<String, dynamic> _$CloudMangaToJson(_CloudManga instance) =>
       'userId': instance.userId,
       'name': instance.name,
       'startPageDirection': instance.startPageDirection,
-      'ideaMemo': instance.ideaMemo,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
       'editLock': instance.editLock,

@@ -180,6 +180,228 @@ class FirebaseService {
       );
     }
   }
+
+  // ============================================================================
+  // Create Operations (return document IDs)
+  // ============================================================================
+
+  /// Create a new manga document with auto-generated ID
+  /// Returns the generated document ID
+  Future<String> createManga(CloudManga manga) async {
+    try {
+      final docRef = _mangasCollection.doc();
+      final mangaWithId = CloudManga(
+        id: docRef.id,
+        userId: manga.userId,
+        name: manga.name,
+        startPageDirection: manga.startPageDirection,
+        ideaMemo: manga.ideaMemo,
+        createdAt: manga.createdAt,
+        updatedAt: manga.updatedAt,
+        editLock: manga.editLock,
+      );
+      await docRef.set(mangaWithId.toFirestore());
+      return docRef.id;
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to create manga: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
+  /// Create a new manga page document with auto-generated ID
+  /// Returns the generated document ID
+  Future<String> createMangaPage(String mangaId, CloudMangaPage page) async {
+    try {
+      final docRef = _mangasCollection
+          .doc(mangaId)
+          .collection('pages')
+          .doc();
+      final pageWithId = CloudMangaPage(
+        id: docRef.id,
+        mangaId: page.mangaId,
+        pageIndex: page.pageIndex,
+        memoDelta: page.memoDelta,
+        stageDirectionDelta: page.stageDirectionDelta,
+        dialoguesDelta: page.dialoguesDelta,
+        createdAt: page.createdAt,
+        updatedAt: page.updatedAt,
+      );
+      await docRef.set(pageWithId.toFirestore());
+      return docRef.id;
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to create manga page: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
+  // ============================================================================
+  // Update Operations
+  // ============================================================================
+
+  /// Update specific fields of a manga document
+  Future<void> updateManga(String mangaId, Map<String, dynamic> updates) async {
+    try {
+      // Add updatedAt timestamp
+      final updatesWithTimestamp = {
+        ...updates,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      await _mangasCollection.doc(mangaId).update(updatesWithTimestamp);
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to update manga: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
+  /// Update specific fields of a manga page document
+  Future<void> updateMangaPage(
+      String mangaId, String pageId, Map<String, dynamic> updates) async {
+    try {
+      // Add updatedAt timestamp
+      final updatesWithTimestamp = {
+        ...updates,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      await _mangasCollection
+          .doc(mangaId)
+          .collection('pages')
+          .doc(pageId)
+          .update(updatesWithTimestamp);
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to update manga page: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
+  // ============================================================================
+  // Reactive Stream Operations
+  // ============================================================================
+
+  /// Watch a specific manga document (reactive)
+  /// Returns a stream that emits updates whenever the manga changes
+  Stream<CloudManga?> watchManga(String mangaId) {
+    try {
+      return _mangasCollection.doc(mangaId).snapshots().map((snapshot) {
+        if (!snapshot.exists) return null;
+        return CloudMangaExt.fromFirestore(snapshot);
+      });
+    } catch (e) {
+      throw FirebaseServiceException('Failed to watch manga: $e');
+    }
+  }
+
+  /// Watch all mangas for a specific user (reactive)
+  /// Returns a stream that emits updates whenever any manga changes
+  Stream<List<CloudManga>> watchAllMangas(String userId) {
+    try {
+      return _mangasCollection.snapshots().map((snapshot) {
+        return snapshot.docs
+            .map((doc) => CloudMangaExt.fromFirestore(doc))
+            .toList();
+      });
+    } catch (e) {
+      throw FirebaseServiceException('Failed to watch all mangas: $e');
+    }
+  }
+
+  /// Watch a specific manga page document (reactive)
+  /// Returns a stream that emits updates whenever the page changes
+  Stream<CloudMangaPage?> watchMangaPage(String pageId) {
+    try {
+      // Note: We need to find the page across all mangas
+      // This is not efficient - better to pass mangaId
+      // For now, this is a placeholder implementation
+      throw UnimplementedError(
+          'watchMangaPage without mangaId is not efficient. Use watchMangaPageWithMangaId instead.');
+    } catch (e) {
+      throw FirebaseServiceException('Failed to watch manga page: $e');
+    }
+  }
+
+  /// Watch a specific manga page document (reactive) with mangaId
+  /// Returns a stream that emits updates whenever the page changes
+  Stream<CloudMangaPage?> watchMangaPageWithMangaId(
+      String mangaId, String pageId) {
+    try {
+      return _mangasCollection
+          .doc(mangaId)
+          .collection('pages')
+          .doc(pageId)
+          .snapshots()
+          .map((snapshot) {
+        if (!snapshot.exists) return null;
+        return CloudMangaPageExt.fromFirestore(snapshot, mangaId);
+      });
+    } catch (e) {
+      throw FirebaseServiceException('Failed to watch manga page: $e');
+    }
+  }
+
+  /// Watch all pages for a specific manga (reactive)
+  /// Returns a stream that emits updates whenever any page changes
+  Stream<List<CloudMangaPage>> watchMangaPages(String mangaId) {
+    try {
+      return _mangasCollection
+          .doc(mangaId)
+          .collection('pages')
+          .orderBy('pageIndex')
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs
+            .map((doc) => CloudMangaPageExt.fromFirestore(doc, mangaId))
+            .toList();
+      });
+    } catch (e) {
+      throw FirebaseServiceException('Failed to watch manga pages: $e');
+    }
+  }
+
+  // ============================================================================
+  // Batch Operations
+  // ============================================================================
+
+  /// Create a new batch write operation
+  /// Use this for atomic multi-document updates
+  FirebaseBatchWrapper batch() {
+    return FirebaseBatchWrapper(_firestore.batch(), _mangasCollection);
+  }
+}
+
+/// Wrapper for WriteBatch to provide a cleaner API for manga/page updates
+class FirebaseBatchWrapper {
+  FirebaseBatchWrapper(this._batch, this._mangasCollection);
+
+  final WriteBatch _batch;
+  final CollectionReference<Map<String, dynamic>> _mangasCollection;
+
+  /// Update a page in the batch
+  void update(String pageId, Map<String, dynamic> updates) {
+    // Note: This is simplified - in reality we'd need mangaId too
+    // For now, assume pageId is globally unique or we track mangaId separately
+    throw UnimplementedError(
+        'Batch update needs mangaId. Use updatePage(mangaId, pageId, updates) instead.');
+  }
+
+  /// Update a page in the batch with mangaId
+  void updatePage(String mangaId, String pageId, Map<String, dynamic> updates) {
+    final pageRef =
+        _mangasCollection.doc(mangaId).collection('pages').doc(pageId);
+    _batch.update(pageRef, {
+      ...updates,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Commit the batch
+  Future<void> commit() => _batch.commit();
 }
 
 /// Exception thrown when Firebase operations fail

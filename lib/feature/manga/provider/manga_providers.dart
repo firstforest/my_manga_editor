@@ -7,6 +7,7 @@ import 'package:flutter_quill/quill_delta.dart';
 import 'package:markdown_quill/markdown_quill.dart';
 import 'package:my_manga_editor/common/logger.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
+import 'package:my_manga_editor/feature/manga/model/sync_status.dart';
 import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -20,6 +21,11 @@ Stream<List<Manga>> allMangaList(Ref ref) {
 @riverpod
 Stream<List<MangaPageId>> mangaPageIdList(Ref ref, MangaId mangaId) {
   return ref.watch(mangaRepositoryProvider).watchAllMangaPageIdList(mangaId);
+}
+
+@riverpod
+Stream<SyncStatus> syncStatus(Ref ref) {
+  return ref.watch(mangaRepositoryProvider).watchSyncStatus();
 }
 
 @riverpod

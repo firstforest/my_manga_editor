@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:my_manga_editor/service/firebase/model/cloud_delta.dart';
 import 'package:my_manga_editor/service/firebase/model/cloud_manga.dart';
 import 'package:my_manga_editor/service/firebase/model/cloud_manga_page.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -31,6 +32,11 @@ class FirebaseService {
   /// Get reference to user's mangas collection
   CollectionReference<Map<String, dynamic>> get _mangasCollection {
     return _firestore.collection('users').doc(_userId).collection('mangas');
+  }
+
+  /// Get reference to deltas subcollection of a manga
+  CollectionReference<Map<String, dynamic>> _deltasCollection(String mangaId) {
+    return _mangasCollection.doc(mangaId).collection('deltas');
   }
 
   /// Upload a manga to Firestore
@@ -66,12 +72,18 @@ class FirebaseService {
   }
 
   /// Delete a manga and all its pages from Firestore
-  /// Uses batch write to delete manga document and all page subcollection documents
+  /// Uses batch write to delete manga document and all subcollection documents
   Future<void> deleteManga(String mangaId) async {
     try {
       final batch = _firestore.batch();
 
-      // Delete all pages first
+      // Delete all deltas first
+      final deltasSnapshot = await _deltasCollection(mangaId).get();
+      for (final doc in deltasSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Delete all pages
       final pagesSnapshot =
           await _mangasCollection.doc(mangaId).collection('pages').get();
       for (final doc in pagesSnapshot.docs) {
@@ -195,7 +207,6 @@ class FirebaseService {
         userId: manga.userId,
         name: manga.name,
         startPageDirection: manga.startPageDirection,
-        ideaMemo: manga.ideaMemo,
         createdAt: manga.createdAt,
         updatedAt: manga.updatedAt,
         editLock: manga.editLock,
@@ -222,9 +233,6 @@ class FirebaseService {
         id: docRef.id,
         mangaId: page.mangaId,
         pageIndex: page.pageIndex,
-        memoDelta: page.memoDelta,
-        stageDirectionDelta: page.stageDirectionDelta,
-        dialoguesDelta: page.dialoguesDelta,
         createdAt: page.createdAt,
         updatedAt: page.updatedAt,
       );
@@ -361,6 +369,119 @@ class FirebaseService {
       });
     } catch (e) {
       throw FirebaseServiceException('Failed to watch manga pages: $e');
+    }
+  }
+
+  // ============================================================================
+  // Delta CRUD Operations
+  // ============================================================================
+
+  /// Create a new delta document with auto-generated ID
+  /// Returns the generated document ID
+  Future<String> createDelta(String mangaId, CloudDelta delta) async {
+    try {
+      final docRef = _deltasCollection(mangaId).doc();
+      final deltaWithId = CloudDelta(
+        id: docRef.id,
+        mangaId: mangaId,
+        ops: delta.ops,
+        fieldName: delta.fieldName,
+        pageId: delta.pageId,
+        createdAt: delta.createdAt,
+        updatedAt: delta.updatedAt,
+      );
+      await docRef.set(deltaWithId.toFirestore());
+      return docRef.id;
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to create delta: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
+  /// Update a delta document
+  Future<void> updateDelta(
+      String mangaId, String deltaId, Map<String, dynamic> updates) async {
+    try {
+      final updatesWithTimestamp = {
+        ...updates,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      await _deltasCollection(mangaId).doc(deltaId).update(updatesWithTimestamp);
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to update delta: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
+  /// Delete a delta document
+  Future<void> deleteDelta(String mangaId, String deltaId) async {
+    try {
+      await _deltasCollection(mangaId).doc(deltaId).delete();
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to delete delta: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
+  /// Fetch all deltas for a manga
+  Future<List<CloudDelta>> fetchDeltas(String mangaId) async {
+    try {
+      final snapshot = await _deltasCollection(mangaId).get();
+      return snapshot.docs
+          .map((doc) => CloudDeltaExt.fromFirestore(doc, mangaId))
+          .toList();
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to fetch deltas: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
+  /// Fetch a specific delta by ID
+  Future<CloudDelta?> fetchDelta(String mangaId, String deltaId) async {
+    try {
+      final snapshot = await _deltasCollection(mangaId).doc(deltaId).get();
+      if (!snapshot.exists) {
+        return null;
+      }
+      return CloudDeltaExt.fromFirestore(snapshot, mangaId);
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to fetch delta: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
+  /// Watch a specific delta document (reactive)
+  Stream<CloudDelta?> watchDelta(String mangaId, String deltaId) {
+    try {
+      return _deltasCollection(mangaId).doc(deltaId).snapshots().map((snapshot) {
+        if (!snapshot.exists) return null;
+        return CloudDeltaExt.fromFirestore(snapshot, mangaId);
+      });
+    } catch (e) {
+      throw FirebaseServiceException('Failed to watch delta: $e');
+    }
+  }
+
+  /// Watch all deltas for a manga (reactive)
+  Stream<List<CloudDelta>> watchDeltas(String mangaId) {
+    try {
+      return _deltasCollection(mangaId).snapshots().map((snapshot) {
+        return snapshot.docs
+            .map((doc) => CloudDeltaExt.fromFirestore(doc, mangaId))
+            .toList();
+      });
+    } catch (e) {
+      throw FirebaseServiceException('Failed to watch deltas: $e');
     }
   }
 

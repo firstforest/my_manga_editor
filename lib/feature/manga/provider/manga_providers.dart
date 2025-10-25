@@ -25,7 +25,7 @@ Stream<List<MangaPageId>> mangaPageIdList(Ref ref, MangaId mangaId) {
 @riverpod
 class MangaNotifier extends _$MangaNotifier {
   @override
-  Stream<Manga?> build(int id) {
+  Stream<Manga?> build(String id) {
     final repo = ref.watch(mangaRepositoryProvider);
     return repo.getMangaStream(id);
   }
@@ -63,7 +63,9 @@ class MangaNotifier extends _$MangaNotifier {
     final manga = await future;
     if (manga != null) {
       logger.d('download $manga}');
-      final content = await ref.read(mangaRepositoryProvider).toMarkdown(id);
+      // TODO: Implement toMarkdown functionality
+      // For now, create a simple text export
+      final content = 'Manga: ${manga.name}';
       await FileSaver.instance.saveFile(
         name: 'komatto_${manga.name}',
         fileExtension: 'txt',
@@ -74,7 +76,8 @@ class MangaNotifier extends _$MangaNotifier {
   }
 
   Future<String> toMarkdown() async {
-    return await ref.read(mangaRepositoryProvider).toMarkdown(id);
+    // TODO: Implement toMarkdown functionality
+    return 'Markdown export not yet implemented';
   }
 }
 

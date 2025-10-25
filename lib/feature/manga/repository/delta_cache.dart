@@ -8,6 +8,7 @@ class DeltaMetadata {
   final MangaId? mangaId;       // Parent manga ID (for ideaMemo or page deltas)
   final MangaPageId? pageId;     // Page ID (for page deltas like memoDelta, etc.)
   final String fieldName;        // 'ideaMemo', 'memoDelta', 'stageDirectionDelta', 'dialoguesDelta'
+  String? firestoreDeltaId;      // Firestore document ID (set after sync)
   bool needsSync = false;
 
   DeltaMetadata({
@@ -15,18 +16,21 @@ class DeltaMetadata {
     required this.fieldName,
     this.mangaId,
     this.pageId,
+    this.firestoreDeltaId,
   });
 }
 
 /// In-memory cache for Delta objects referenced by DeltaId
 ///
-/// This cache bridges between Firestore's embedded delta storage (Map)
+/// This cache bridges between Firestore's separate delta storage (Cloud Deltas)
 /// and the domain model's DeltaId reference pattern (int).
-/// Also tracks delta metadata for cloud sync.
+/// Also tracks delta metadata for cloud sync and Firestore ID mapping.
 class DeltaCache {
   final Map<DeltaId, Delta> _cache = {};
   final Map<DeltaId, StreamController<Delta?>> _controllers = {};
   final Map<DeltaId, DeltaMetadata> _metadata = {};
+  // Map from Firestore Delta ID to internal DeltaId for efficient lookups
+  final Map<String, DeltaId> _firestoreIdToInternalId = {};
   DeltaId _nextId = DeltaId(1);
 
   /// Store a Delta and return its DeltaId
@@ -118,11 +122,22 @@ class DeltaCache {
   void clearCache() {
     _cache.clear();
     _metadata.clear();
+    _firestoreIdToInternalId.clear();
     for (final controller in _controllers.values) {
       controller.close();
     }
     _controllers.clear();
     _nextId = DeltaId(1);
+  }
+
+  /// Get internal DeltaId from Firestore Delta ID
+  DeltaId? getInternalIdByFirestoreId(String firestoreDeltaId) {
+    return _firestoreIdToInternalId[firestoreDeltaId];
+  }
+
+  /// Store mapping from Firestore Delta ID to internal DeltaId
+  void setFirestoreIdMapping(String firestoreDeltaId, DeltaId internalId) {
+    _firestoreIdToInternalId[firestoreDeltaId] = internalId;
   }
 
   /// Dispose of all resources

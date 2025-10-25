@@ -58,6 +58,9 @@ MangaDao mangaDao(Ref ref) {
 class MangaDao extends DatabaseAccessor<AppDatabase> with _$MangaDaoMixin {
   MangaDao(super.db);
 
+  // NOTE: Drift database methods are deprecated - use FirebaseService instead
+  // These methods are kept for backwards compatibility during migration
+
   Stream<DbManga?> watchManga(int id) {
     final query = select(dbMangas)..where((t) => t.id.equals(id));
     return query.watchSingleOrNull();
@@ -82,8 +85,9 @@ class MangaDao extends DatabaseAccessor<AppDatabase> with _$MangaDaoMixin {
     return query.watchSingleOrNull();
   }
 
-  Future<MangaId> insertManga(DbMangasCompanion dbManga) {
-    return into(dbMangas).insert(dbManga);
+  Future<MangaId> insertManga(DbMangasCompanion dbManga) async {
+    final id = await into(dbMangas).insert(dbManga);
+    return id.toString(); // Convert int to String for MangaId
   }
 
   Future<void> insertMangaPage(DbMangaPagesCompanion dbMangaPagesCompanion) {
@@ -94,7 +98,7 @@ class MangaDao extends DatabaseAccessor<AppDatabase> with _$MangaDaoMixin {
     final query = select(dbMangaPages)
       ..where((t) => t.mangaId.equals(mangaId))
       ..orderBy([(t) => OrderingTerm.asc(t.pageIndex)]);
-    return query.map((e) => e.id).watch();
+    return query.map((e) => e.id.toString()).watch(); // Convert to String
   }
 
   void updateMangaPages(List<DbMangaPagesCompanion> list) {
@@ -106,14 +110,17 @@ class MangaDao extends DatabaseAccessor<AppDatabase> with _$MangaDaoMixin {
   }
 
   Future<List<MangaPageId>> selectAllMangaPageIdList(MangaId mangaId) async {
-    final query = select(dbMangaPages)..where((t) => t.mangaId.equals(mangaId));
-    return await query.map((e) => e.id).get();
+    final mangaIdInt = int.tryParse(mangaId) ?? 0;
+    final query = select(dbMangaPages)..where((t) => t.mangaId.equals(mangaIdInt));
+    final results = await query.map((e) => e.id.toString()).get();
+    return results; // Already List<String>
   }
 
   Future updateManga(MangaId id, DbMangasCompanion dbMangasCompanion) async {
+    final idInt = int.tryParse(id) ?? 0;
     return (update(
       dbMangas,
-    )..where((t) => t.id.equals(id))).write(dbMangasCompanion);
+    )..where((t) => t.id.equals(idInt))).write(dbMangasCompanion);
   }
 
   Future<void> deleteMangaPage(int pageId) {

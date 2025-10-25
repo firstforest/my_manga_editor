@@ -14,10 +14,10 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$SyncStatus {
-  SyncState get state;
-  DateTime? get lastSyncedAt; // Null if never synced
-  String? get errorMessage; // Null if no error
-  int? get pendingOperations;
+  bool get isOnline;
+  bool get isSyncing;
+  DateTime? get lastSyncedAt;
+  List<String> get pendingMangaIds;
 
   /// Create a copy of SyncStatus
   /// with the given fields replaced by the non-null parameter values.
@@ -26,27 +26,32 @@ mixin _$SyncStatus {
   $SyncStatusCopyWith<SyncStatus> get copyWith =>
       _$SyncStatusCopyWithImpl<SyncStatus>(this as SyncStatus, _$identity);
 
+  /// Serializes this SyncStatus to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is SyncStatus &&
-            (identical(other.state, state) || other.state == state) &&
+            (identical(other.isOnline, isOnline) ||
+                other.isOnline == isOnline) &&
+            (identical(other.isSyncing, isSyncing) ||
+                other.isSyncing == isSyncing) &&
             (identical(other.lastSyncedAt, lastSyncedAt) ||
                 other.lastSyncedAt == lastSyncedAt) &&
-            (identical(other.errorMessage, errorMessage) ||
-                other.errorMessage == errorMessage) &&
-            (identical(other.pendingOperations, pendingOperations) ||
-                other.pendingOperations == pendingOperations));
+            const DeepCollectionEquality()
+                .equals(other.pendingMangaIds, pendingMangaIds));
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, state, lastSyncedAt, errorMessage, pendingOperations);
+  int get hashCode => Object.hash(runtimeType, isOnline, isSyncing,
+      lastSyncedAt, const DeepCollectionEquality().hash(pendingMangaIds));
 
   @override
   String toString() {
-    return 'SyncStatus(state: $state, lastSyncedAt: $lastSyncedAt, errorMessage: $errorMessage, pendingOperations: $pendingOperations)';
+    return 'SyncStatus(isOnline: $isOnline, isSyncing: $isSyncing, lastSyncedAt: $lastSyncedAt, pendingMangaIds: $pendingMangaIds)';
   }
 }
 
@@ -57,10 +62,10 @@ abstract mixin class $SyncStatusCopyWith<$Res> {
       _$SyncStatusCopyWithImpl;
   @useResult
   $Res call(
-      {SyncState state,
+      {bool isOnline,
+      bool isSyncing,
       DateTime? lastSyncedAt,
-      String? errorMessage,
-      int? pendingOperations});
+      List<String> pendingMangaIds});
 }
 
 /// @nodoc
@@ -75,28 +80,28 @@ class _$SyncStatusCopyWithImpl<$Res> implements $SyncStatusCopyWith<$Res> {
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? state = null,
+    Object? isOnline = null,
+    Object? isSyncing = null,
     Object? lastSyncedAt = freezed,
-    Object? errorMessage = freezed,
-    Object? pendingOperations = freezed,
+    Object? pendingMangaIds = null,
   }) {
     return _then(_self.copyWith(
-      state: null == state
-          ? _self.state
-          : state // ignore: cast_nullable_to_non_nullable
-              as SyncState,
+      isOnline: null == isOnline
+          ? _self.isOnline
+          : isOnline // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSyncing: null == isSyncing
+          ? _self.isSyncing
+          : isSyncing // ignore: cast_nullable_to_non_nullable
+              as bool,
       lastSyncedAt: freezed == lastSyncedAt
           ? _self.lastSyncedAt
           : lastSyncedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      errorMessage: freezed == errorMessage
-          ? _self.errorMessage
-          : errorMessage // ignore: cast_nullable_to_non_nullable
-              as String?,
-      pendingOperations: freezed == pendingOperations
-          ? _self.pendingOperations
-          : pendingOperations // ignore: cast_nullable_to_non_nullable
-              as int?,
+      pendingMangaIds: null == pendingMangaIds
+          ? _self.pendingMangaIds
+          : pendingMangaIds // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
@@ -194,16 +199,16 @@ extension SyncStatusPatterns on SyncStatus {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(SyncState state, DateTime? lastSyncedAt,
-            String? errorMessage, int? pendingOperations)?
+    TResult Function(bool isOnline, bool isSyncing, DateTime? lastSyncedAt,
+            List<String> pendingMangaIds)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _SyncStatus() when $default != null:
-        return $default(_that.state, _that.lastSyncedAt, _that.errorMessage,
-            _that.pendingOperations);
+        return $default(_that.isOnline, _that.isSyncing, _that.lastSyncedAt,
+            _that.pendingMangaIds);
       case _:
         return orElse();
     }
@@ -224,15 +229,15 @@ extension SyncStatusPatterns on SyncStatus {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(SyncState state, DateTime? lastSyncedAt,
-            String? errorMessage, int? pendingOperations)
+    TResult Function(bool isOnline, bool isSyncing, DateTime? lastSyncedAt,
+            List<String> pendingMangaIds)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _SyncStatus():
-        return $default(_that.state, _that.lastSyncedAt, _that.errorMessage,
-            _that.pendingOperations);
+        return $default(_that.isOnline, _that.isSyncing, _that.lastSyncedAt,
+            _that.pendingMangaIds);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -252,15 +257,15 @@ extension SyncStatusPatterns on SyncStatus {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(SyncState state, DateTime? lastSyncedAt,
-            String? errorMessage, int? pendingOperations)?
+    TResult? Function(bool isOnline, bool isSyncing, DateTime? lastSyncedAt,
+            List<String> pendingMangaIds)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _SyncStatus() when $default != null:
-        return $default(_that.state, _that.lastSyncedAt, _that.errorMessage,
-            _that.pendingOperations);
+        return $default(_that.isOnline, _that.isSyncing, _that.lastSyncedAt,
+            _that.pendingMangaIds);
       case _:
         return null;
     }
@@ -268,24 +273,31 @@ extension SyncStatusPatterns on SyncStatus {
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _SyncStatus implements SyncStatus {
   const _SyncStatus(
-      {required this.state,
-      this.lastSyncedAt,
-      this.errorMessage,
-      this.pendingOperations});
+      {required this.isOnline,
+      required this.isSyncing,
+      required this.lastSyncedAt,
+      final List<String> pendingMangaIds = const []})
+      : _pendingMangaIds = pendingMangaIds;
+  factory _SyncStatus.fromJson(Map<String, dynamic> json) =>
+      _$SyncStatusFromJson(json);
 
   @override
-  final SyncState state;
+  final bool isOnline;
+  @override
+  final bool isSyncing;
   @override
   final DateTime? lastSyncedAt;
-// Null if never synced
+  final List<String> _pendingMangaIds;
   @override
-  final String? errorMessage;
-// Null if no error
-  @override
-  final int? pendingOperations;
+  @JsonKey()
+  List<String> get pendingMangaIds {
+    if (_pendingMangaIds is EqualUnmodifiableListView) return _pendingMangaIds;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_pendingMangaIds);
+  }
 
   /// Create a copy of SyncStatus
   /// with the given fields replaced by the non-null parameter values.
@@ -296,26 +308,35 @@ class _SyncStatus implements SyncStatus {
       __$SyncStatusCopyWithImpl<_SyncStatus>(this, _$identity);
 
   @override
+  Map<String, dynamic> toJson() {
+    return _$SyncStatusToJson(
+      this,
+    );
+  }
+
+  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _SyncStatus &&
-            (identical(other.state, state) || other.state == state) &&
+            (identical(other.isOnline, isOnline) ||
+                other.isOnline == isOnline) &&
+            (identical(other.isSyncing, isSyncing) ||
+                other.isSyncing == isSyncing) &&
             (identical(other.lastSyncedAt, lastSyncedAt) ||
                 other.lastSyncedAt == lastSyncedAt) &&
-            (identical(other.errorMessage, errorMessage) ||
-                other.errorMessage == errorMessage) &&
-            (identical(other.pendingOperations, pendingOperations) ||
-                other.pendingOperations == pendingOperations));
+            const DeepCollectionEquality()
+                .equals(other._pendingMangaIds, _pendingMangaIds));
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, state, lastSyncedAt, errorMessage, pendingOperations);
+  int get hashCode => Object.hash(runtimeType, isOnline, isSyncing,
+      lastSyncedAt, const DeepCollectionEquality().hash(_pendingMangaIds));
 
   @override
   String toString() {
-    return 'SyncStatus(state: $state, lastSyncedAt: $lastSyncedAt, errorMessage: $errorMessage, pendingOperations: $pendingOperations)';
+    return 'SyncStatus(isOnline: $isOnline, isSyncing: $isSyncing, lastSyncedAt: $lastSyncedAt, pendingMangaIds: $pendingMangaIds)';
   }
 }
 
@@ -328,10 +349,10 @@ abstract mixin class _$SyncStatusCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {SyncState state,
+      {bool isOnline,
+      bool isSyncing,
       DateTime? lastSyncedAt,
-      String? errorMessage,
-      int? pendingOperations});
+      List<String> pendingMangaIds});
 }
 
 /// @nodoc
@@ -346,28 +367,28 @@ class __$SyncStatusCopyWithImpl<$Res> implements _$SyncStatusCopyWith<$Res> {
   @override
   @pragma('vm:prefer-inline')
   $Res call({
-    Object? state = null,
+    Object? isOnline = null,
+    Object? isSyncing = null,
     Object? lastSyncedAt = freezed,
-    Object? errorMessage = freezed,
-    Object? pendingOperations = freezed,
+    Object? pendingMangaIds = null,
   }) {
     return _then(_SyncStatus(
-      state: null == state
-          ? _self.state
-          : state // ignore: cast_nullable_to_non_nullable
-              as SyncState,
+      isOnline: null == isOnline
+          ? _self.isOnline
+          : isOnline // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSyncing: null == isSyncing
+          ? _self.isSyncing
+          : isSyncing // ignore: cast_nullable_to_non_nullable
+              as bool,
       lastSyncedAt: freezed == lastSyncedAt
           ? _self.lastSyncedAt
           : lastSyncedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      errorMessage: freezed == errorMessage
-          ? _self.errorMessage
-          : errorMessage // ignore: cast_nullable_to_non_nullable
-              as String?,
-      pendingOperations: freezed == pendingOperations
-          ? _self.pendingOperations
-          : pendingOperations // ignore: cast_nullable_to_non_nullable
-              as int?,
+      pendingMangaIds: null == pendingMangaIds
+          ? _self._pendingMangaIds
+          : pendingMangaIds // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }

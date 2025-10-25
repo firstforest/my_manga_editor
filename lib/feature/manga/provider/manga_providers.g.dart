@@ -338,7 +338,7 @@ final class DeltaNotifierProvider
     extends $AsyncNotifierProvider<DeltaNotifier, Delta?> {
   const DeltaNotifierProvider._(
       {required DeltaNotifierFamily super.from,
-      required DeltaId? super.argument})
+      required String? super.argument})
       : super(
           retry: null,
           name: r'deltaProvider',
@@ -372,12 +372,12 @@ final class DeltaNotifierProvider
   }
 }
 
-String _$deltaNotifierHash() => r'0e9125ff92c135ca9900a4f6c546ae9a3dfe6b91';
+String _$deltaNotifierHash() => r'49a7ca553186c7325e403eadde7cdb52daa93c00';
 
 final class DeltaNotifierFamily extends $Family
     with
         $ClassFamilyOverride<DeltaNotifier, AsyncValue<Delta?>, Delta?,
-            FutureOr<Delta?>, DeltaId?> {
+            FutureOr<Delta?>, String?> {
   const DeltaNotifierFamily._()
       : super(
           retry: null,
@@ -388,7 +388,7 @@ final class DeltaNotifierFamily extends $Family
         );
 
   DeltaNotifierProvider call(
-    DeltaId? id,
+    String? id,
   ) =>
       DeltaNotifierProvider._(argument: id, from: this);
 
@@ -397,11 +397,11 @@ final class DeltaNotifierFamily extends $Family
 }
 
 abstract class _$DeltaNotifier extends $AsyncNotifier<Delta?> {
-  late final _$args = ref.$arg as DeltaId?;
-  DeltaId? get id => _$args;
+  late final _$args = ref.$arg as String?;
+  String? get id => _$args;
 
   FutureOr<Delta?> build(
-    DeltaId? id,
+    String? id,
   );
   @$mustCallSuper
   @override

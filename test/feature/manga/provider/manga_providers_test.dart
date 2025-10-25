@@ -49,7 +49,7 @@ void main() {
   });
 
   group('DeltaNotifier', () {
-    final deltaId = DeltaId(10);
+    final deltaId = 'test-delta-id-10';
 
     test('クリスタ用のセリフとして出力する', () async {
       when(mockMangaRepository.getDeltaStream(any))

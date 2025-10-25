@@ -183,7 +183,7 @@ class MangaSelectDialog extends HookConsumerWidget {
                 }
                 final manga = mangaList[index - 1];
                 final delta =
-                    ref.watch(deltaProvider(manga.ideaMemo)).value;
+                    ref.watch(deltaProvider(manga.ideaMemoDeltaId)).value;
                 return ListTile(
                   title: Text(manga.name),
                   subtitle: Text(

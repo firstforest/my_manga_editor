@@ -17,7 +17,7 @@ mixin _$Manga {
   MangaId get id;
   String get name;
   MangaStartPage get startPage;
-  DeltaId get ideaMemo;
+  String get ideaMemoDeltaId;
 
   /// Create a copy of Manga
   /// with the given fields replaced by the non-null parameter values.
@@ -35,16 +35,17 @@ mixin _$Manga {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.startPage, startPage) ||
                 other.startPage == startPage) &&
-            (identical(other.ideaMemo, ideaMemo) ||
-                other.ideaMemo == ideaMemo));
+            (identical(other.ideaMemoDeltaId, ideaMemoDeltaId) ||
+                other.ideaMemoDeltaId == ideaMemoDeltaId));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, startPage, ideaMemo);
+  int get hashCode =>
+      Object.hash(runtimeType, id, name, startPage, ideaMemoDeltaId);
 
   @override
   String toString() {
-    return 'Manga(id: $id, name: $name, startPage: $startPage, ideaMemo: $ideaMemo)';
+    return 'Manga(id: $id, name: $name, startPage: $startPage, ideaMemoDeltaId: $ideaMemoDeltaId)';
   }
 }
 
@@ -54,7 +55,10 @@ abstract mixin class $MangaCopyWith<$Res> {
       _$MangaCopyWithImpl;
   @useResult
   $Res call(
-      {MangaId id, String name, MangaStartPage startPage, DeltaId ideaMemo});
+      {MangaId id,
+      String name,
+      MangaStartPage startPage,
+      String ideaMemoDeltaId});
 }
 
 /// @nodoc
@@ -72,7 +76,7 @@ class _$MangaCopyWithImpl<$Res> implements $MangaCopyWith<$Res> {
     Object? id = null,
     Object? name = null,
     Object? startPage = null,
-    Object? ideaMemo = null,
+    Object? ideaMemoDeltaId = null,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -87,10 +91,10 @@ class _$MangaCopyWithImpl<$Res> implements $MangaCopyWith<$Res> {
           ? _self.startPage
           : startPage // ignore: cast_nullable_to_non_nullable
               as MangaStartPage,
-      ideaMemo: null == ideaMemo
-          ? _self.ideaMemo
-          : ideaMemo // ignore: cast_nullable_to_non_nullable
-              as DeltaId,
+      ideaMemoDeltaId: null == ideaMemoDeltaId
+          ? _self.ideaMemoDeltaId
+          : ideaMemoDeltaId // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -189,14 +193,15 @@ extension MangaPatterns on Manga {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(MangaId id, String name, MangaStartPage startPage,
-            DeltaId ideaMemo)?
+            String ideaMemoDeltaId)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _Manga() when $default != null:
-        return $default(_that.id, _that.name, _that.startPage, _that.ideaMemo);
+        return $default(
+            _that.id, _that.name, _that.startPage, _that.ideaMemoDeltaId);
       case _:
         return orElse();
     }
@@ -217,14 +222,15 @@ extension MangaPatterns on Manga {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(
-            MangaId id, String name, MangaStartPage startPage, DeltaId ideaMemo)
+    TResult Function(MangaId id, String name, MangaStartPage startPage,
+            String ideaMemoDeltaId)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _Manga():
-        return $default(_that.id, _that.name, _that.startPage, _that.ideaMemo);
+        return $default(
+            _that.id, _that.name, _that.startPage, _that.ideaMemoDeltaId);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -245,13 +251,14 @@ extension MangaPatterns on Manga {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(MangaId id, String name, MangaStartPage startPage,
-            DeltaId ideaMemo)?
+            String ideaMemoDeltaId)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _Manga() when $default != null:
-        return $default(_that.id, _that.name, _that.startPage, _that.ideaMemo);
+        return $default(
+            _that.id, _that.name, _that.startPage, _that.ideaMemoDeltaId);
       case _:
         return null;
     }
@@ -265,7 +272,7 @@ class _Manga implements Manga {
       {required this.id,
       required this.name,
       required this.startPage,
-      required this.ideaMemo});
+      required this.ideaMemoDeltaId});
 
   @override
   final MangaId id;
@@ -274,7 +281,7 @@ class _Manga implements Manga {
   @override
   final MangaStartPage startPage;
   @override
-  final DeltaId ideaMemo;
+  final String ideaMemoDeltaId;
 
   /// Create a copy of Manga
   /// with the given fields replaced by the non-null parameter values.
@@ -293,16 +300,17 @@ class _Manga implements Manga {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.startPage, startPage) ||
                 other.startPage == startPage) &&
-            (identical(other.ideaMemo, ideaMemo) ||
-                other.ideaMemo == ideaMemo));
+            (identical(other.ideaMemoDeltaId, ideaMemoDeltaId) ||
+                other.ideaMemoDeltaId == ideaMemoDeltaId));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, startPage, ideaMemo);
+  int get hashCode =>
+      Object.hash(runtimeType, id, name, startPage, ideaMemoDeltaId);
 
   @override
   String toString() {
-    return 'Manga(id: $id, name: $name, startPage: $startPage, ideaMemo: $ideaMemo)';
+    return 'Manga(id: $id, name: $name, startPage: $startPage, ideaMemoDeltaId: $ideaMemoDeltaId)';
   }
 }
 
@@ -313,7 +321,10 @@ abstract mixin class _$MangaCopyWith<$Res> implements $MangaCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {MangaId id, String name, MangaStartPage startPage, DeltaId ideaMemo});
+      {MangaId id,
+      String name,
+      MangaStartPage startPage,
+      String ideaMemoDeltaId});
 }
 
 /// @nodoc
@@ -331,7 +342,7 @@ class __$MangaCopyWithImpl<$Res> implements _$MangaCopyWith<$Res> {
     Object? id = null,
     Object? name = null,
     Object? startPage = null,
-    Object? ideaMemo = null,
+    Object? ideaMemoDeltaId = null,
   }) {
     return _then(_Manga(
       id: null == id
@@ -346,10 +357,10 @@ class __$MangaCopyWithImpl<$Res> implements _$MangaCopyWith<$Res> {
           ? _self.startPage
           : startPage // ignore: cast_nullable_to_non_nullable
               as MangaStartPage,
-      ideaMemo: null == ideaMemo
-          ? _self.ideaMemo
-          : ideaMemo // ignore: cast_nullable_to_non_nullable
-              as DeltaId,
+      ideaMemoDeltaId: null == ideaMemoDeltaId
+          ? _self.ideaMemoDeltaId
+          : ideaMemoDeltaId // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -358,9 +369,9 @@ class __$MangaCopyWithImpl<$Res> implements _$MangaCopyWith<$Res> {
 mixin _$MangaPage {
   MangaPageId get id;
   MangaId get mangaId;
-  DeltaId get memoDelta;
-  DeltaId get stageDirectionDelta;
-  DeltaId get dialoguesDelta;
+  String get memoDeltaId; // CloudDelta document ID
+  String get stageDirectionDeltaId; // CloudDelta document ID
+  String get dialoguesDeltaId;
 
   /// Create a copy of MangaPage
   /// with the given fields replaced by the non-null parameter values.
@@ -376,21 +387,21 @@ mixin _$MangaPage {
             other is MangaPage &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.mangaId, mangaId) || other.mangaId == mangaId) &&
-            (identical(other.memoDelta, memoDelta) ||
-                other.memoDelta == memoDelta) &&
-            (identical(other.stageDirectionDelta, stageDirectionDelta) ||
-                other.stageDirectionDelta == stageDirectionDelta) &&
-            (identical(other.dialoguesDelta, dialoguesDelta) ||
-                other.dialoguesDelta == dialoguesDelta));
+            (identical(other.memoDeltaId, memoDeltaId) ||
+                other.memoDeltaId == memoDeltaId) &&
+            (identical(other.stageDirectionDeltaId, stageDirectionDeltaId) ||
+                other.stageDirectionDeltaId == stageDirectionDeltaId) &&
+            (identical(other.dialoguesDeltaId, dialoguesDeltaId) ||
+                other.dialoguesDeltaId == dialoguesDeltaId));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, mangaId, memoDelta, stageDirectionDelta, dialoguesDelta);
+  int get hashCode => Object.hash(runtimeType, id, mangaId, memoDeltaId,
+      stageDirectionDeltaId, dialoguesDeltaId);
 
   @override
   String toString() {
-    return 'MangaPage(id: $id, mangaId: $mangaId, memoDelta: $memoDelta, stageDirectionDelta: $stageDirectionDelta, dialoguesDelta: $dialoguesDelta)';
+    return 'MangaPage(id: $id, mangaId: $mangaId, memoDeltaId: $memoDeltaId, stageDirectionDeltaId: $stageDirectionDeltaId, dialoguesDeltaId: $dialoguesDeltaId)';
   }
 }
 
@@ -402,9 +413,9 @@ abstract mixin class $MangaPageCopyWith<$Res> {
   $Res call(
       {MangaPageId id,
       MangaId mangaId,
-      DeltaId memoDelta,
-      DeltaId stageDirectionDelta,
-      DeltaId dialoguesDelta});
+      String memoDeltaId,
+      String stageDirectionDeltaId,
+      String dialoguesDeltaId});
 }
 
 /// @nodoc
@@ -421,9 +432,9 @@ class _$MangaPageCopyWithImpl<$Res> implements $MangaPageCopyWith<$Res> {
   $Res call({
     Object? id = null,
     Object? mangaId = null,
-    Object? memoDelta = null,
-    Object? stageDirectionDelta = null,
-    Object? dialoguesDelta = null,
+    Object? memoDeltaId = null,
+    Object? stageDirectionDeltaId = null,
+    Object? dialoguesDeltaId = null,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -434,18 +445,18 @@ class _$MangaPageCopyWithImpl<$Res> implements $MangaPageCopyWith<$Res> {
           ? _self.mangaId
           : mangaId // ignore: cast_nullable_to_non_nullable
               as MangaId,
-      memoDelta: null == memoDelta
-          ? _self.memoDelta
-          : memoDelta // ignore: cast_nullable_to_non_nullable
-              as DeltaId,
-      stageDirectionDelta: null == stageDirectionDelta
-          ? _self.stageDirectionDelta
-          : stageDirectionDelta // ignore: cast_nullable_to_non_nullable
-              as DeltaId,
-      dialoguesDelta: null == dialoguesDelta
-          ? _self.dialoguesDelta
-          : dialoguesDelta // ignore: cast_nullable_to_non_nullable
-              as DeltaId,
+      memoDeltaId: null == memoDeltaId
+          ? _self.memoDeltaId
+          : memoDeltaId // ignore: cast_nullable_to_non_nullable
+              as String,
+      stageDirectionDeltaId: null == stageDirectionDeltaId
+          ? _self.stageDirectionDeltaId
+          : stageDirectionDeltaId // ignore: cast_nullable_to_non_nullable
+              as String,
+      dialoguesDeltaId: null == dialoguesDeltaId
+          ? _self.dialoguesDeltaId
+          : dialoguesDeltaId // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -543,16 +554,16 @@ extension MangaPagePatterns on MangaPage {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(MangaPageId id, MangaId mangaId, DeltaId memoDelta,
-            DeltaId stageDirectionDelta, DeltaId dialoguesDelta)?
+    TResult Function(MangaPageId id, MangaId mangaId, String memoDeltaId,
+            String stageDirectionDeltaId, String dialoguesDeltaId)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _MangaPage() when $default != null:
-        return $default(_that.id, _that.mangaId, _that.memoDelta,
-            _that.stageDirectionDelta, _that.dialoguesDelta);
+        return $default(_that.id, _that.mangaId, _that.memoDeltaId,
+            _that.stageDirectionDeltaId, _that.dialoguesDeltaId);
       case _:
         return orElse();
     }
@@ -573,15 +584,15 @@ extension MangaPagePatterns on MangaPage {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(MangaPageId id, MangaId mangaId, DeltaId memoDelta,
-            DeltaId stageDirectionDelta, DeltaId dialoguesDelta)
+    TResult Function(MangaPageId id, MangaId mangaId, String memoDeltaId,
+            String stageDirectionDeltaId, String dialoguesDeltaId)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _MangaPage():
-        return $default(_that.id, _that.mangaId, _that.memoDelta,
-            _that.stageDirectionDelta, _that.dialoguesDelta);
+        return $default(_that.id, _that.mangaId, _that.memoDeltaId,
+            _that.stageDirectionDeltaId, _that.dialoguesDeltaId);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -601,15 +612,15 @@ extension MangaPagePatterns on MangaPage {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(MangaPageId id, MangaId mangaId, DeltaId memoDelta,
-            DeltaId stageDirectionDelta, DeltaId dialoguesDelta)?
+    TResult? Function(MangaPageId id, MangaId mangaId, String memoDeltaId,
+            String stageDirectionDeltaId, String dialoguesDeltaId)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _MangaPage() when $default != null:
-        return $default(_that.id, _that.mangaId, _that.memoDelta,
-            _that.stageDirectionDelta, _that.dialoguesDelta);
+        return $default(_that.id, _that.mangaId, _that.memoDeltaId,
+            _that.stageDirectionDeltaId, _that.dialoguesDeltaId);
       case _:
         return null;
     }
@@ -622,20 +633,22 @@ class _MangaPage implements MangaPage {
   const _MangaPage(
       {required this.id,
       required this.mangaId,
-      required this.memoDelta,
-      required this.stageDirectionDelta,
-      required this.dialoguesDelta});
+      required this.memoDeltaId,
+      required this.stageDirectionDeltaId,
+      required this.dialoguesDeltaId});
 
   @override
   final MangaPageId id;
   @override
   final MangaId mangaId;
   @override
-  final DeltaId memoDelta;
+  final String memoDeltaId;
+// CloudDelta document ID
   @override
-  final DeltaId stageDirectionDelta;
+  final String stageDirectionDeltaId;
+// CloudDelta document ID
   @override
-  final DeltaId dialoguesDelta;
+  final String dialoguesDeltaId;
 
   /// Create a copy of MangaPage
   /// with the given fields replaced by the non-null parameter values.
@@ -652,21 +665,21 @@ class _MangaPage implements MangaPage {
             other is _MangaPage &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.mangaId, mangaId) || other.mangaId == mangaId) &&
-            (identical(other.memoDelta, memoDelta) ||
-                other.memoDelta == memoDelta) &&
-            (identical(other.stageDirectionDelta, stageDirectionDelta) ||
-                other.stageDirectionDelta == stageDirectionDelta) &&
-            (identical(other.dialoguesDelta, dialoguesDelta) ||
-                other.dialoguesDelta == dialoguesDelta));
+            (identical(other.memoDeltaId, memoDeltaId) ||
+                other.memoDeltaId == memoDeltaId) &&
+            (identical(other.stageDirectionDeltaId, stageDirectionDeltaId) ||
+                other.stageDirectionDeltaId == stageDirectionDeltaId) &&
+            (identical(other.dialoguesDeltaId, dialoguesDeltaId) ||
+                other.dialoguesDeltaId == dialoguesDeltaId));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, mangaId, memoDelta, stageDirectionDelta, dialoguesDelta);
+  int get hashCode => Object.hash(runtimeType, id, mangaId, memoDeltaId,
+      stageDirectionDeltaId, dialoguesDeltaId);
 
   @override
   String toString() {
-    return 'MangaPage(id: $id, mangaId: $mangaId, memoDelta: $memoDelta, stageDirectionDelta: $stageDirectionDelta, dialoguesDelta: $dialoguesDelta)';
+    return 'MangaPage(id: $id, mangaId: $mangaId, memoDeltaId: $memoDeltaId, stageDirectionDeltaId: $stageDirectionDeltaId, dialoguesDeltaId: $dialoguesDeltaId)';
   }
 }
 
@@ -681,9 +694,9 @@ abstract mixin class _$MangaPageCopyWith<$Res>
   $Res call(
       {MangaPageId id,
       MangaId mangaId,
-      DeltaId memoDelta,
-      DeltaId stageDirectionDelta,
-      DeltaId dialoguesDelta});
+      String memoDeltaId,
+      String stageDirectionDeltaId,
+      String dialoguesDeltaId});
 }
 
 /// @nodoc
@@ -700,9 +713,9 @@ class __$MangaPageCopyWithImpl<$Res> implements _$MangaPageCopyWith<$Res> {
   $Res call({
     Object? id = null,
     Object? mangaId = null,
-    Object? memoDelta = null,
-    Object? stageDirectionDelta = null,
-    Object? dialoguesDelta = null,
+    Object? memoDeltaId = null,
+    Object? stageDirectionDeltaId = null,
+    Object? dialoguesDeltaId = null,
   }) {
     return _then(_MangaPage(
       id: null == id
@@ -713,18 +726,18 @@ class __$MangaPageCopyWithImpl<$Res> implements _$MangaPageCopyWith<$Res> {
           ? _self.mangaId
           : mangaId // ignore: cast_nullable_to_non_nullable
               as MangaId,
-      memoDelta: null == memoDelta
-          ? _self.memoDelta
-          : memoDelta // ignore: cast_nullable_to_non_nullable
-              as DeltaId,
-      stageDirectionDelta: null == stageDirectionDelta
-          ? _self.stageDirectionDelta
-          : stageDirectionDelta // ignore: cast_nullable_to_non_nullable
-              as DeltaId,
-      dialoguesDelta: null == dialoguesDelta
-          ? _self.dialoguesDelta
-          : dialoguesDelta // ignore: cast_nullable_to_non_nullable
-              as DeltaId,
+      memoDeltaId: null == memoDeltaId
+          ? _self.memoDeltaId
+          : memoDeltaId // ignore: cast_nullable_to_non_nullable
+              as String,
+      stageDirectionDeltaId: null == stageDirectionDeltaId
+          ? _self.stageDirectionDeltaId
+          : stageDirectionDeltaId // ignore: cast_nullable_to_non_nullable
+              as String,
+      dialoguesDeltaId: null == dialoguesDeltaId
+          ? _self.dialoguesDeltaId
+          : dialoguesDeltaId // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }

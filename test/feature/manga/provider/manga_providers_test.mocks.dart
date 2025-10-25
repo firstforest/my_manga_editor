@@ -111,14 +111,14 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
 
   @override
   _i3.Future<void> saveDelta(
-    _i4.DeltaId? id,
+    String? firestoreDeltaId,
     _i6.Delta? delta,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
           #saveDelta,
           [
-            id,
+            firestoreDeltaId,
             delta,
           ],
         ),
@@ -127,20 +127,22 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i3.Future<void>);
 
   @override
-  _i3.Future<_i6.Delta?> loadDelta(_i4.DeltaId? id) => (super.noSuchMethod(
+  _i3.Future<_i6.Delta?> loadDelta(String? firestoreDeltaId) =>
+      (super.noSuchMethod(
         Invocation.method(
           #loadDelta,
-          [id],
+          [firestoreDeltaId],
         ),
         returnValue: _i3.Future<_i6.Delta?>.value(),
         returnValueForMissingStub: _i3.Future<_i6.Delta?>.value(),
       ) as _i3.Future<_i6.Delta?>);
 
   @override
-  _i3.Stream<_i6.Delta?> getDeltaStream(_i4.DeltaId? id) => (super.noSuchMethod(
+  _i3.Stream<_i6.Delta?> getDeltaStream(String? firestoreDeltaId) =>
+      (super.noSuchMethod(
         Invocation.method(
           #getDeltaStream,
-          [id],
+          [firestoreDeltaId],
         ),
         returnValue: _i3.Stream<_i6.Delta?>.empty(),
         returnValueForMissingStub: _i3.Stream<_i6.Delta?>.empty(),

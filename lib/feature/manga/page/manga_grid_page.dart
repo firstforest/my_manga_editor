@@ -141,7 +141,7 @@ class MangaGridPageView extends HookConsumerWidget {
                   child: mangaPage.map(
                     data: (mangaPage) {
                       final delta = ref.watch(deltaProvider(
-                          mangaPage.value.dialoguesDelta));
+                          mangaPage.value.dialoguesDeltaId));
                       return switch (delta.value) {
                         Delta d when d.isNotEmpty => SingleChildScrollView(
                             child: Tategaki(

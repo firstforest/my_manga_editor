@@ -22,7 +22,6 @@ extension MangaStartPageExt on MangaStartPage {
 
 extension type MangaId(String id) {}
 extension type MangaPageId(String id) {}
-extension type DeltaId(int id) {}
 
 @freezed
 abstract class Manga with _$Manga {
@@ -30,7 +29,7 @@ abstract class Manga with _$Manga {
     required MangaId id,
     required String name,
     required MangaStartPage startPage,
-    required DeltaId ideaMemo,
+    required String ideaMemoDeltaId, // CloudDelta document ID
   }) = _Manga;
 }
 
@@ -39,8 +38,8 @@ abstract class MangaPage with _$MangaPage {
   const factory MangaPage({
     required MangaPageId id,
     required MangaId mangaId,
-    required DeltaId memoDelta,
-    required DeltaId stageDirectionDelta,
-    required DeltaId dialoguesDelta,
+    required String memoDeltaId, // CloudDelta document ID
+    required String stageDirectionDeltaId, // CloudDelta document ID
+    required String dialoguesDeltaId, // CloudDelta document ID
   }) = _MangaPage;
 }

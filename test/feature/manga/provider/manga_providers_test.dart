@@ -55,11 +55,23 @@ void main() {
       when(mockMangaRepository.getDeltaStream(any))
           .thenAnswer((_) => Stream.value(Delta()..insert(testDialogues)));
 
+      // Keep the provider alive by listening
+      final subscription = providerContainer.listen(
+        deltaProvider(deltaId),
+        (previous, next) {},
+      );
+
+      // Wait for the stream provider to emit its first value
+      await providerContainer.read(deltaProvider(deltaId).future);
+
       final exported = await providerContainer
           .read(deltaProvider(deltaId).notifier)
           .exportPlainText();
 
       expect(exported, dataForClipStudio);
+
+      // Clean up
+      subscription.close();
     });
   });
 }

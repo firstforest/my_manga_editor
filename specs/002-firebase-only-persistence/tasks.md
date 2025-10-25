@@ -25,11 +25,11 @@
 
 **Purpose**: Project initialization, dependency configuration, and Firebase setup
 
-- [ ] T001 Create feature branch `002-firebase-only-persistence` from main branch
-- [ ] T002 Enable Firestore offline persistence in lib/main.dart (add Settings with persistenceEnabled: true)
-- [ ] T003 [P] Add fake_cloud_firestore ^2.5.0 to pubspec.yaml dev_dependencies for testing
-- [ ] T004 Configure Firestore Security Rules in Firebase Console (user data isolation rules from quickstart.md)
-- [ ] T005 Run flutter pub get to install new dependencies
+- [X] T001 Create feature branch `002-firebase-only-persistence` from main branch
+- [X] T002 Enable Firestore offline persistence in lib/main.dart (add Settings with persistenceEnabled: true)
+- [X] T003 [P] Add fake_cloud_firestore ^3.1.0 to pubspec.yaml dev_dependencies for testing
+- [ ] T004 Configure Firestore Security Rules in Firebase Console (user data isolation rules from quickstart.md) **[USER ACTION REQUIRED]**
+- [X] T005 Run flutter pub get to install new dependencies
 
 ---
 
@@ -39,16 +39,16 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 [P] Create custom exceptions in lib/feature/manga/repository/exceptions.dart (AuthException, NotFoundException, ValidationException, StorageException, PermissionException)
-- [ ] T007 [P] Update MangaId typedef in lib/feature/manga/model/manga.dart (change from int to String for Firestore compatibility)
-- [ ] T008 [P] Update MangaPageId typedef in lib/feature/manga/model/manga.dart (change from int to String for Firestore compatibility)
-- [ ] T009 [P] Keep DeltaId typedef in lib/feature/manga/model/manga.dart (remain as int for in-memory cache reference)
-- [ ] T010 [P] Add MangaStartPageExt extension in lib/feature/manga/model/manga.dart (fromString helper for enum conversion)
-- [ ] T011 [P] Create SyncStatus model in lib/feature/manga/model/sync_status.dart (isOnline, isSyncing, lastSyncedAt, pendingMangaIds)
-- [ ] T012 Run dart run build_runner build -d to regenerate Freezed models (manga.freezed.dart, manga.g.dart, sync_status.freezed.dart)
-- [ ] T013 [P] Update CloudManga model in lib/service/firebase/model/cloud_manga.dart (verify embedded ideaMemo map structure)
-- [ ] T014 [P] Update CloudMangaPage model in lib/service/firebase/model/cloud_manga_page.dart (verify embedded delta map structures)
-- [ ] T015 Run dart run build_runner build -d to regenerate cloud model files (cloud_manga.g.dart, cloud_manga_page.g.dart)
+- [X] T006 [P] Create custom exceptions in lib/feature/manga/repository/exceptions.dart (AuthException, NotFoundException, ValidationException, StorageException, PermissionException)
+- [X] T007 [P] Update MangaId typedef in lib/feature/manga/model/manga.dart (change from int to String for Firestore compatibility)
+- [X] T008 [P] Update MangaPageId typedef in lib/feature/manga/model/manga.dart (change from int to String for Firestore compatibility)
+- [X] T009 [P] Keep DeltaId typedef in lib/feature/manga/model/manga.dart (remain as int for in-memory cache reference)
+- [X] T010 [P] Add MangaStartPageExt extension in lib/feature/manga/model/manga.dart (fromString helper for enum conversion)
+- [X] T011 [P] Create SyncStatus model in lib/feature/manga/model/sync_status.dart (isOnline, isSyncing, lastSyncedAt, pendingMangaIds)
+- [X] T012 Run dart run build_runner build -d to regenerate Freezed models (manga.freezed.dart, manga.g.dart, sync_status.freezed.dart)
+- [X] T013 [P] Update CloudManga model in lib/service/firebase/model/cloud_manga.dart (verify embedded ideaMemo map structure)
+- [X] T014 [P] Update CloudMangaPage model in lib/service/firebase/model/cloud_manga_page.dart (verify embedded delta map structures)
+- [X] T015 Run dart run build_runner build -d to regenerate cloud model files (cloud_manga.g.dart, cloud_manga_page.g.dart)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

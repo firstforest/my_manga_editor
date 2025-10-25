@@ -15,7 +15,11 @@
       "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks)",
       "Bash(flutter analyze)",
       "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json -PathsOnly)",
-      "Bash(git rev-parse --git-dir)"
+      "Bash(git rev-parse --git-dir)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/create-new-feature.ps1 -Json -ShortName \"firebase-only-persistence\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/create-new-feature.ps1 -Json -ShortName \"firebase-only-persistence\" \"実装をシンプルに保ちたいので、Driftの実装を削除しFirebaseによる永続化のみにする。オフライン対応はFirebaseの機能で行う\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/setup-plan.ps1 -Json)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/update-agent-context.ps1 -AgentType claude)"
     ],
     "deny": [],
     "ask": []

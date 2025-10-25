@@ -111,7 +111,7 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
 
   @override
   _i3.Future<void> saveDelta(
-    String? firestoreDeltaId,
+    _i4.DeltaId? firestoreDeltaId,
     _i6.Delta? delta,
   ) =>
       (super.noSuchMethod(
@@ -127,7 +127,7 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i3.Future<void>);
 
   @override
-  _i3.Future<_i6.Delta?> loadDelta(String? firestoreDeltaId) =>
+  _i3.Future<_i6.Delta?> loadDelta(_i4.DeltaId? firestoreDeltaId) =>
       (super.noSuchMethod(
         Invocation.method(
           #loadDelta,

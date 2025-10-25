@@ -201,7 +201,7 @@ class MangaPageWidget extends HookConsumerWidget {
     };
   }
 
-  Future<void> _copyToClipboard(WidgetRef ref, String deltaId) async {
+  Future<void> _copyToClipboard(WidgetRef ref, DeltaId deltaId) async {
     final delta =
         await ref.read(deltaProvider(deltaId).notifier).exportPlainText();
     final clipboard = SystemClipboard.instance;
@@ -221,7 +221,7 @@ class _QuillTextAreaWidget extends HookConsumerWidget {
     this.placeholder,
   });
 
-  final String deltaId;
+  final DeltaId deltaId;
   final String? placeholder;
 
   @override

@@ -103,7 +103,7 @@ class MangaPageNotifier extends _$MangaPageNotifier {
 @riverpod
 class DeltaNotifier extends _$DeltaNotifier {
   @override
-  Future<Delta?> build(String? id) async {
+  Future<Delta?> build(DeltaId id) async {
     if (id == null) {
       return null;
     }
@@ -112,9 +112,7 @@ class DeltaNotifier extends _$DeltaNotifier {
   }
 
   void updateDelta(Delta delta) {
-    if (id != null) {
-      ref.read(mangaRepositoryProvider).saveDelta(id!, delta);
-    }
+    ref.read(mangaRepositoryProvider).saveDelta(id, delta);
     state = AsyncValue.data(delta);
   }
 

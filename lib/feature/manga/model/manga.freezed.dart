@@ -17,7 +17,7 @@ mixin _$Manga {
   MangaId get id;
   String get name;
   MangaStartPage get startPage;
-  String get ideaMemoDeltaId;
+  DeltaId get ideaMemoDeltaId;
 
   /// Create a copy of Manga
   /// with the given fields replaced by the non-null parameter values.
@@ -58,7 +58,7 @@ abstract mixin class $MangaCopyWith<$Res> {
       {MangaId id,
       String name,
       MangaStartPage startPage,
-      String ideaMemoDeltaId});
+      DeltaId ideaMemoDeltaId});
 }
 
 /// @nodoc
@@ -94,7 +94,7 @@ class _$MangaCopyWithImpl<$Res> implements $MangaCopyWith<$Res> {
       ideaMemoDeltaId: null == ideaMemoDeltaId
           ? _self.ideaMemoDeltaId
           : ideaMemoDeltaId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as DeltaId,
     ));
   }
 }
@@ -193,7 +193,7 @@ extension MangaPatterns on Manga {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(MangaId id, String name, MangaStartPage startPage,
-            String ideaMemoDeltaId)?
+            DeltaId ideaMemoDeltaId)?
         $default, {
     required TResult orElse(),
   }) {
@@ -223,7 +223,7 @@ extension MangaPatterns on Manga {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(MangaId id, String name, MangaStartPage startPage,
-            String ideaMemoDeltaId)
+            DeltaId ideaMemoDeltaId)
         $default,
   ) {
     final _that = this;
@@ -251,7 +251,7 @@ extension MangaPatterns on Manga {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(MangaId id, String name, MangaStartPage startPage,
-            String ideaMemoDeltaId)?
+            DeltaId ideaMemoDeltaId)?
         $default,
   ) {
     final _that = this;
@@ -281,7 +281,7 @@ class _Manga implements Manga {
   @override
   final MangaStartPage startPage;
   @override
-  final String ideaMemoDeltaId;
+  final DeltaId ideaMemoDeltaId;
 
   /// Create a copy of Manga
   /// with the given fields replaced by the non-null parameter values.
@@ -324,7 +324,7 @@ abstract mixin class _$MangaCopyWith<$Res> implements $MangaCopyWith<$Res> {
       {MangaId id,
       String name,
       MangaStartPage startPage,
-      String ideaMemoDeltaId});
+      DeltaId ideaMemoDeltaId});
 }
 
 /// @nodoc
@@ -360,7 +360,7 @@ class __$MangaCopyWithImpl<$Res> implements _$MangaCopyWith<$Res> {
       ideaMemoDeltaId: null == ideaMemoDeltaId
           ? _self.ideaMemoDeltaId
           : ideaMemoDeltaId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as DeltaId,
     ));
   }
 }
@@ -369,9 +369,9 @@ class __$MangaCopyWithImpl<$Res> implements _$MangaCopyWith<$Res> {
 mixin _$MangaPage {
   MangaPageId get id;
   MangaId get mangaId;
-  String get memoDeltaId; // CloudDelta document ID
-  String get stageDirectionDeltaId; // CloudDelta document ID
-  String get dialoguesDeltaId;
+  DeltaId get memoDeltaId;
+  DeltaId get stageDirectionDeltaId;
+  DeltaId get dialoguesDeltaId;
 
   /// Create a copy of MangaPage
   /// with the given fields replaced by the non-null parameter values.
@@ -413,9 +413,9 @@ abstract mixin class $MangaPageCopyWith<$Res> {
   $Res call(
       {MangaPageId id,
       MangaId mangaId,
-      String memoDeltaId,
-      String stageDirectionDeltaId,
-      String dialoguesDeltaId});
+      DeltaId memoDeltaId,
+      DeltaId stageDirectionDeltaId,
+      DeltaId dialoguesDeltaId});
 }
 
 /// @nodoc
@@ -448,15 +448,15 @@ class _$MangaPageCopyWithImpl<$Res> implements $MangaPageCopyWith<$Res> {
       memoDeltaId: null == memoDeltaId
           ? _self.memoDeltaId
           : memoDeltaId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as DeltaId,
       stageDirectionDeltaId: null == stageDirectionDeltaId
           ? _self.stageDirectionDeltaId
           : stageDirectionDeltaId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as DeltaId,
       dialoguesDeltaId: null == dialoguesDeltaId
           ? _self.dialoguesDeltaId
           : dialoguesDeltaId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as DeltaId,
     ));
   }
 }
@@ -554,8 +554,8 @@ extension MangaPagePatterns on MangaPage {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(MangaPageId id, MangaId mangaId, String memoDeltaId,
-            String stageDirectionDeltaId, String dialoguesDeltaId)?
+    TResult Function(MangaPageId id, MangaId mangaId, DeltaId memoDeltaId,
+            DeltaId stageDirectionDeltaId, DeltaId dialoguesDeltaId)?
         $default, {
     required TResult orElse(),
   }) {
@@ -584,8 +584,8 @@ extension MangaPagePatterns on MangaPage {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(MangaPageId id, MangaId mangaId, String memoDeltaId,
-            String stageDirectionDeltaId, String dialoguesDeltaId)
+    TResult Function(MangaPageId id, MangaId mangaId, DeltaId memoDeltaId,
+            DeltaId stageDirectionDeltaId, DeltaId dialoguesDeltaId)
         $default,
   ) {
     final _that = this;
@@ -612,8 +612,8 @@ extension MangaPagePatterns on MangaPage {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(MangaPageId id, MangaId mangaId, String memoDeltaId,
-            String stageDirectionDeltaId, String dialoguesDeltaId)?
+    TResult? Function(MangaPageId id, MangaId mangaId, DeltaId memoDeltaId,
+            DeltaId stageDirectionDeltaId, DeltaId dialoguesDeltaId)?
         $default,
   ) {
     final _that = this;
@@ -642,13 +642,11 @@ class _MangaPage implements MangaPage {
   @override
   final MangaId mangaId;
   @override
-  final String memoDeltaId;
-// CloudDelta document ID
+  final DeltaId memoDeltaId;
   @override
-  final String stageDirectionDeltaId;
-// CloudDelta document ID
+  final DeltaId stageDirectionDeltaId;
   @override
-  final String dialoguesDeltaId;
+  final DeltaId dialoguesDeltaId;
 
   /// Create a copy of MangaPage
   /// with the given fields replaced by the non-null parameter values.
@@ -694,9 +692,9 @@ abstract mixin class _$MangaPageCopyWith<$Res>
   $Res call(
       {MangaPageId id,
       MangaId mangaId,
-      String memoDeltaId,
-      String stageDirectionDeltaId,
-      String dialoguesDeltaId});
+      DeltaId memoDeltaId,
+      DeltaId stageDirectionDeltaId,
+      DeltaId dialoguesDeltaId});
 }
 
 /// @nodoc
@@ -729,15 +727,15 @@ class __$MangaPageCopyWithImpl<$Res> implements _$MangaPageCopyWith<$Res> {
       memoDeltaId: null == memoDeltaId
           ? _self.memoDeltaId
           : memoDeltaId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as DeltaId,
       stageDirectionDeltaId: null == stageDirectionDeltaId
           ? _self.stageDirectionDeltaId
           : stageDirectionDeltaId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as DeltaId,
       dialoguesDeltaId: null == dialoguesDeltaId
           ? _self.dialoguesDeltaId
           : dialoguesDeltaId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as DeltaId,
     ));
   }
 }

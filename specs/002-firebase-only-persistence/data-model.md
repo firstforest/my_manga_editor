@@ -170,98 +170,160 @@ Fields: pageIndex (Ascending)
 
 **`Manga` Model** (`lib/feature/manga/model/manga.dart`):
 ```dart
+typedef MangaId = int;
+typedef DeltaId = int;
+
 @freezed
 class Manga with _$Manga {
   const factory Manga({
-    required int id,
+    required MangaId id,        // int (will change to String for Firestore)
     required String name,
     required MangaStartPage startPage,
-    required int ideaMemo,  // DeltaId (foreign key to DbDeltas)
+    required DeltaId ideaMemo,  // DeltaId (int reference to in-memory cache)
   }) = _Manga;
 }
 ```
 
 **`MangaPage` Model**:
 ```dart
+typedef MangaPageId = int;
+
 @freezed
 class MangaPage with _$MangaPage {
   const factory MangaPage({
-    required int id,
-    required int memoDelta,           // DeltaId
-    required int stageDirectionDelta, // DeltaId
-    required int dialoguesDelta,      // DeltaId
+    required MangaPageId id,          // int (will change to String for Firestore)
+    required DeltaId memoDelta,           // DeltaId (int reference)
+    required DeltaId stageDirectionDelta, // DeltaId (int reference)
+    required DeltaId dialoguesDelta,      // DeltaId (int reference)
   }) = _MangaPage;
 }
 ```
 
 ### Migration Changes Required
 
-**Option A: Minimal Changes (Recommended)**
-Keep domain models unchanged, convert in repository:
+**✅ SELECTED APPROACH: Minimal Changes with Delta Cache**
+
+Keep domain model structure unchanged (DeltaId as int), use in-memory cache for Delta management:
 
 ```dart
-// Domain model stays the same
-class Manga {
-  final int id;           // Still int for backwards compatibility
-  final String name;
-  final MangaStartPage startPage;
-  final int ideaMemo;     // Still DeltaId (int)
-}
+// Domain model - MINIMAL CHANGES
+typedef MangaId = String;      // Change: int → String (Firestore doc ID)
+typedef MangaPageId = String;  // Change: int → String
+typedef DeltaId = int;         // Keep: int (in-memory cache reference)
 
-// Repository conversion layer
-extension CloudMangaConversion on CloudManga {
-  Future<Manga> toManga(MangaRepository repo) async {
-    // Convert embedded delta to DeltaId by storing in-memory
-    final deltaId = repo.cacheDelta(ideaMemo);  // Returns int
-    return Manga(
-      id: int.parse(id),
-      name: name,
-      startPage: MangaStartPage.fromString(startPageDirection),
-      ideaMemo: deltaId,  // In-memory delta ID
-    );
-  }
-}
-```
-
-**Option B: Update Domain Models**
-Change domain models to match Firestore structure:
-
-```dart
 @freezed
 class Manga with _$Manga {
   const factory Manga({
-    required String id,           // Change: String (Firestore doc ID)
+    required MangaId id,        // Changed to String
     required String name,
     required MangaStartPage startPage,
-    required Delta ideaMemo,      // Change: Direct Delta object
+    required DeltaId ideaMemo,  // Unchanged: int DeltaId
   }) = _Manga;
 }
 
 @freezed
 class MangaPage with _$MangaPage {
   const factory MangaPage({
-    required String id,            // Change: String
-    required Delta memoDelta,      // Change: Direct Delta
-    required Delta stageDirectionDelta,
-    required Delta dialoguesDelta,
+    required MangaPageId id,          // Changed to String
+    required DeltaId memoDelta,           // Unchanged: int DeltaId
+    required DeltaId stageDirectionDelta, // Unchanged: int DeltaId
+    required DeltaId dialoguesDelta,      // Unchanged: int DeltaId
   }) = _MangaPage;
 }
 ```
 
-### Recommendation
+**DeltaCache Architecture** (new component):
 
-✅ **Option B: Update Domain Models**
+```dart
+/// In-memory cache for Delta objects referenced by DeltaId
+class DeltaCache {
+  final Map<DeltaId, Delta> _cache = {};
+  final Map<DeltaId, StreamController<Delta?>> _controllers = {};
+  int _nextId = 1;
 
-**Rationale**:
-1. **Simpler Architecture**: Removes in-memory delta caching complexity
-2. **Better Type Safety**: `Delta` type is more explicit than `int` reference
-3. **Firestore Alignment**: Matches natural Firestore document structure
-4. **Breaking Change Acceptable**: UI layer uses streams, changes are internal
+  /// Store a Delta and return its DeltaId
+  DeltaId storeDelta(Delta delta) {
+    final id = _nextId++;
+    _cache[id] = delta;
+    return id;
+  }
+
+  /// Get Delta by DeltaId
+  Delta? getDelta(DeltaId id) => _cache[id];
+
+  /// Get reactive stream for Delta updates
+  Stream<Delta?> getDeltaStream(DeltaId id) {
+    if (!_controllers.containsKey(id)) {
+      _controllers[id] = StreamController<Delta?>.broadcast();
+      _controllers[id]!.add(_cache[id]);
+    }
+    return _controllers[id]!.stream;
+  }
+
+  /// Update Delta and notify listeners
+  void updateDelta(DeltaId id, Delta delta) {
+    _cache[id] = delta;
+    _controllers[id]?.add(delta);
+  }
+}
+```
+
+**Repository Conversion Layer**:
+
+```dart
+extension CloudMangaConversion on CloudManga {
+  Manga toManga(DeltaCache cache) {
+    // Convert embedded Delta map to DeltaId
+    final ideaMemoOps = ideaMemo['ops'] as List? ?? [];
+    final delta = Delta.fromJson(ideaMemoOps);
+    final deltaId = cache.storeDelta(delta);  // Store in cache, get int ID
+
+    return Manga(
+      id: id,  // Already String in CloudManga
+      name: name,
+      startPage: MangaStartPageExt.fromString(startPageDirection),
+      ideaMemo: deltaId,  // int DeltaId reference
+    );
+  }
+}
+
+extension MangaToCloudConversion on Manga {
+  CloudManga toCloudManga(String userId, DeltaCache cache) {
+    // Convert DeltaId to embedded Delta map
+    final delta = cache.getDelta(ideaMemo);
+    if (delta == null) {
+      throw Exception('Delta not found in cache for DeltaId: $ideaMemo');
+    }
+
+    return CloudManga(
+      id: id,
+      userId: userId,
+      name: name,
+      startPageDirection: startPage.name,
+      ideaMemo: {'ops': delta.toJson()},  // Embed Delta in Firestore
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      editLock: null,
+    );
+  }
+}
+```
+
+### Rationale for Selected Approach
+
+✅ **Why Delta Cache Pattern**:
+
+1. **Minimal Domain Model Changes**: Only MangaId/MangaPageId change from int → String (required for Firestore). DeltaId remains int.
+2. **UI Layer Compatibility**: Existing `getDeltaStream(DeltaId)` calls work unchanged
+3. **Firestore Optimization**: Deltas embedded in Firestore documents (reduces read costs)
+4. **Memory Efficiency**: Cache only active deltas, cleared on app restart
+5. **Backwards Compatible**: Repository API maintains same signatures
 
 **Migration Impact**:
-- Update domain model classes (`manga.dart`)
-- Update repository conversion methods (already have `toManga()`, `toCloudManga()`)
-- UI layer mostly unaffected (uses `Delta` objects via repository streams)
+- Update MangaId/MangaPageId typedefs in `manga.dart` (int → String)
+- Create `DeltaCache` class in repository layer
+- Update repository conversion methods to use cache
+- UI layer: Change manga/page ID types from int → String, DeltaId usage unchanged
 - Re-run `dart run build_runner build -d` for Freezed generation
 
 ---

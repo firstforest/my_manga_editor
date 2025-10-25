@@ -72,22 +72,27 @@ State management architecture unchanged:
 - Flutter Hooks usage for local state unchanged
 
 ### V. Rich Text Data Consistency
-**Status**: ⚠️ REQUIRES ATTENTION
+**Status**: ✅ RESOLVED
 
-Current: Quill Delta stored in `DbDeltas` table with foreign key references
-Migration: Store Quill Delta as `Map<String, dynamic>` directly in Firestore documents
+**Decision**: Hybrid approach - Firestore embeds deltas, Domain models use DeltaId references
 
-**Decision Required**:
-- **Option A (Embedded)**: Store deltas as nested maps within manga/page documents (simpler, fewer Firestore reads)
-- **Option B (Subcollection)**: Create separate delta subcollection mimicking current FK structure (maintains separation)
+Current: Quill Delta stored in `DbDeltas` table with foreign key references (DeltaId = int)
+Migration:
+- **Firestore layer**: Deltas embedded as `Map<String, dynamic>` in CloudManga/CloudMangaPage documents
+- **Domain layer**: Delta references preserved as `DeltaId` (int) in Manga/MangaPage models
+- **Repository layer**: DeltaCache bridges between embedded deltas and DeltaId references
 
-**Recommendation**: Option A (embedded) - Firestore pricing is per-document-read, embedding deltas reduces cost and latency while maintaining data consistency through document atomicity.
+**Benefits**:
+1. **Minimal domain model changes**: DeltaId (int) unchanged, only MangaId/MangaPageId change to String
+2. **UI compatibility**: Existing `getDeltaStream(DeltaId)` calls work unchanged
+3. **Firestore optimization**: Embedded deltas reduce document reads (cost savings)
+4. **Offline-first**: In-memory cache provides instant delta access
 
-**Constitution Alignment**: Moving from normalized DB structure to denormalized document structure is acceptable because:
-1. Firestore is document-oriented (not relational)
-2. Deltas are always accessed with their parent manga/page
-3. No sharing of deltas between entities
-4. Document size limits (<1MB) are not a concern for manga content
+**Constitution Alignment**:
+- Firestore denormalization is standard practice (document-oriented storage)
+- Domain model maintains referential pattern (preserves existing architecture)
+- Repository layer encapsulates conversion logic (clean separation of concerns)
+- Delta cache cleared on app restart, re-populated from Firestore (stateless design)
 
 ### Pre-Research Gate Decision
 ✅ **PASS** - All constitution principles maintained or improved. Rich text storage pattern requires architectural decision (documented in research phase).
@@ -263,21 +268,21 @@ State management unchanged:
 **Previous Status**: ⚠️ REQUIRES ATTENTION (decision needed on delta storage)
 
 **Resolution** (from research.md and data-model.md):
-- **Decision**: Embed deltas as `Map<String, dynamic>` in Firestore documents (Option A)
-- **Rationale**: Firestore best practice, cost optimization, atomic updates, document size well within limits
+- **Decision**: Hybrid approach - Firestore embeds deltas, Domain models use DeltaId references
+- **Rationale**: Combines Firestore optimization with minimal domain model changes
 - **Constitution Alignment**: Acceptable because:
   1. Firestore is document-oriented (denormalization is standard)
-  2. Deltas always accessed with parent manga/page (no separate queries needed)
-  3. No delta sharing between entities (no normalization benefit)
+  2. Domain model preserves existing DeltaId pattern (minimal breaking changes)
+  3. Repository DeltaCache encapsulates conversion logic (clean separation)
   4. Document size <100KB for typical manga (well under 1MB limit)
 
-**New Pattern**:
-- Store `ideaMemo` as nested map in `CloudManga`
-- Store `memoDelta`, `dialoguesDelta`, `stageDirectionDelta` as nested maps in `CloudMangaPage`
-- Convert to/from Quill `Delta` in repository layer
-- Single document read fetches all content (vs 5+ reads in normalized approach)
+**Implementation Pattern**:
+- **Firestore layer**: `ideaMemo`, `memoDelta`, etc. stored as nested maps in documents
+- **Domain layer**: `DeltaId` (int) references maintained in Manga/MangaPage models
+- **Repository layer**: DeltaCache converts between embedded maps and DeltaId references
+- **UI layer**: Unchanged - continues using `getDeltaStream(DeltaId)`
 
-**Constitution Compliance**: ✅ Pattern documented in data-model.md, follows Firestore best practices.
+**Constitution Compliance**: ✅ Pattern documented in data-model.md, preserves existing architecture while adopting Firestore best practices.
 
 ### Post-Design Gate Decision
 ✅ **PASS** - All constitution principles confirmed. Design artifacts complete and compliant. Ready for task generation phase.

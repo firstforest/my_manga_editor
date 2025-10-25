@@ -25,13 +25,16 @@ This document defines the contract between the Repository Layer and UI Layer (Pr
 ### Manga
 
 ```dart
+typedef MangaId = String;      // Changed: int → String (Firestore doc ID)
+typedef DeltaId = int;         // Unchanged: int (in-memory cache reference)
+
 @freezed
 class Manga with _$Manga {
   const factory Manga({
-    required String id,           // Changed: String (was int)
+    required MangaId id,          // Changed: String (was int)
     required String name,
     required MangaStartPage startPage,
-    required Delta ideaMemo,      // Changed: Delta object (was int DeltaId)
+    required DeltaId ideaMemo,    // Unchanged: int DeltaId reference
   }) = _Manga;
 
   factory Manga.fromJson(Map<String, dynamic> json) => _$MangaFromJson(json);
@@ -45,22 +48,24 @@ enum MangaStartPage {
 
 **Breaking Changes**:
 - `id`: `int` → `String` (Firestore document IDs are strings)
-- `ideaMemo`: `int` (DeltaId foreign key) → `Delta` (direct object)
+- `ideaMemo`: **UNCHANGED** - remains `int` DeltaId (references in-memory cache)
 
 **Migration Strategy**:
 - Update all UI code referencing `manga.id` to handle `String` type
-- Update all UI code using `ideaMemo` to use `Delta` directly (no repository lookup needed)
+- UI code using `getDeltaStream(ideaMemo)` works unchanged (DeltaId is still int)
 
 ### MangaPage
 
 ```dart
+typedef MangaPageId = String;  // Changed: int → String
+
 @freezed
 class MangaPage with _$MangaPage {
   const factory MangaPage({
-    required String id,                   // Changed: String (was int)
-    required Delta memoDelta,             // Changed: Delta object (was int DeltaId)
-    required Delta stageDirectionDelta,   // Changed: Delta object (was int DeltaId)
-    required Delta dialoguesDelta,        // Changed: Delta object (was int DeltaId)
+    required MangaPageId id,              // Changed: String (was int)
+    required DeltaId memoDelta,           // Unchanged: int DeltaId reference
+    required DeltaId stageDirectionDelta, // Unchanged: int DeltaId reference
+    required DeltaId dialoguesDelta,      // Unchanged: int DeltaId reference
   }) = _MangaPage;
 
   factory MangaPage.fromJson(Map<String, dynamic> json) => _$MangaPageFromJson(json);
@@ -69,7 +74,7 @@ class MangaPage with _$MangaPage {
 
 **Breaking Changes**:
 - `id`: `int` → `String`
-- All delta fields: `int` → `Delta` object
+- All delta fields: **UNCHANGED** - remain `int` DeltaId (references in-memory cache)
 
 ### SyncStatus (New)
 
@@ -128,10 +133,6 @@ class MangaRepository {
   /// Throws: AuthException, NotFoundException
   Future<void> updateStartPage(String id, MangaStartPage value);
 
-  /// Update manga idea memo (rich text)
-  /// Throws: AuthException, NotFoundException
-  Future<void> updateIdeaMemo(String id, Delta delta);
-
   /// Delete manga and all its pages
   /// Throws: AuthException, NotFoundException
   Future<void> deleteManga(String id);
@@ -140,6 +141,23 @@ class MangaRepository {
   /// Includes all pages and formatted content
   /// Throws: NotFoundException
   Future<String> toMarkdown(String mangaId);
+
+  // ============================================================================
+  // Delta Management Operations (KEPT for backward compatibility)
+  // ============================================================================
+
+  /// Save delta to cache and sync to Firestore
+  /// Updates the embedded delta in parent manga/page document
+  /// Throws: AuthException, NotFoundException
+  void saveDelta(DeltaId id, Delta delta);
+
+  /// Load delta from cache or Firestore
+  /// Returns null if delta not found
+  Future<Delta?> loadDelta(DeltaId id);
+
+  /// Watch delta changes (reactive)
+  /// Emits updates when delta is modified via saveDelta
+  Stream<Delta?> getDeltaStream(DeltaId id);
 
   // ============================================================================
   // MangaPage CRUD Operations
@@ -157,18 +175,6 @@ class MangaRepository {
   /// Watch all page IDs for a manga, ordered by pageIndex (reactive)
   /// Used for displaying page list in grid/editor
   Stream<List<String>> watchAllMangaPageIdList(String mangaId);
-
-  /// Update page memo content (rich text)
-  /// Throws: AuthException, NotFoundException
-  Future<void> updatePageMemo(String pageId, Delta delta);
-
-  /// Update page dialogue content (rich text)
-  /// Throws: AuthException, NotFoundException
-  Future<void> updatePageDialogue(String pageId, Delta delta);
-
-  /// Update page stage direction content (rich text)
-  /// Throws: AuthException, NotFoundException
-  Future<void> updatePageStageDirection(String pageId, Delta delta);
 
   /// Reorder pages by updating pageIndex
   /// pageIdList should contain all page IDs in desired order
@@ -206,32 +212,39 @@ class MangaRepository {
 Future<void> saveManga(String fileName, Manga manga);     // File export
 Future<Manga?> loadManga(String fileName);                // File import
 Future<void> clearData();                                 // Clear all (dangerous)
-Stream<Delta?> getDeltaStream(DeltaId id);                // Separate delta access
-void saveDelta(DeltaId id, Delta delta);                  // Direct delta save
-Future<Delta?> loadDelta(DeltaId id);                     // Direct delta load
 ```
 
 **Rationale**:
-- Deltas now embedded in manga/page objects (no separate access needed)
 - File-based save/load replaced by cloud persistence
 - Clearing data done via Firebase Console (admin operation)
+
+### Kept Methods (UNCHANGED)
+
+```dart
+// KEPT: Delta management methods preserved for backward compatibility
+
+Stream<Delta?> getDeltaStream(DeltaId id);    // Reactive delta access
+void saveDelta(DeltaId id, Delta delta);      // Update delta and sync
+Future<Delta?> loadDelta(DeltaId id);         // Load delta from cache
+```
+
+**Rationale**:
+- Delta ID reference pattern maintained (DeltaId = int)
+- UI layer works unchanged with existing getDeltaStream calls
+- Repository uses DeltaCache to bridge between Firestore (embedded) and domain models (ID reference)
 
 ### New Methods
 
 ```dart
 // NEW: Added for Firebase-specific functionality
 
-Future<void> updateIdeaMemo(String id, Delta delta);
-Future<void> updatePageMemo(String pageId, Delta delta);
-Future<void> updatePageDialogue(String pageId, Delta delta);
-Future<void> updatePageStageDirection(String pageId, Delta delta);
 Stream<SyncStatus> watchSyncStatus();
 Future<void> forceSyncAll();
 ```
 
 **Rationale**:
-- Explicit update methods for delta fields (cleaner than generic update)
 - Sync status visibility for offline-first UX
+- Manual sync trigger for user control
 
 ### Changed Signatures
 
@@ -655,15 +668,15 @@ void main() {
 
 UI components must be updated to:
 
-- [x] Change `manga.id` type from `int` to `String`
-- [x] Access `manga.ideaMemo` directly (Delta object) instead of `getDeltaStream(manga.ideaMemo)`
-- [x] Change `page.id` type from `int` to `String`
-- [x] Access page deltas directly (`page.memoDelta`, etc.) instead of separate stream lookups
-- [x] Handle new exceptions: `AuthException`, `NotFoundException`, etc.
-- [x] Remove calls to deprecated methods: `saveDelta()`, `loadDelta()`, `getDeltaStream()`
-- [x] Update Riverpod providers to use new repository signatures
-- [x] Add sync status indicator using `watchSyncStatus()` stream
-- [x] Test offline editing behavior (auto-queue for sync)
+- [ ] Change `manga.id` type from `int` to `String`
+- [ ] **UNCHANGED**: Continue using `getDeltaStream(manga.ideaMemo)` - DeltaId remains int
+- [ ] Change `page.id` type from `int` to `String`
+- [ ] **UNCHANGED**: Continue using `getDeltaStream(page.memoDelta)` etc. - DeltaId remains int
+- [ ] Handle new exceptions: `AuthException`, `NotFoundException`, etc.
+- [ ] **UNCHANGED**: Keep using `saveDelta()`, `loadDelta()`, `getDeltaStream()` - methods preserved
+- [ ] Update Riverpod providers to use new repository signatures (String IDs instead of int)
+- [ ] Add sync status indicator using `watchSyncStatus()` stream
+- [ ] Test offline editing behavior (auto-queue for sync via saveDelta)
 
 ---
 

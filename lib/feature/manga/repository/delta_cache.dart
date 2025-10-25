@@ -9,14 +9,14 @@ import 'package:my_manga_editor/feature/manga/model/manga.dart';
 class DeltaCache {
   final Map<DeltaId, Delta> _cache = {};
   final Map<DeltaId, StreamController<Delta?>> _controllers = {};
-  int _nextId = 1;
+  DeltaId _nextId = DeltaId(1);
 
   /// Store a Delta and return its DeltaId
   ///
   /// The Delta is cached in memory and assigned an auto-incrementing integer ID.
   /// This ID can be used to retrieve the Delta later via [getDelta] or [getDeltaStream].
   DeltaId storeDelta(Delta delta) {
-    final id = _nextId++;
+    final id = DeltaId(_nextId.id + 1);
     _cache[id] = delta;
     // If there's an existing stream controller for this ID, emit the delta
     if (_controllers.containsKey(id)) {
@@ -64,7 +64,7 @@ class DeltaCache {
       controller.close();
     }
     _controllers.clear();
-    _nextId = 1;
+    _nextId = DeltaId(1);
   }
 
   /// Dispose of all resources

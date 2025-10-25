@@ -75,7 +75,7 @@ class MangaGridPage extends HookConsumerWidget {
             final newOrder = reorder(list);
             ref
                 .read(mangaProvider(mangaId).notifier)
-                .reorderPage(newOrder.nonNulls.toList(), 0, 0);
+                .reorderPage(newOrder.whereType<MangaPageId>().toList(), 0, 0);
           },
           enableLongPress: false,
           children: generatedChildren,

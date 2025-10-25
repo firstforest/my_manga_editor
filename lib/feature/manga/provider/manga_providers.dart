@@ -25,7 +25,7 @@ Stream<List<MangaPageId>> mangaPageIdList(Ref ref, MangaId mangaId) {
 @riverpod
 class MangaNotifier extends _$MangaNotifier {
   @override
-  Stream<Manga?> build(String id) {
+  Stream<Manga?> build(MangaId id) {
     final repo = ref.watch(mangaRepositoryProvider);
     return repo.getMangaStream(id);
   }

@@ -128,7 +128,8 @@ const mangaProvider = MangaNotifierFamily._();
 final class MangaNotifierProvider
     extends $StreamNotifierProvider<MangaNotifier, Manga?> {
   const MangaNotifierProvider._(
-      {required MangaNotifierFamily super.from, required String super.argument})
+      {required MangaNotifierFamily super.from,
+      required MangaId super.argument})
       : super(
           retry: null,
           name: r'mangaProvider',
@@ -162,12 +163,12 @@ final class MangaNotifierProvider
   }
 }
 
-String _$mangaNotifierHash() => r'68e5315479c823cb91f7249b2313fad911183d80';
+String _$mangaNotifierHash() => r'a150efd4c1d7f0047cd99d78b40382e1d3c6dd14';
 
 final class MangaNotifierFamily extends $Family
     with
         $ClassFamilyOverride<MangaNotifier, AsyncValue<Manga?>, Manga?,
-            Stream<Manga?>, String> {
+            Stream<Manga?>, MangaId> {
   const MangaNotifierFamily._()
       : super(
           retry: null,
@@ -178,7 +179,7 @@ final class MangaNotifierFamily extends $Family
         );
 
   MangaNotifierProvider call(
-    String id,
+    MangaId id,
   ) =>
       MangaNotifierProvider._(argument: id, from: this);
 
@@ -187,11 +188,11 @@ final class MangaNotifierFamily extends $Family
 }
 
 abstract class _$MangaNotifier extends $StreamNotifier<Manga?> {
-  late final _$args = ref.$arg as String;
-  String get id => _$args;
+  late final _$args = ref.$arg as MangaId;
+  MangaId get id => _$args;
 
   Stream<Manga?> build(
-    String id,
+    MangaId id,
   );
   @$mustCallSuper
   @override

@@ -3,11 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart';
 
-@GenerateNiceMocks([MockSpec<MangaRepository>()])
+@GenerateNiceMocks([
+  MockSpec<MangaRepository>(
+      fallbackGenerators: {#createNewManga: mockCreateNewManga})
+])
 import 'manga_providers_test.mocks.dart';
+
+Future<MangaId> mockCreateNewManga({String? name = '無名の傑作'}) =>
+    Future.value(MangaId('0'));
 
 final testDialogues = '''セリフ1
 
@@ -42,7 +49,7 @@ void main() {
   });
 
   group('DeltaNotifier', () {
-    final deltaId = 10;
+    final deltaId = DeltaId(10);
 
     test('クリスタ用のセリフとして出力する', () async {
       when(mockMangaRepository.getDeltaStream(any))

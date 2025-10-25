@@ -4,7 +4,7 @@ import 'package:my_manga_editor/feature/manga/model/manga.dart';
 
 /// In-memory cache for Delta objects referenced by DeltaId
 ///
-/// This cache bridges between Firestore's embedded delta storage (Map<String, dynamic>)
+/// This cache bridges between Firestore's embedded delta storage (Map)
 /// and the domain model's DeltaId reference pattern (int).
 class DeltaCache {
   final Map<DeltaId, Delta> _cache = {};

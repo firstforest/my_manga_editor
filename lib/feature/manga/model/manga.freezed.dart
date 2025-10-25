@@ -26,9 +26,6 @@ mixin _$Manga {
   $MangaCopyWith<Manga> get copyWith =>
       _$MangaCopyWithImpl<Manga>(this as Manga, _$identity);
 
-  /// Serializes this Manga to a JSON map.
-  Map<String, dynamic> toJson();
-
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
@@ -42,7 +39,6 @@ mixin _$Manga {
                 other.ideaMemo == ideaMemo));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, name, startPage, ideaMemo);
 
@@ -263,14 +259,13 @@ extension MangaPatterns on Manga {
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _Manga implements Manga {
   const _Manga(
       {required this.id,
       required this.name,
       required this.startPage,
       required this.ideaMemo});
-  factory _Manga.fromJson(Map<String, dynamic> json) => _$MangaFromJson(json);
 
   @override
   final MangaId id;
@@ -290,13 +285,6 @@ class _Manga implements Manga {
       __$MangaCopyWithImpl<_Manga>(this, _$identity);
 
   @override
-  Map<String, dynamic> toJson() {
-    return _$MangaToJson(
-      this,
-    );
-  }
-
-  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
@@ -309,7 +297,6 @@ class _Manga implements Manga {
                 other.ideaMemo == ideaMemo));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, name, startPage, ideaMemo);
 
@@ -381,9 +368,6 @@ mixin _$MangaPage {
   $MangaPageCopyWith<MangaPage> get copyWith =>
       _$MangaPageCopyWithImpl<MangaPage>(this as MangaPage, _$identity);
 
-  /// Serializes this MangaPage to a JSON map.
-  Map<String, dynamic> toJson();
-
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
@@ -398,7 +382,6 @@ mixin _$MangaPage {
                 other.dialoguesDelta == dialoguesDelta));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType, id, memoDelta, stageDirectionDelta, dialoguesDelta);
@@ -626,15 +609,13 @@ extension MangaPagePatterns on MangaPage {
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _MangaPage implements MangaPage {
   const _MangaPage(
       {required this.id,
       required this.memoDelta,
       required this.stageDirectionDelta,
       required this.dialoguesDelta});
-  factory _MangaPage.fromJson(Map<String, dynamic> json) =>
-      _$MangaPageFromJson(json);
 
   @override
   final MangaPageId id;
@@ -654,13 +635,6 @@ class _MangaPage implements MangaPage {
       __$MangaPageCopyWithImpl<_MangaPage>(this, _$identity);
 
   @override
-  Map<String, dynamic> toJson() {
-    return _$MangaPageToJson(
-      this,
-    );
-  }
-
-  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
@@ -674,7 +648,6 @@ class _MangaPage implements MangaPage {
                 other.dialoguesDelta == dialoguesDelta));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType, id, memoDelta, stageDirectionDelta, dialoguesDelta);

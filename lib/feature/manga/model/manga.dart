@@ -1,7 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'manga.freezed.dart';
-part 'manga.g.dart';
 
 enum MangaStartPage {
   left,
@@ -21,9 +20,9 @@ extension MangaStartPageExt on MangaStartPage {
   }
 }
 
-typedef MangaId = String; // Changed from int to String for Firestore compatibility
-typedef MangaPageId = String; // Changed from int to String for Firestore compatibility
-typedef DeltaId = int; // Kept as int for in-memory cache reference
+extension type MangaId(String id) {}
+extension type MangaPageId(String id) {}
+extension type DeltaId(int id) {}
 
 @freezed
 abstract class Manga with _$Manga {
@@ -33,8 +32,6 @@ abstract class Manga with _$Manga {
     required MangaStartPage startPage,
     required DeltaId ideaMemo,
   }) = _Manga;
-
-  factory Manga.fromJson(Map<String, dynamic> json) => _$MangaFromJson(json);
 }
 
 @freezed
@@ -45,7 +42,4 @@ abstract class MangaPage with _$MangaPage {
     required DeltaId stageDirectionDelta,
     required DeltaId dialoguesDelta,
   }) = _MangaPage;
-
-  factory MangaPage.fromJson(Map<String, dynamic> json) =>
-      _$MangaPageFromJson(json);
 }

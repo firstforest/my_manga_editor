@@ -64,69 +64,69 @@
 
 #### Repository Delta Cache Management
 
-- [ ] T016 [US1] Create DeltaCache class in lib/feature/manga/repository/delta_cache.dart (in-memory cache for Delta ↔ DeltaId mapping)
-- [ ] T017 [US1] Implement storeDelta method in lib/feature/manga/repository/delta_cache.dart (Delta → DeltaId, returns auto-incremented int)
-- [ ] T018 [US1] Implement getDelta method in lib/feature/manga/repository/delta_cache.dart (DeltaId → Delta?, returns null if not found)
-- [ ] T019 [US1] Implement getDeltaStream method in lib/feature/manga/repository/delta_cache.dart (DeltaId → Stream<Delta?>, reactive delta updates)
-- [ ] T020 [US1] Implement updateDelta method in lib/feature/manga/repository/delta_cache.dart (DeltaId → void, updates cached delta and emits stream)
-- [ ] T021 [US1] Implement clearCache method in lib/feature/manga/repository/delta_cache.dart (clears all cached deltas, for testing)
+- [X] T016 [US1] Create DeltaCache class in lib/feature/manga/repository/delta_cache.dart (in-memory cache for Delta ↔ DeltaId mapping)
+- [X] T017 [US1] Implement storeDelta method in lib/feature/manga/repository/delta_cache.dart (Delta → DeltaId, returns auto-incremented int)
+- [X] T018 [US1] Implement getDelta method in lib/feature/manga/repository/delta_cache.dart (DeltaId → Delta?, returns null if not found)
+- [X] T019 [US1] Implement getDeltaStream method in lib/feature/manga/repository/delta_cache.dart (DeltaId → Stream<Delta?>, reactive delta updates)
+- [X] T020 [US1] Implement updateDelta method in lib/feature/manga/repository/delta_cache.dart (DeltaId → void, updates cached delta and emits stream)
+- [X] T021 [US1] Implement clearCache method in lib/feature/manga/repository/delta_cache.dart (clears all cached deltas, for testing)
 
 #### Repository Conversion Layer
 
-- [ ] T022 [P] [US1] Add CloudMangaConversion extension in lib/feature/manga/repository/manga_repository.dart (toManga method: embedded Delta → DeltaId via cache)
-- [ ] T023 [P] [US1] Add MangaToCloudConversion extension in lib/feature/manga/repository/manga_repository.dart (toCloudManga method: DeltaId → embedded Delta from cache)
-- [ ] T024 [P] [US1] Add CloudMangaPageConversion extension in lib/feature/manga/repository/manga_repository.dart (toMangaPage method: embedded Deltas → DeltaIds)
-- [ ] T025 [P] [US1] Add MangaPageToCloudConversion extension in lib/feature/manga/repository/manga_repository.dart (toCloudMangaPage method: DeltaIds → embedded Deltas)
+- [X] T022 [P] [US1] Add CloudMangaConversion extension in lib/feature/manga/repository/manga_repository.dart (toManga method: embedded Delta → DeltaId via cache)
+- [X] T023 [P] [US1] Add MangaToCloudConversion extension in lib/feature/manga/repository/manga_repository.dart (toCloudManga method: DeltaId → embedded Delta from cache)
+- [X] T024 [P] [US1] Add CloudMangaPageConversion extension in lib/feature/manga/repository/manga_repository.dart (toMangaPage method: embedded Deltas → DeltaIds)
+- [X] T025 [P] [US1] Add MangaPageToCloudConversion extension in lib/feature/manga/repository/manga_repository.dart (toCloudMangaPage method: DeltaIds → embedded Deltas)
 
 #### Repository Core Implementation
 
-- [ ] T026 [US1] Update MangaRepository constructor in lib/feature/manga/repository/manga_repository.dart (remove MangaDao, add FirebaseService and DeltaCache dependencies)
-- [ ] T027 [US1] Implement createNewManga method in lib/feature/manga/repository/manga_repository.dart (returns String mangaId, creates empty Delta and stores in cache)
-- [ ] T028 [US1] Implement getMangaStream method in lib/feature/manga/repository/manga_repository.dart (Stream<Manga?> with String id, converts CloudManga → Manga with Delta caching)
-- [ ] T029 [US1] Implement watchAllMangaList method in lib/feature/manga/repository/manga_repository.dart (Stream<List<Manga>>, caches all deltas from fetched mangas)
-- [ ] T030 [US1] Implement updateMangaName method in lib/feature/manga/repository/manga_repository.dart (validates 1-100 chars, throws ValidationException)
-- [ ] T031 [US1] Implement updateStartPage method in lib/feature/manga/repository/manga_repository.dart (updates manga reading direction)
-- [ ] T032 [US1] Implement deleteManga method in lib/feature/manga/repository/manga_repository.dart (deletes manga, pages, and clears cached deltas)
+- [X] T026 [US1] Update MangaRepository constructor in lib/feature/manga/repository/manga_repository.dart (remove MangaDao, add FirebaseService and DeltaCache dependencies)
+- [X] T027 [US1] Implement createNewManga method in lib/feature/manga/repository/manga_repository.dart (returns String mangaId, creates empty Delta and stores in cache)
+- [X] T028 [US1] Implement getMangaStream method in lib/feature/manga/repository/manga_repository.dart (Stream<Manga?> with String id, converts CloudManga → Manga with Delta caching)
+- [X] T029 [US1] Implement watchAllMangaList method in lib/feature/manga/repository/manga_repository.dart (Stream<List<Manga>>, caches all deltas from fetched mangas)
+- [X] T030 [US1] Implement updateMangaName method in lib/feature/manga/repository/manga_repository.dart (validates 1-100 chars, throws ValidationException)
+- [X] T031 [US1] Implement updateStartPage method in lib/feature/manga/repository/manga_repository.dart (updates manga reading direction)
+- [X] T032 [US1] Implement deleteManga method in lib/feature/manga/repository/manga_repository.dart (deletes manga, pages, and clears cached deltas)
 
 #### Repository Delta Management Methods
 
-- [ ] T033 [US1] Implement saveDelta method in lib/feature/manga/repository/manga_repository.dart (DeltaId → Delta → void, updates cache and syncs to Firestore)
-- [ ] T034 [US1] Implement loadDelta method in lib/feature/manga/repository/manga_repository.dart (DeltaId → Future<Delta?>, retrieves from cache or Firestore)
-- [ ] T035 [US1] Implement getDeltaStream method in lib/feature/manga/repository/manga_repository.dart (DeltaId → Stream<Delta?>, delegates to DeltaCache)
+- [X] T033 [US1] Implement saveDelta method in lib/feature/manga/repository/manga_repository.dart (DeltaId → Delta → void, updates cache and syncs to Firestore)
+- [X] T034 [US1] Implement loadDelta method in lib/feature/manga/repository/manga_repository.dart (DeltaId → Future<Delta?>, retrieves from cache or Firestore)
+- [X] T035 [US1] Implement getDeltaStream method in lib/feature/manga/repository/manga_repository.dart (DeltaId → Stream<Delta?>, delegates to DeltaCache)
 
 #### Repository Page Operations
 
-- [ ] T036 [US1] Implement createNewMangaPage method in lib/feature/manga/repository/manga_repository.dart (returns String pageId, creates empty Deltas and stores in cache)
-- [ ] T037 [US1] Implement getMangaPageStream method in lib/feature/manga/repository/manga_repository.dart (Stream<MangaPage?>, converts CloudMangaPage → MangaPage with Delta caching)
-- [ ] T038 [US1] Implement watchAllMangaPageIdList method in lib/feature/manga/repository/manga_repository.dart (Stream<List<String>> ordered by pageIndex)
-- [ ] T039 [US1] Implement reorderPages method in lib/feature/manga/repository/manga_repository.dart (batch updates pageIndex for all pages in Firestore)
-- [ ] T040 [US1] Implement deleteMangaPage method in lib/feature/manga/repository/manga_repository.dart (deletes page and clears cached deltas)
+- [X] T036 [US1] Implement createNewMangaPage method in lib/feature/manga/repository/manga_repository.dart (returns String pageId, creates empty Deltas and stores in cache)
+- [X] T037 [US1] Implement getMangaPageStream method in lib/feature/manga/repository/manga_repository.dart (Stream<MangaPage?>, converts CloudMangaPage → MangaPage with Delta caching)
+- [X] T038 [US1] Implement watchAllMangaPageIdList method in lib/feature/manga/repository/manga_repository.dart (Stream<List<String>> ordered by pageIndex)
+- [X] T039 [US1] Implement reorderPages method in lib/feature/manga/repository/manga_repository.dart (batch updates pageIndex for all pages in Firestore)
+- [X] T040 [US1] Implement deleteMangaPage method in lib/feature/manga/repository/manga_repository.dart (deletes page and clears cached deltas)
 
 #### Repository Error Handling
 
-- [ ] T041 [US1] Add Firebase exception handling helper in lib/feature/manga/repository/manga_repository.dart (_handleFirebaseException method converting FirebaseException to custom exceptions)
+- [X] T041 [US1] Add Firebase exception handling helper in lib/feature/manga/repository/manga_repository.dart (_handleFirebaseException method converting FirebaseException to custom exceptions)
 
 #### Repository Code Generation
 
-- [ ] T042 Run dart run build_runner build -d to regenerate repository provider (manga_repository.g.dart)
+- [X] T042 Run dart run build_runner build -d to regenerate repository provider (manga_repository.g.dart)
 
 #### Provider Layer Updates
 
-- [ ] T043 [US1] Update manga provider in lib/feature/manga/provider/manga_providers.dart (change id parameter from int to String)
-- [ ] T044 [US1] Update mangaPage provider in lib/feature/manga/provider/manga_providers.dart (change id parameter from int to String)
-- [ ] T045 [US1] Verify delta provider in lib/feature/manga/provider/manga_providers.dart (getDeltaStream should work unchanged with int DeltaId)
-- [ ] T046 Run dart run build_runner build -d to regenerate provider files (manga_providers.g.dart)
+- [X] T043 [US1] Update manga provider in lib/feature/manga/provider/manga_providers.dart (change id parameter from int to String)
+- [X] T044 [US1] Update mangaPage provider in lib/feature/manga/provider/manga_providers.dart (change id parameter from int to String)
+- [X] T045 [US1] Verify delta provider in lib/feature/manga/provider/manga_providers.dart (getDeltaStream should work unchanged with int DeltaId)
+- [X] T046 Run dart run build_runner build -d to regenerate provider files (manga_providers.g.dart)
 
 #### UI Layer Updates
 
-- [ ] T047 [US1] Update MangaGridPage in lib/feature/manga/page/manga_grid_page.dart (handle String manga IDs, getDeltaStream remains unchanged)
-- [ ] T048 [US1] Update MainPage in lib/feature/manga/page/main_page.dart (handle String page IDs, getDeltaStream usage remains unchanged)
-- [ ] T049 [US1] Update MangaEditWidget in lib/feature/manga/view/manga_edit_widget.dart (getDeltaStream usage remains unchanged, DeltaId is still int)
-- [ ] T050 [US1] Update MangaPageWidget in lib/feature/manga/view/manga_page_widget.dart (getDeltaStream usage remains unchanged)
-- [ ] T051 [US1] Add error handling in UI components (catch AuthException, NotFoundException, ValidationException, StorageException)
-- [ ] T052 Run flutter analyze to verify no compilation errors
+- [X] T047 [US1] Update MangaGridPage in lib/feature/manga/page/manga_grid_page.dart (handle String manga IDs, getDeltaStream remains unchanged)
+- [X] T048 [US1] Update MainPage in lib/feature/manga/page/main_page.dart (handle String page IDs, getDeltaStream usage remains unchanged)
+- [X] T049 [US1] Update MangaEditWidget in lib/feature/manga/view/manga_edit_widget.dart (getDeltaStream usage remains unchanged, DeltaId is still int)
+- [X] T050 [US1] Update MangaPageWidget in lib/feature/manga/view/manga_page_widget.dart (getDeltaStream usage remains unchanged)
+- [X] T051 [US1] Add error handling in UI components (catch AuthException, NotFoundException, ValidationException, StorageException)
+- [X] T052 Run flutter analyze to verify no compilation errors
 
-**Checkpoint**: At this point, User Story 1 should be fully functional - data persists to Firebase with Delta ID reference pattern
+**Checkpoint**: ✅ **User Story 1 Complete** - Data persists to Firebase with Delta ID reference pattern (0 compilation errors)
 
 ---
 

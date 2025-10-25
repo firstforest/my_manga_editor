@@ -12,6 +12,9 @@ abstract class CloudMangaPage with _$CloudMangaPage {
     required int pageIndex, // Page order (0-based)
     required DateTime createdAt, // Creation timestamp
     required DateTime updatedAt, // Last modification timestamp
+    String? memoDeltaId, // CloudDelta document ID for memoDelta
+    String? stageDirectionDeltaId, // CloudDelta document ID for stageDirectionDelta
+    String? dialoguesDeltaId, // CloudDelta document ID for dialoguesDelta
   }) = _CloudMangaPage;
 
   factory CloudMangaPage.fromJson(Map<String, dynamic> json) =>
@@ -24,6 +27,9 @@ extension CloudMangaPageExt on CloudMangaPage {
       'pageIndex': pageIndex,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      if (memoDeltaId != null) 'memoDeltaId': memoDeltaId,
+      if (stageDirectionDeltaId != null) 'stageDirectionDeltaId': stageDirectionDeltaId,
+      if (dialoguesDeltaId != null) 'dialoguesDeltaId': dialoguesDeltaId,
     };
   }
 
@@ -38,6 +44,9 @@ extension CloudMangaPageExt on CloudMangaPage {
       pageIndex: data['pageIndex'] as int,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      memoDeltaId: data['memoDeltaId'] as String?,
+      stageDirectionDeltaId: data['stageDirectionDeltaId'] as String?,
+      dialoguesDeltaId: data['dialoguesDeltaId'] as String?,
     );
   }
 }

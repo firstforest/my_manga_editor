@@ -9,17 +9,20 @@ part of 'sync_state_notifier.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Notifier for managing sync state and queue
-/// Handles periodic sync, retry logic, and sync status tracking
+/// NOTE: This is a stub implementation for Firebase-only persistence
+/// Full sync functionality will be implemented in User Story 2
 
 @ProviderFor(SyncStateNotifier)
 const syncStateProvider = SyncStateNotifierProvider._();
 
 /// Notifier for managing sync state and queue
-/// Handles periodic sync, retry logic, and sync status tracking
+/// NOTE: This is a stub implementation for Firebase-only persistence
+/// Full sync functionality will be implemented in User Story 2
 final class SyncStateNotifierProvider
-    extends $NotifierProvider<SyncStateNotifier, Map<MangaId, SyncStatus>> {
+    extends $NotifierProvider<SyncStateNotifier, SyncStatus> {
   /// Notifier for managing sync state and queue
-  /// Handles periodic sync, retry logic, and sync status tracking
+  /// NOTE: This is a stub implementation for Firebase-only persistence
+  /// Full sync functionality will be implemented in User Story 2
   const SyncStateNotifierProvider._()
       : super(
           from: null,
@@ -39,47 +42,47 @@ final class SyncStateNotifierProvider
   SyncStateNotifier create() => SyncStateNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(Map<MangaId, SyncStatus> value) {
+  Override overrideWithValue(SyncStatus value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<Map<MangaId, SyncStatus>>(value),
+      providerOverride: $SyncValueProvider<SyncStatus>(value),
     );
   }
 }
 
-String _$syncStateNotifierHash() => r'7f2bdc8c562cc037266186567873decc9caaec97';
+String _$syncStateNotifierHash() => r'548f93222e1d7c76a6095360bad43d7ab30939ad';
 
 /// Notifier for managing sync state and queue
-/// Handles periodic sync, retry logic, and sync status tracking
+/// NOTE: This is a stub implementation for Firebase-only persistence
+/// Full sync functionality will be implemented in User Story 2
 
-abstract class _$SyncStateNotifier extends $Notifier<Map<MangaId, SyncStatus>> {
-  Map<MangaId, SyncStatus> build();
+abstract class _$SyncStateNotifier extends $Notifier<SyncStatus> {
+  SyncStatus build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref =
-        this.ref as $Ref<Map<MangaId, SyncStatus>, Map<MangaId, SyncStatus>>;
+    final ref = this.ref as $Ref<SyncStatus, SyncStatus>;
     final element = ref.element as $ClassProviderElement<
-        AnyNotifier<Map<MangaId, SyncStatus>, Map<MangaId, SyncStatus>>,
-        Map<MangaId, SyncStatus>,
-        Object?,
-        Object?>;
+        AnyNotifier<SyncStatus, SyncStatus>, SyncStatus, Object?, Object?>;
     element.handleValue(ref, created);
   }
 }
 
-/// Provider for sync status of a specific manga
+/// Provider for getting sync status of a specific manga
+/// Returns null if manga is not in sync queue
 
 @ProviderFor(mangaSyncStatus)
 const mangaSyncStatusProvider = MangaSyncStatusFamily._();
 
-/// Provider for sync status of a specific manga
+/// Provider for getting sync status of a specific manga
+/// Returns null if manga is not in sync queue
 
 final class MangaSyncStatusProvider
     extends $FunctionalProvider<SyncStatus?, SyncStatus?, SyncStatus?>
     with $Provider<SyncStatus?> {
-  /// Provider for sync status of a specific manga
+  /// Provider for getting sync status of a specific manga
+  /// Returns null if manga is not in sync queue
   const MangaSyncStatusProvider._(
       {required MangaSyncStatusFamily super.from,
       required MangaId super.argument})
@@ -134,9 +137,10 @@ final class MangaSyncStatusProvider
   }
 }
 
-String _$mangaSyncStatusHash() => r'38294c2df231c771643f95a6f9eb520f68e5f64f';
+String _$mangaSyncStatusHash() => r'4b0b56c84d6291a242facabbb8a231f6b8d66916';
 
-/// Provider for sync status of a specific manga
+/// Provider for getting sync status of a specific manga
+/// Returns null if manga is not in sync queue
 
 final class MangaSyncStatusFamily extends $Family
     with $FunctionalFamilyOverride<SyncStatus?, MangaId> {
@@ -149,7 +153,8 @@ final class MangaSyncStatusFamily extends $Family
           isAutoDispose: true,
         );
 
-  /// Provider for sync status of a specific manga
+  /// Provider for getting sync status of a specific manga
+  /// Returns null if manga is not in sync queue
 
   MangaSyncStatusProvider call(
     MangaId mangaId,

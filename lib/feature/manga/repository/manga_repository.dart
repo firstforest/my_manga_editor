@@ -6,7 +6,6 @@ import 'package:connectivity_plus/connectivity_plus.dart'
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:my_manga_editor/common/logger.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
-import 'package:my_manga_editor/feature/manga/model/sync_status.dart';
 import 'package:my_manga_editor/feature/manga/repository/exceptions.dart'
     as repo_exceptions;
 import 'package:my_manga_editor/service/firebase/auth_service.dart';
@@ -51,16 +50,11 @@ class MangaRepository {
   // Track mangaId for each deltaId to enable efficient lookups
   final Map<String, String> _deltaToMangaMap = {};
 
-  // Sync status tracking
-  final StreamController<SyncStatus> _syncStatusController =
-      StreamController<SyncStatus>.broadcast();
-  DateTime? _lastSyncTime;
+  // Online status tracking
+  final StreamController<bool> _onlineStatusController =
+      StreamController<bool>.broadcast();
   bool _isOnline = true;
-  bool _isSyncing = false;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
-
-  // Pending changes for offline support
-  final Set<String> _pendingSyncDeltaIds = {};
 
   // ============================================================================
   // Manga CRUD Operations
@@ -230,34 +224,22 @@ class MangaRepository {
   // Delta Management Operations
   // ============================================================================
 
-  /// Save delta directly to Firestore (T055)
+  /// Save delta directly to Firestore
   /// Updates the delta document in Firestore
-  /// Syncs immediately if online, or queues for later sync if offline
+  /// Firestore offline persistence handles automatic sync
   Future<void> saveDelta(DeltaId firestoreDeltaId, Delta delta) async {
     final mangaId = _deltaToMangaMap[firestoreDeltaId.id];
     if (mangaId == null) {
-      logger.w('Cannot sync delta - mangaId not found for: $firestoreDeltaId');
+      logger.w('Cannot save delta - mangaId not found for: $firestoreDeltaId');
       return;
     }
 
-    if (_isOnline) {
-      // Sync immediately if online
-      try {
-        await _syncDeltaToFirestore(mangaId, firestoreDeltaId.id, delta);
-        _pendingSyncDeltaIds.remove(firestoreDeltaId.id);
-        logger.d('Delta synced to Firestore: $firestoreDeltaId');
-        _emitSyncStatus();
-      } catch (e) {
-        logger.e('Failed to sync delta to Firestore: $firestoreDeltaId',
-            error: e);
-        _pendingSyncDeltaIds.add(firestoreDeltaId.id);
-        _emitSyncStatus();
-      }
-    } else {
-      // Queue for sync if offline
-      _pendingSyncDeltaIds.add(firestoreDeltaId.id);
-      logger.d('Delta queued for sync (offline): $firestoreDeltaId');
-      _emitSyncStatus();
+    try {
+      await _syncDeltaToFirestore(mangaId, firestoreDeltaId.id, delta);
+      logger.d('Delta saved to Firestore: $firestoreDeltaId');
+    } catch (e) {
+      logger.e('Failed to save delta to Firestore: $firestoreDeltaId', error: e);
+      rethrow;
     }
   }
 
@@ -305,14 +287,14 @@ class MangaRepository {
   }
 
   /// Watch delta changes (reactive) - loads directly from Firestore
-  Stream<Delta?> getDeltaStream(String firestoreDeltaId) {
-    final mangaId = _deltaToMangaMap[firestoreDeltaId];
+  Stream<Delta?> getDeltaStream(DeltaId firestoreDeltaId) {
+    final mangaId = _deltaToMangaMap[firestoreDeltaId.id];
     if (mangaId == null) {
       logger.w('Cannot watch delta - mangaId not found for: $firestoreDeltaId');
       return Stream.value(null);
     }
 
-    return _firebaseService.watchDelta(mangaId, firestoreDeltaId).map((cloudDelta) {
+    return _firebaseService.watchDelta(mangaId, firestoreDeltaId.id).map((cloudDelta) {
       if (cloudDelta == null) return null;
       return Delta.fromJson(cloudDelta.ops);
     });
@@ -528,61 +510,14 @@ class MangaRepository {
   }
 
   // ============================================================================
-  // Sync & Status
+  // Online Status
   // ============================================================================
 
-  /// Watch sync status for UI indicator (T053)
-  /// Monitors online status and syncing state for the UI
-  Stream<SyncStatus> watchSyncStatus() {
-    _emitSyncStatus();
-    return _syncStatusController.stream;
-  }
-
-  /// Force sync all pending changes (T054)
-  /// Manually triggers sync for all pending deltas
-  Future<void> forceSyncAll() async {
-    if (_pendingSyncDeltaIds.isEmpty) {
-      logger.d('No pending delta changes to sync');
-      return;
-    }
-
-    _isSyncing = true;
-    _emitSyncStatus();
-
-    try {
-      logger.d('Force syncing ${_pendingSyncDeltaIds.length} delta(s)');
-
-      // Sync each pending delta by fetching from Firestore
-      final pendingList = _pendingSyncDeltaIds.toList();
-      for (final firestoreDeltaId in pendingList) {
-        final mangaId = _deltaToMangaMap[firestoreDeltaId];
-
-        if (mangaId != null) {
-          try {
-            // Fetch the latest delta from Firestore
-            final cloudDelta = await _firebaseService.fetchDelta(mangaId, firestoreDeltaId);
-            if (cloudDelta != null) {
-              final delta = Delta.fromJson(cloudDelta.ops);
-              await _syncDeltaToFirestore(mangaId, firestoreDeltaId, delta);
-              _pendingSyncDeltaIds.remove(firestoreDeltaId);
-              logger.d('Synced delta: $firestoreDeltaId');
-            }
-          } catch (e) {
-            logger.e('Failed to sync delta $firestoreDeltaId', error: e);
-          }
-        }
-      }
-
-      _lastSyncTime = DateTime.now();
-      _isSyncing = false;
-      _emitSyncStatus();
-      logger.d('Force sync completed');
-    } catch (e) {
-      logger.e('Force sync failed', error: e);
-      _isSyncing = false;
-      _emitSyncStatus();
-      rethrow;
-    }
+  /// Watch online status for UI indicator
+  /// Monitors network connectivity status
+  Stream<bool> watchOnlineStatus() {
+    _emitOnlineStatus();
+    return _onlineStatusController.stream;
   }
 
   // ============================================================================
@@ -714,10 +649,10 @@ class MangaRepository {
   }
 
   // ============================================================================
-  // Sync Status Helpers
+  // Online Status Helpers
   // ============================================================================
 
-  /// Initialize connectivity monitoring (T053)
+  /// Initialize connectivity monitoring
   void _initializeConnectivityMonitoring() {
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen((result) {
@@ -726,46 +661,26 @@ class MangaRepository {
 
       if (wasOnline != _isOnline) {
         logger.d('Connection state changed: $_isOnline');
-        _emitSyncStatus();
-
-        // If we just came online, trigger a sync
-        if (_isOnline && _pendingSyncDeltaIds.isNotEmpty) {
-          logger.d('Connection restored, syncing pending changes');
-          forceSyncAll();
-        }
+        _emitOnlineStatus();
       }
     });
 
     // Check initial connectivity
     Connectivity().checkConnectivity().then((result) {
       _isOnline = !result.contains(ConnectivityResult.none);
-      _emitSyncStatus();
+      _emitOnlineStatus();
     });
   }
 
-  /// Emit current sync status to listeners
-  void _emitSyncStatus() {
-    // Derive pending manga IDs from pending deltas
-    final pendingMangaIds = _pendingSyncDeltaIds
-        .map((deltaId) => _deltaToMangaMap[deltaId])
-        .whereType<String>()
-        .toSet()
-        .toList();
-
-    final status = SyncStatus(
-      isOnline: _isOnline,
-      isSyncing: _isSyncing,
-      lastSyncedAt: _lastSyncTime,
-      pendingMangaIds: pendingMangaIds,
-    );
-    _syncStatusController.add(status);
+  /// Emit current online status to listeners
+  void _emitOnlineStatus() {
+    _onlineStatusController.add(_isOnline);
   }
-
 
   /// Dispose resources
   void dispose() {
     _connectivitySubscription?.cancel();
-    _syncStatusController.close();
+    _onlineStatusController.close();
   }
 }
 

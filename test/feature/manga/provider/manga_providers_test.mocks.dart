@@ -9,7 +9,6 @@ import 'package:flutter_quill/quill_delta.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i7;
 import 'package:my_manga_editor/feature/manga/model/manga.dart' as _i4;
-import 'package:my_manga_editor/feature/manga/model/sync_status.dart' as _i8;
 import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart'
     as _i2;
 
@@ -138,7 +137,7 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i3.Future<_i6.Delta?>);
 
   @override
-  _i3.Stream<_i6.Delta?> getDeltaStream(String? firestoreDeltaId) =>
+  _i3.Stream<_i6.Delta?> getDeltaStream(_i4.DeltaId? firestoreDeltaId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getDeltaStream,
@@ -241,24 +240,14 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i3.Future<void>);
 
   @override
-  _i3.Stream<_i8.SyncStatus> watchSyncStatus() => (super.noSuchMethod(
+  _i3.Stream<bool> watchOnlineStatus() => (super.noSuchMethod(
         Invocation.method(
-          #watchSyncStatus,
+          #watchOnlineStatus,
           [],
         ),
-        returnValue: _i3.Stream<_i8.SyncStatus>.empty(),
-        returnValueForMissingStub: _i3.Stream<_i8.SyncStatus>.empty(),
-      ) as _i3.Stream<_i8.SyncStatus>);
-
-  @override
-  _i3.Future<void> forceSyncAll() => (super.noSuchMethod(
-        Invocation.method(
-          #forceSyncAll,
-          [],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i3.Stream<bool>.empty(),
+        returnValueForMissingStub: _i3.Stream<bool>.empty(),
+      ) as _i3.Stream<bool>);
 
   @override
   _i3.Future<String> toMarkdown(_i4.MangaId? mangaId) => (super.noSuchMethod(

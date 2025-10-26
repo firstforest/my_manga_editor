@@ -7,7 +7,6 @@ import 'package:flutter_quill/quill_delta.dart';
 import 'package:markdown_quill/markdown_quill.dart';
 import 'package:my_manga_editor/common/logger.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
-import 'package:my_manga_editor/feature/manga/model/sync_status.dart';
 import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -24,8 +23,8 @@ Stream<List<MangaPageId>> mangaPageIdList(Ref ref, MangaId mangaId) {
 }
 
 @riverpod
-Stream<SyncStatus> syncStatus(Ref ref) {
-  return ref.watch(mangaRepositoryProvider).watchSyncStatus();
+Stream<bool> onlineStatus(Ref ref) {
+  return ref.watch(mangaRepositoryProvider).watchOnlineStatus();
 }
 
 @riverpod
@@ -103,12 +102,12 @@ class MangaPageNotifier extends _$MangaPageNotifier {
 @riverpod
 class DeltaNotifier extends _$DeltaNotifier {
   @override
-  Stream<Delta?> build(DeltaId id) {
+  Future<Delta?> build(DeltaId id) async {
     if (id.id.isEmpty) {
-      return Stream.value(null);
+      return null;
     }
     final repo = ref.read(mangaRepositoryProvider);
-    return repo.getDeltaStream(id.id);
+    return repo.getDeltaStream(id).first;
   }
 
   void updateDelta(Delta delta) {

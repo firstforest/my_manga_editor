@@ -122,38 +122,38 @@ final class MangaPageIdListFamily extends $Family
   String toString() => r'mangaPageIdListProvider';
 }
 
-@ProviderFor(syncStatus)
-const syncStatusProvider = SyncStatusProvider._();
+@ProviderFor(onlineStatus)
+const onlineStatusProvider = OnlineStatusProvider._();
 
-final class SyncStatusProvider extends $FunctionalProvider<
-        AsyncValue<SyncStatus>, SyncStatus, Stream<SyncStatus>>
-    with $FutureModifier<SyncStatus>, $StreamProvider<SyncStatus> {
-  const SyncStatusProvider._()
+final class OnlineStatusProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, Stream<bool>>
+    with $FutureModifier<bool>, $StreamProvider<bool> {
+  const OnlineStatusProvider._()
       : super(
           from: null,
           argument: null,
           retry: null,
-          name: r'syncStatusProvider',
+          name: r'onlineStatusProvider',
           isAutoDispose: true,
           dependencies: null,
           $allTransitiveDependencies: null,
         );
 
   @override
-  String debugGetCreateSourceHash() => _$syncStatusHash();
+  String debugGetCreateSourceHash() => _$onlineStatusHash();
 
   @$internal
   @override
-  $StreamProviderElement<SyncStatus> $createElement($ProviderPointer pointer) =>
+  $StreamProviderElement<bool> $createElement($ProviderPointer pointer) =>
       $StreamProviderElement(pointer);
 
   @override
-  Stream<SyncStatus> create(Ref ref) {
-    return syncStatus(ref);
+  Stream<bool> create(Ref ref) {
+    return onlineStatus(ref);
   }
 }
 
-String _$syncStatusHash() => r'18fc8a0ef3bf207cd0a3f6824627fbd3efaaefdd';
+String _$onlineStatusHash() => r'2ebc01d21f5bc1ecc40bc7e89f9dfd6cd17c12b5';
 
 @ProviderFor(MangaNotifier)
 const mangaProvider = MangaNotifierFamily._();
@@ -335,7 +335,7 @@ abstract class _$MangaPageNotifier extends $StreamNotifier<MangaPage> {
 const deltaProvider = DeltaNotifierFamily._();
 
 final class DeltaNotifierProvider
-    extends $StreamNotifierProvider<DeltaNotifier, Delta?> {
+    extends $AsyncNotifierProvider<DeltaNotifier, Delta?> {
   const DeltaNotifierProvider._(
       {required DeltaNotifierFamily super.from,
       required DeltaId super.argument})
@@ -372,12 +372,12 @@ final class DeltaNotifierProvider
   }
 }
 
-String _$deltaNotifierHash() => r'c7e25fedf5957682e32f4ebecd6a220cf00404a1';
+String _$deltaNotifierHash() => r'74a011a1e5f1f527630afc491ad5bd3ae0d78d2a';
 
 final class DeltaNotifierFamily extends $Family
     with
         $ClassFamilyOverride<DeltaNotifier, AsyncValue<Delta?>, Delta?,
-            Stream<Delta?>, DeltaId> {
+            FutureOr<Delta?>, DeltaId> {
   const DeltaNotifierFamily._()
       : super(
           retry: null,
@@ -396,11 +396,11 @@ final class DeltaNotifierFamily extends $Family
   String toString() => r'deltaProvider';
 }
 
-abstract class _$DeltaNotifier extends $StreamNotifier<Delta?> {
+abstract class _$DeltaNotifier extends $AsyncNotifier<Delta?> {
   late final _$args = ref.$arg as DeltaId;
   DeltaId get id => _$args;
 
-  Stream<Delta?> build(
+  FutureOr<Delta?> build(
     DeltaId id,
   );
   @$mustCallSuper

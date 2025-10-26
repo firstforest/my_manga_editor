@@ -4,18 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:my_manga_editor/feature/ai_comment/repository/ai_repository.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart';
-import 'package:my_manga_editor/feature/ai_comment/repository/ai_repository.dart';
+import 'package:my_manga_editor/feature/setting/repository/setting_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'ai_comment_area.freezed.dart';
-
 part 'ai_comment_area.g.dart';
 
 @riverpod
 AiRepository aiRepository(Ref ref) {
-  const apiKey = String.fromEnvironment('OPENAI_API_KEY');
+  final apiKey = ref.watch(openAiApiKeyProvider);
   return AiRepository(apiKey: apiKey);
 }
 
@@ -37,8 +37,12 @@ abstract class AiComment with _$AiComment {
 class AiCommentList extends _$AiCommentList {
   @override
   List<AiComment> build(MangaId mangaId) {
-    final timer = Timer.periodic(Duration(seconds: 3), (_) async {
-      state = state.toList()..add(await getAiComment(mangaId));
+    final timer = Timer.periodic(Duration(seconds: 30), (_) async {
+      final comment = await getAiComment(mangaId);
+      if (comment == null) {
+        return;
+      }
+      state = state.toList()..add(comment);
     });
     ref.onDispose(() {
       timer.cancel();
@@ -46,23 +50,19 @@ class AiCommentList extends _$AiCommentList {
     return [];
   }
 
-  Future<AiComment> getAiComment(MangaId mangaId) async {
+  Future<AiComment?> getAiComment(MangaId mangaId) async {
     try {
       final description =
           await ref.read(mangaDescriptionProvider(mangaId).future);
       final aiRepository = ref.read(aiRepositoryProvider);
       final aiResponse = await aiRepository.generateComment(description);
-      
+
       return AiComment(
         text: aiResponse,
         createdAt: DateTime.now(),
       );
     } catch (e) {
-      return AiComment(
-        text: 'AIコメントの生成に失敗しました',
-        createdAt: DateTime.now(),
-        errorMessage: e.toString(),
-      );
+      return null;
     }
   }
 }

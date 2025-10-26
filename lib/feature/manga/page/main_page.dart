@@ -12,6 +12,7 @@ import 'package:my_manga_editor/feature/manga/view/manga_name_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/sign_in_button.dart';
 import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
 import 'package:my_manga_editor/feature/manga/view/sync_status_indicator.dart';
+import 'package:my_manga_editor/feature/setting/page/setting_page.dart';
 
 class MainPage extends HookConsumerWidget {
   const MainPage({super.key});
@@ -71,6 +72,17 @@ class MainPage extends HookConsumerWidget {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.0),
             child: OnlineStatusIndicator(),
+          ),
+          // Settings button
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SettingPage(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.settings),
           ),
           // Firebase Authentication Button
           Padding(

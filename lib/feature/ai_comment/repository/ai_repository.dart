@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:dart_openai/dart_openai.dart';
+import 'package:flutter/foundation.dart';
 
 class AiRepository {
   final String? _apiKey;
@@ -17,14 +17,13 @@ class AiRepository {
 
     try {
       final completion = await OpenAI.instance.chat.create(
-        model: "gpt-3.5-turbo",
+        model: 'gpt-5-nano-2025-08-07',
         messages: [
           OpenAIChatCompletionChoiceMessageModel(
             role: OpenAIChatMessageRole.system,
             content: [
               OpenAIChatCompletionChoiceMessageContentItemModel.text(
-                'あなたは漫画制作のアドバイザーです。提供された漫画のプロットやページ内容を分析し、建設的なフィードバックやアドバイスを日本語で提供してください。',
-              ),
+                  'あなたは制作中の漫画のプロットを見ている読者です。制作途中のプロットの情報が与えられるので、期待をしているという内容のコメントを返してください。口調はランダムで生成してください。一言コメントがよいです。'),
             ],
           ),
           OpenAIChatCompletionChoiceMessageModel(
@@ -34,8 +33,6 @@ class AiRepository {
             ],
           ),
         ],
-        maxTokens: 500,
-        temperature: 0.7,
       );
 
       if (completion.choices.isNotEmpty) {

@@ -48,7 +48,7 @@ final class AiRepositoryProvider
   }
 }
 
-String _$aiRepositoryHash() => r'10fcba34df2ef43be2c7da9f20d88ecb59908d61';
+String _$aiRepositoryHash() => r'6d4f187715757cd92b7f44458f1cce644c7892df';
 
 @ProviderFor(mangaDescription)
 const mangaDescriptionProvider = MangaDescriptionFamily._();

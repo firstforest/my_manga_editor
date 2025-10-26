@@ -70,8 +70,7 @@ class MangaGridPage extends HookConsumerWidget {
           ],
         ),
         actions: [
-          SyncStatusIndicator(mangaId: mangaId),
-          ManualSyncButton(mangaId: mangaId),
+          const OnlineStatusIndicator(),
         ],
       ),
       body: ReorderableBuilder<MangaPageId?>(

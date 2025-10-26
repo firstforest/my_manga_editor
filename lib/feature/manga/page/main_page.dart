@@ -69,15 +69,11 @@ class MainPage extends HookConsumerWidget {
             },
             icon: const Icon(Icons.list),
           ),
-          // Sync status indicator
-          if (viewModel.value?.mangaId case final MangaId mangaId)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: SyncStatusIndicator(mangaId: mangaId),
-            ),
-          // Manual sync button
-          if (viewModel.value?.mangaId case final MangaId mangaId)
-            ManualSyncButton(mangaId: mangaId),
+          // Online status indicator
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            child: OnlineStatusIndicator(),
+          ),
           // Firebase Authentication Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),

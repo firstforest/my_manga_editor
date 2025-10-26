@@ -338,7 +338,11 @@ final class DeltaNotifierProvider
     extends $AsyncNotifierProvider<DeltaNotifier, Delta?> {
   const DeltaNotifierProvider._(
       {required DeltaNotifierFamily super.from,
-      required DeltaId super.argument})
+      required (
+        MangaId,
+        DeltaId,
+      )
+          super.argument})
       : super(
           retry: null,
           name: r'deltaProvider',
@@ -354,7 +358,7 @@ final class DeltaNotifierProvider
   String toString() {
     return r'deltaProvider'
         ''
-        '($argument)';
+        '$argument';
   }
 
   @$internal
@@ -372,12 +376,19 @@ final class DeltaNotifierProvider
   }
 }
 
-String _$deltaNotifierHash() => r'74a011a1e5f1f527630afc491ad5bd3ae0d78d2a';
+String _$deltaNotifierHash() => r'75b8511415614afd6b3fb89cf33f24805905402e';
 
 final class DeltaNotifierFamily extends $Family
     with
-        $ClassFamilyOverride<DeltaNotifier, AsyncValue<Delta?>, Delta?,
-            FutureOr<Delta?>, DeltaId> {
+        $ClassFamilyOverride<
+            DeltaNotifier,
+            AsyncValue<Delta?>,
+            Delta?,
+            FutureOr<Delta?>,
+            (
+              MangaId,
+              DeltaId,
+            )> {
   const DeltaNotifierFamily._()
       : super(
           retry: null,
@@ -388,26 +399,36 @@ final class DeltaNotifierFamily extends $Family
         );
 
   DeltaNotifierProvider call(
+    MangaId mangaId,
     DeltaId id,
   ) =>
-      DeltaNotifierProvider._(argument: id, from: this);
+      DeltaNotifierProvider._(argument: (
+        mangaId,
+        id,
+      ), from: this);
 
   @override
   String toString() => r'deltaProvider';
 }
 
 abstract class _$DeltaNotifier extends $AsyncNotifier<Delta?> {
-  late final _$args = ref.$arg as DeltaId;
-  DeltaId get id => _$args;
+  late final _$args = ref.$arg as (
+    MangaId,
+    DeltaId,
+  );
+  MangaId get mangaId => _$args.$1;
+  DeltaId get id => _$args.$2;
 
   FutureOr<Delta?> build(
+    MangaId mangaId,
     DeltaId id,
   );
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build(
-      _$args,
+      _$args.$1,
+      _$args.$2,
     );
     final ref = this.ref as $Ref<AsyncValue<Delta?>, Delta?>;
     final element = ref.element as $ClassProviderElement<

@@ -49,23 +49,24 @@ void main() {
   });
 
   group('DeltaNotifier', () {
+    final mangaId = MangaId('mangaId');
     final deltaId = DeltaId('test-delta-id-10');
 
     test('クリスタ用のセリフとして出力する', () async {
-      when(mockMangaRepository.getDeltaStream(any))
+      when(mockMangaRepository.getDeltaStream(any, any))
           .thenAnswer((_) => Stream.value(Delta()..insert(testDialogues)));
 
       // Keep the provider alive by listening
       final subscription = providerContainer.listen(
-        deltaProvider(deltaId),
+        deltaProvider(mangaId, deltaId),
         (previous, next) {},
       );
 
       // Wait for the stream provider to emit its first value
-      await providerContainer.read(deltaProvider(deltaId).future);
+      await providerContainer.read(deltaProvider(mangaId, deltaId).future);
 
       final exported = await providerContainer
-          .read(deltaProvider(deltaId).notifier)
+          .read(deltaProvider(mangaId, deltaId).notifier)
           .exportPlainText();
 
       expect(exported, dataForClipStudio);

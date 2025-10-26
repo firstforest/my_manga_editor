@@ -47,9 +47,6 @@ class MangaRepository {
   // Track mangaId for each pageId to enable efficient lookups
   final Map<MangaPageId, MangaId> _pageToMangaMap = {};
 
-  // Track mangaId for each deltaId to enable efficient lookups
-  final Map<String, String> _deltaToMangaMap = {};
-
   // Online status tracking
   final StreamController<bool> _onlineStatusController =
       StreamController<bool>.broadcast();
@@ -100,9 +97,6 @@ class MangaRepository {
       final firestoreDeltaId =
           await _firebaseService.createDelta(mangaId, cloudDelta);
 
-      // Track the delta to manga mapping
-      _deltaToMangaMap[firestoreDeltaId] = mangaId;
-
       // Update manga document with delta ID reference
       await _firebaseService.updateManga(mangaId, {
         'ideaMemoDeltaId': firestoreDeltaId,
@@ -125,11 +119,6 @@ class MangaRepository {
       return _firebaseService.watchManga(id.id).map((cloudManga) {
         if (cloudManga == null) return null;
 
-        // Track ideaMemoDeltaId mapping
-        if (cloudManga.ideaMemoDeltaId != null) {
-          _deltaToMangaMap[cloudManga.ideaMemoDeltaId!] = cloudManga.id;
-        }
-
         return cloudManga.toManga();
       });
     } catch (e) {
@@ -147,12 +136,6 @@ class MangaRepository {
       }
 
       return _firebaseService.watchAllMangas(userId).map((cloudMangas) {
-        // Track all ideaMemoDeltaId mappings
-        for (final cm in cloudMangas) {
-          if (cm.ideaMemoDeltaId != null) {
-            _deltaToMangaMap[cm.ideaMemoDeltaId!] = cm.id;
-          }
-        }
         return cloudMangas.map((cm) => cm.toManga()).toList();
       });
     } catch (e) {
@@ -227,18 +210,19 @@ class MangaRepository {
   /// Save delta directly to Firestore
   /// Updates the delta document in Firestore
   /// Firestore offline persistence handles automatic sync
-  Future<void> saveDelta(DeltaId firestoreDeltaId, Delta delta) async {
-    final mangaId = _deltaToMangaMap[firestoreDeltaId.id];
+  Future<void> saveDelta(
+      MangaId mangaId, DeltaId firestoreDeltaId, Delta delta) async {
     if (mangaId == null) {
       logger.w('Cannot save delta - mangaId not found for: $firestoreDeltaId');
       return;
     }
 
     try {
-      await _syncDeltaToFirestore(mangaId, firestoreDeltaId.id, delta);
+      await _syncDeltaToFirestore(mangaId.id, firestoreDeltaId.id, delta);
       logger.d('Delta saved to Firestore: $firestoreDeltaId');
     } catch (e) {
-      logger.e('Failed to save delta to Firestore: $firestoreDeltaId', error: e);
+      logger.e('Failed to save delta to Firestore: $firestoreDeltaId',
+          error: e);
       rethrow;
     }
   }
@@ -263,15 +247,15 @@ class MangaRepository {
   }
 
   /// Load delta directly from Firestore
-  Future<Delta?> loadDelta(DeltaId firestoreDeltaId) async {
-    final mangaId = _deltaToMangaMap[firestoreDeltaId.id];
+  Future<Delta?> loadDelta(MangaId mangaId, DeltaId firestoreDeltaId) async {
     if (mangaId == null) {
       logger.w('Cannot load delta - mangaId not found for: $firestoreDeltaId');
       return null;
     }
 
     try {
-      final cloudDelta = await _firebaseService.fetchDelta(mangaId, firestoreDeltaId.id);
+      final cloudDelta =
+          await _firebaseService.fetchDelta(mangaId.id, firestoreDeltaId.id);
       if (cloudDelta == null) {
         logger.w('Delta not found in Firestore: $firestoreDeltaId');
         return null;
@@ -281,20 +265,22 @@ class MangaRepository {
       logger.d('Loaded delta from Firestore: $firestoreDeltaId');
       return delta;
     } catch (e) {
-      logger.e('Failed to load delta from Firestore: $firestoreDeltaId', error: e);
+      logger.e('Failed to load delta from Firestore: $firestoreDeltaId',
+          error: e);
       return null;
     }
   }
 
   /// Watch delta changes (reactive) - loads directly from Firestore
-  Stream<Delta?> getDeltaStream(DeltaId firestoreDeltaId) {
-    final mangaId = _deltaToMangaMap[firestoreDeltaId.id];
+  Stream<Delta?> getDeltaStream(MangaId mangaId, DeltaId firestoreDeltaId) {
     if (mangaId == null) {
       logger.w('Cannot watch delta - mangaId not found for: $firestoreDeltaId');
       return Stream.value(null);
     }
 
-    return _firebaseService.watchDelta(mangaId, firestoreDeltaId.id).map((cloudDelta) {
+    return _firebaseService
+        .watchDelta(mangaId.id, firestoreDeltaId.id)
+        .map((cloudDelta) {
       if (cloudDelta == null) return null;
       return Delta.fromJson(cloudDelta.ops);
     });
@@ -352,8 +338,6 @@ class MangaRepository {
         final firestoreDeltaId =
             await _firebaseService.createDelta(mangaId.id, cloudDelta);
 
-        // Track the delta to manga mapping
-        _deltaToMangaMap[firestoreDeltaId] = mangaId.id;
         deltaIdMap[fieldName] = firestoreDeltaId;
       }
 
@@ -409,17 +393,6 @@ class MangaRepository {
           .watchMangaPageWithMangaId(mangaId.id, pageId.id)
           .map((cloudPage) {
         if (cloudPage == null) return null;
-
-        // Track all delta ID mappings for this page
-        if (cloudPage.memoDeltaId != null) {
-          _deltaToMangaMap[cloudPage.memoDeltaId!] = mangaId.id;
-        }
-        if (cloudPage.stageDirectionDeltaId != null) {
-          _deltaToMangaMap[cloudPage.stageDirectionDeltaId!] = mangaId.id;
-        }
-        if (cloudPage.dialoguesDeltaId != null) {
-          _deltaToMangaMap[cloudPage.dialoguesDeltaId!] = mangaId.id;
-        }
 
         return cloudPage.toMangaPage();
       });

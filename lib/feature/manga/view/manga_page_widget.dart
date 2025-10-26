@@ -128,7 +128,7 @@ class MangaPageWidget extends HookConsumerWidget {
         ),
         IconButton(
           onPressed: () async {
-            await _copyToClipboard(ref, value.dialoguesDeltaId);
+            await _copyToClipboard(ref, value.mangaId, value.dialoguesDeltaId);
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Page $pageIndex をコピーしました')));
@@ -154,6 +154,7 @@ class MangaPageWidget extends HookConsumerWidget {
       color: Colors.black12,
       child: _QuillTextAreaWidget(
         key: ValueKey(value.stageDirectionDeltaId),
+        mangaId: value.mangaId,
         deltaId: value.stageDirectionDeltaId,
         placeholder: 'ト書き',
       ),
@@ -167,6 +168,7 @@ class MangaPageWidget extends HookConsumerWidget {
       color: Colors.black12,
       child: _QuillTextAreaWidget(
         key: ValueKey(value.dialoguesDeltaId),
+        mangaId: value.mangaId,
         deltaId: value.dialoguesDeltaId,
         placeholder: 'セリフ',
       ),
@@ -179,6 +181,7 @@ class MangaPageWidget extends HookConsumerWidget {
       constraints: BoxConstraints(minWidth: 300.r),
       color: Colors.indigo.shade100,
       child: _QuillTextAreaWidget(
+        mangaId: value.mangaId,
         deltaId: value.memoDeltaId,
         placeholder: 'このページで描きたいこと',
       ),
@@ -201,9 +204,11 @@ class MangaPageWidget extends HookConsumerWidget {
     };
   }
 
-  Future<void> _copyToClipboard(WidgetRef ref, DeltaId deltaId) async {
-    final delta =
-        await ref.read(deltaProvider(deltaId).notifier).exportPlainText();
+  Future<void> _copyToClipboard(
+      WidgetRef ref, MangaId mangaId, DeltaId deltaId) async {
+    final delta = await ref
+        .read(deltaProvider(mangaId, deltaId).notifier)
+        .exportPlainText();
     final clipboard = SystemClipboard.instance;
     if (clipboard == null || delta.isEmpty) {
       return; // Clipboard API is not supported on this platform.
@@ -217,10 +222,12 @@ class MangaPageWidget extends HookConsumerWidget {
 class _QuillTextAreaWidget extends HookConsumerWidget {
   const _QuillTextAreaWidget({
     super.key,
+    required this.mangaId,
     required this.deltaId,
     this.placeholder,
   });
 
+  final MangaId mangaId;
   final DeltaId deltaId;
   final String? placeholder;
 
@@ -229,7 +236,7 @@ class _QuillTextAreaWidget extends HookConsumerWidget {
     final quillController = useQuillController(null);
     final focusNode = useFocusNode();
 
-    ref.listen(deltaProvider(deltaId), (previous, next) {
+    ref.listen(deltaProvider(mangaId, deltaId), (previous, next) {
       if (previous?.hasValue != true && next.hasValue) {
         final initialText = next.requireValue;
         if (initialText != null && initialText.isNotEmpty) {
@@ -240,7 +247,7 @@ class _QuillTextAreaWidget extends HookConsumerWidget {
 
     final onTextChanged = useCallback(() {
       final delta = quillController.document.toDelta();
-      ref.read(deltaProvider(deltaId).notifier).updateDelta(delta);
+      ref.read(deltaProvider(mangaId, deltaId).notifier).updateDelta(delta);
     }, [deltaId]);
 
     useEffect(() {

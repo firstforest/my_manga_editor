@@ -14,20 +14,24 @@ import 'package:my_manga_editor/hooks/quill_controller_hook.dart';
 class Workspace extends HookConsumerWidget {
   const Workspace({
     super.key,
+    required this.mangaId,
     required this.deltaId,
   });
 
+  final MangaId mangaId;
   final DeltaId deltaId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final deltaAsync = ref.watch(deltaProvider(deltaId));
+    final deltaAsync = ref.watch(deltaProvider(mangaId, deltaId));
 
     return switch (deltaAsync) {
       AsyncData<Delta?>(:final value) => _QuillEditor(
           initialText: value,
           onTextChanged: (delta) {
-            ref.read(deltaProvider(deltaId).notifier).updateDelta(delta);
+            ref
+                .read(deltaProvider(mangaId, deltaId).notifier)
+                .updateDelta(delta);
           },
         ),
       _ => SizedBox.shrink(),

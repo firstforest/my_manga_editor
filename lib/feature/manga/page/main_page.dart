@@ -3,7 +3,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_grid_page.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_page_view_model.dart';
@@ -11,6 +10,7 @@ import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_edit_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_name_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/sign_in_button.dart';
+import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
 import 'package:my_manga_editor/feature/manga/view/sync_status_indicator.dart';
 
 class MainPage extends HookConsumerWidget {
@@ -37,9 +37,7 @@ class MainPage extends HookConsumerWidget {
           if (viewModel.value?.mangaId case final MangaId mangaId)
             IconButton(
                 onPressed: () async {
-                  await ref
-                      .read(mangaProvider(mangaId).notifier)
-                      .download();
+                  await ref.read(mangaProvider(mangaId).notifier).download();
                   final manga = ref.read(mangaProvider(mangaId)).value;
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -88,9 +86,7 @@ class MainPage extends HookConsumerWidget {
         null => Center(
             child: TextButton(
               onPressed: () {
-                ref
-                    .read(mangaPageViewModelProvider.notifier)
-                    .createNewManga();
+                ref.read(mangaPageViewModelProvider.notifier).createNewManga();
               },
               child: Text(
                 '新しく作品を作る',
@@ -178,8 +174,9 @@ class MangaSelectDialog extends HookConsumerWidget {
                   );
                 }
                 final manga = mangaList[index - 1];
-                final delta =
-                    ref.watch(deltaProvider(manga.ideaMemoDeltaId)).value;
+                final delta = ref
+                    .watch(deltaProvider(manga.id, manga.ideaMemoDeltaId))
+                    .value;
                 return ListTile(
                   title: Text(manga.name),
                   subtitle: Text(
@@ -196,9 +193,7 @@ class MangaSelectDialog extends HookConsumerWidget {
                   },
                   trailing: IconButton(
                     onPressed: () {
-                      ref
-                          .read(mangaProvider(manga.id).notifier)
-                          .delete();
+                      ref.read(mangaProvider(manga.id).notifier).delete();
                     },
                     icon: Icon(Icons.delete),
                   ),

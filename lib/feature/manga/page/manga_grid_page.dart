@@ -7,9 +7,9 @@ import 'package:flutter_reorderable_grid_view/widgets/reorderable_builder.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
 import 'package:my_manga_editor/feature/manga/view/sync_status_indicator.dart';
 import 'package:my_manga_editor/feature/manga/view/tategaki.dart';
 
@@ -140,7 +140,9 @@ class MangaGridPageView extends HookConsumerWidget {
                   child: mangaPage.map(
                     data: (mangaPage) {
                       final delta = ref.watch(deltaProvider(
-                          mangaPage.value.dialoguesDeltaId));
+                        mangaPage.value.mangaId,
+                        mangaPage.value.dialoguesDeltaId,
+                      ));
                       return switch (delta.value) {
                         Delta d when d.isNotEmpty => SingleChildScrollView(
                             child: Tategaki(

@@ -21,7 +21,12 @@
       "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/setup-plan.ps1 -Json)",
       "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/update-agent-context.ps1 -AgentType claude)",
       "Bash(git rev-parse:*)",
-      "Bash(dart run build_runner build:*)"
+      "Bash(dart run build_runner build:*)",
+      "WebFetch(domain:pub.dev)",
+      "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:joemuller.com)",
+      "WebFetch(domain:firebase.flutter.dev)"
     ],
     "deny": [],
     "ask": []

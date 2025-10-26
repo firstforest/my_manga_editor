@@ -10,6 +10,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/feature/manga/view/sync_status_indicator.dart';
 import 'package:my_manga_editor/feature/manga/view/tategaki.dart';
 
 class MangaGridPage extends HookConsumerWidget {
@@ -43,7 +44,7 @@ class MangaGridPage extends HookConsumerWidget {
     final generatedChildren = list
         .mapIndexed((index, id) => id != null
             ? MangaGridPageView(
-                key: ValueKey('$id'),
+                key: ValueKey(id),
                 mangaPageId: id,
                 pageNumber: switch (startPage) {
                   MangaStartPage.left => index,
@@ -68,6 +69,9 @@ class MangaGridPage extends HookConsumerWidget {
             StartPageSelector(mangaId: mangaId),
           ],
         ),
+        actions: [
+          const OnlineStatusIndicator(),
+        ],
       ),
       body: ReorderableBuilder<MangaPageId?>(
           scrollController: scrollController,
@@ -75,7 +79,7 @@ class MangaGridPage extends HookConsumerWidget {
             final newOrder = reorder(list);
             ref
                 .read(mangaProvider(mangaId).notifier)
-                .reorderPage(newOrder.nonNulls.toList(), 0, 0);
+                .reorderPage(newOrder.whereType<MangaPageId>().toList(), 0, 0);
           },
           enableLongPress: false,
           children: generatedChildren,
@@ -136,7 +140,7 @@ class MangaGridPageView extends HookConsumerWidget {
                   child: mangaPage.map(
                     data: (mangaPage) {
                       final delta = ref.watch(deltaProvider(
-                          mangaPage.value.dialoguesDelta));
+                          mangaPage.value.dialoguesDeltaId));
                       return switch (delta.value) {
                         Delta d when d.isNotEmpty => SingleChildScrollView(
                             child: Tategaki(

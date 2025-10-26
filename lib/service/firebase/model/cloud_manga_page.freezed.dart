@@ -17,12 +17,12 @@ mixin _$CloudMangaPage {
   String get id; // Firestore document ID
   String get mangaId; // Parent manga ID
   int get pageIndex; // Page order (0-based)
-  Map<String, dynamic> get memoDelta; // Quill Delta for memo
-  Map<String, dynamic>
-      get stageDirectionDelta; // Quill Delta for stage directions
-  Map<String, dynamic> get dialoguesDelta; // Quill Delta for dialogues
   DateTime get createdAt; // Creation timestamp
-  DateTime get updatedAt;
+  DateTime get updatedAt; // Last modification timestamp
+  String? get memoDeltaId; // CloudDelta document ID for memoDelta
+  String?
+      get stageDirectionDeltaId; // CloudDelta document ID for stageDirectionDelta
+  String? get dialoguesDeltaId;
 
   /// Create a copy of CloudMangaPage
   /// with the given fields replaced by the non-null parameter values.
@@ -44,15 +44,16 @@ mixin _$CloudMangaPage {
             (identical(other.mangaId, mangaId) || other.mangaId == mangaId) &&
             (identical(other.pageIndex, pageIndex) ||
                 other.pageIndex == pageIndex) &&
-            const DeepCollectionEquality().equals(other.memoDelta, memoDelta) &&
-            const DeepCollectionEquality()
-                .equals(other.stageDirectionDelta, stageDirectionDelta) &&
-            const DeepCollectionEquality()
-                .equals(other.dialoguesDelta, dialoguesDelta) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.updatedAt == updatedAt) &&
+            (identical(other.memoDeltaId, memoDeltaId) ||
+                other.memoDeltaId == memoDeltaId) &&
+            (identical(other.stageDirectionDeltaId, stageDirectionDeltaId) ||
+                other.stageDirectionDeltaId == stageDirectionDeltaId) &&
+            (identical(other.dialoguesDeltaId, dialoguesDeltaId) ||
+                other.dialoguesDeltaId == dialoguesDeltaId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -62,15 +63,15 @@ mixin _$CloudMangaPage {
       id,
       mangaId,
       pageIndex,
-      const DeepCollectionEquality().hash(memoDelta),
-      const DeepCollectionEquality().hash(stageDirectionDelta),
-      const DeepCollectionEquality().hash(dialoguesDelta),
       createdAt,
-      updatedAt);
+      updatedAt,
+      memoDeltaId,
+      stageDirectionDeltaId,
+      dialoguesDeltaId);
 
   @override
   String toString() {
-    return 'CloudMangaPage(id: $id, mangaId: $mangaId, pageIndex: $pageIndex, memoDelta: $memoDelta, stageDirectionDelta: $stageDirectionDelta, dialoguesDelta: $dialoguesDelta, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'CloudMangaPage(id: $id, mangaId: $mangaId, pageIndex: $pageIndex, createdAt: $createdAt, updatedAt: $updatedAt, memoDeltaId: $memoDeltaId, stageDirectionDeltaId: $stageDirectionDeltaId, dialoguesDeltaId: $dialoguesDeltaId)';
   }
 }
 
@@ -84,11 +85,11 @@ abstract mixin class $CloudMangaPageCopyWith<$Res> {
       {String id,
       String mangaId,
       int pageIndex,
-      Map<String, dynamic> memoDelta,
-      Map<String, dynamic> stageDirectionDelta,
-      Map<String, dynamic> dialoguesDelta,
       DateTime createdAt,
-      DateTime updatedAt});
+      DateTime updatedAt,
+      String? memoDeltaId,
+      String? stageDirectionDeltaId,
+      String? dialoguesDeltaId});
 }
 
 /// @nodoc
@@ -107,11 +108,11 @@ class _$CloudMangaPageCopyWithImpl<$Res>
     Object? id = null,
     Object? mangaId = null,
     Object? pageIndex = null,
-    Object? memoDelta = null,
-    Object? stageDirectionDelta = null,
-    Object? dialoguesDelta = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? memoDeltaId = freezed,
+    Object? stageDirectionDeltaId = freezed,
+    Object? dialoguesDeltaId = freezed,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -126,18 +127,6 @@ class _$CloudMangaPageCopyWithImpl<$Res>
           ? _self.pageIndex
           : pageIndex // ignore: cast_nullable_to_non_nullable
               as int,
-      memoDelta: null == memoDelta
-          ? _self.memoDelta
-          : memoDelta // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
-      stageDirectionDelta: null == stageDirectionDelta
-          ? _self.stageDirectionDelta
-          : stageDirectionDelta // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
-      dialoguesDelta: null == dialoguesDelta
-          ? _self.dialoguesDelta
-          : dialoguesDelta // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -146,6 +135,18 @@ class _$CloudMangaPageCopyWithImpl<$Res>
           ? _self.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      memoDeltaId: freezed == memoDeltaId
+          ? _self.memoDeltaId
+          : memoDeltaId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      stageDirectionDeltaId: freezed == stageDirectionDeltaId
+          ? _self.stageDirectionDeltaId
+          : stageDirectionDeltaId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      dialoguesDeltaId: freezed == dialoguesDeltaId
+          ? _self.dialoguesDeltaId
+          : dialoguesDeltaId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -247,11 +248,11 @@ extension CloudMangaPagePatterns on CloudMangaPage {
             String id,
             String mangaId,
             int pageIndex,
-            Map<String, dynamic> memoDelta,
-            Map<String, dynamic> stageDirectionDelta,
-            Map<String, dynamic> dialoguesDelta,
             DateTime createdAt,
-            DateTime updatedAt)?
+            DateTime updatedAt,
+            String? memoDeltaId,
+            String? stageDirectionDeltaId,
+            String? dialoguesDeltaId)?
         $default, {
     required TResult orElse(),
   }) {
@@ -262,11 +263,11 @@ extension CloudMangaPagePatterns on CloudMangaPage {
             _that.id,
             _that.mangaId,
             _that.pageIndex,
-            _that.memoDelta,
-            _that.stageDirectionDelta,
-            _that.dialoguesDelta,
             _that.createdAt,
-            _that.updatedAt);
+            _that.updatedAt,
+            _that.memoDeltaId,
+            _that.stageDirectionDeltaId,
+            _that.dialoguesDeltaId);
       case _:
         return orElse();
     }
@@ -291,11 +292,11 @@ extension CloudMangaPagePatterns on CloudMangaPage {
             String id,
             String mangaId,
             int pageIndex,
-            Map<String, dynamic> memoDelta,
-            Map<String, dynamic> stageDirectionDelta,
-            Map<String, dynamic> dialoguesDelta,
             DateTime createdAt,
-            DateTime updatedAt)
+            DateTime updatedAt,
+            String? memoDeltaId,
+            String? stageDirectionDeltaId,
+            String? dialoguesDeltaId)
         $default,
   ) {
     final _that = this;
@@ -305,11 +306,11 @@ extension CloudMangaPagePatterns on CloudMangaPage {
             _that.id,
             _that.mangaId,
             _that.pageIndex,
-            _that.memoDelta,
-            _that.stageDirectionDelta,
-            _that.dialoguesDelta,
             _that.createdAt,
-            _that.updatedAt);
+            _that.updatedAt,
+            _that.memoDeltaId,
+            _that.stageDirectionDeltaId,
+            _that.dialoguesDeltaId);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -333,11 +334,11 @@ extension CloudMangaPagePatterns on CloudMangaPage {
             String id,
             String mangaId,
             int pageIndex,
-            Map<String, dynamic> memoDelta,
-            Map<String, dynamic> stageDirectionDelta,
-            Map<String, dynamic> dialoguesDelta,
             DateTime createdAt,
-            DateTime updatedAt)?
+            DateTime updatedAt,
+            String? memoDeltaId,
+            String? stageDirectionDeltaId,
+            String? dialoguesDeltaId)?
         $default,
   ) {
     final _that = this;
@@ -347,11 +348,11 @@ extension CloudMangaPagePatterns on CloudMangaPage {
             _that.id,
             _that.mangaId,
             _that.pageIndex,
-            _that.memoDelta,
-            _that.stageDirectionDelta,
-            _that.dialoguesDelta,
             _that.createdAt,
-            _that.updatedAt);
+            _that.updatedAt,
+            _that.memoDeltaId,
+            _that.stageDirectionDeltaId,
+            _that.dialoguesDeltaId);
       case _:
         return null;
     }
@@ -365,14 +366,11 @@ class _CloudMangaPage implements CloudMangaPage {
       {required this.id,
       required this.mangaId,
       required this.pageIndex,
-      required final Map<String, dynamic> memoDelta,
-      required final Map<String, dynamic> stageDirectionDelta,
-      required final Map<String, dynamic> dialoguesDelta,
       required this.createdAt,
-      required this.updatedAt})
-      : _memoDelta = memoDelta,
-        _stageDirectionDelta = stageDirectionDelta,
-        _dialoguesDelta = dialoguesDelta;
+      required this.updatedAt,
+      this.memoDeltaId,
+      this.stageDirectionDeltaId,
+      this.dialoguesDeltaId});
   factory _CloudMangaPage.fromJson(Map<String, dynamic> json) =>
       _$CloudMangaPageFromJson(json);
 
@@ -385,42 +383,20 @@ class _CloudMangaPage implements CloudMangaPage {
   @override
   final int pageIndex;
 // Page order (0-based)
-  final Map<String, dynamic> _memoDelta;
-// Page order (0-based)
-  @override
-  Map<String, dynamic> get memoDelta {
-    if (_memoDelta is EqualUnmodifiableMapView) return _memoDelta;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_memoDelta);
-  }
-
-// Quill Delta for memo
-  final Map<String, dynamic> _stageDirectionDelta;
-// Quill Delta for memo
-  @override
-  Map<String, dynamic> get stageDirectionDelta {
-    if (_stageDirectionDelta is EqualUnmodifiableMapView)
-      return _stageDirectionDelta;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_stageDirectionDelta);
-  }
-
-// Quill Delta for stage directions
-  final Map<String, dynamic> _dialoguesDelta;
-// Quill Delta for stage directions
-  @override
-  Map<String, dynamic> get dialoguesDelta {
-    if (_dialoguesDelta is EqualUnmodifiableMapView) return _dialoguesDelta;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_dialoguesDelta);
-  }
-
-// Quill Delta for dialogues
   @override
   final DateTime createdAt;
 // Creation timestamp
   @override
   final DateTime updatedAt;
+// Last modification timestamp
+  @override
+  final String? memoDeltaId;
+// CloudDelta document ID for memoDelta
+  @override
+  final String? stageDirectionDeltaId;
+// CloudDelta document ID for stageDirectionDelta
+  @override
+  final String? dialoguesDeltaId;
 
   /// Create a copy of CloudMangaPage
   /// with the given fields replaced by the non-null parameter values.
@@ -446,16 +422,16 @@ class _CloudMangaPage implements CloudMangaPage {
             (identical(other.mangaId, mangaId) || other.mangaId == mangaId) &&
             (identical(other.pageIndex, pageIndex) ||
                 other.pageIndex == pageIndex) &&
-            const DeepCollectionEquality()
-                .equals(other._memoDelta, _memoDelta) &&
-            const DeepCollectionEquality()
-                .equals(other._stageDirectionDelta, _stageDirectionDelta) &&
-            const DeepCollectionEquality()
-                .equals(other._dialoguesDelta, _dialoguesDelta) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.updatedAt == updatedAt) &&
+            (identical(other.memoDeltaId, memoDeltaId) ||
+                other.memoDeltaId == memoDeltaId) &&
+            (identical(other.stageDirectionDeltaId, stageDirectionDeltaId) ||
+                other.stageDirectionDeltaId == stageDirectionDeltaId) &&
+            (identical(other.dialoguesDeltaId, dialoguesDeltaId) ||
+                other.dialoguesDeltaId == dialoguesDeltaId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -465,15 +441,15 @@ class _CloudMangaPage implements CloudMangaPage {
       id,
       mangaId,
       pageIndex,
-      const DeepCollectionEquality().hash(_memoDelta),
-      const DeepCollectionEquality().hash(_stageDirectionDelta),
-      const DeepCollectionEquality().hash(_dialoguesDelta),
       createdAt,
-      updatedAt);
+      updatedAt,
+      memoDeltaId,
+      stageDirectionDeltaId,
+      dialoguesDeltaId);
 
   @override
   String toString() {
-    return 'CloudMangaPage(id: $id, mangaId: $mangaId, pageIndex: $pageIndex, memoDelta: $memoDelta, stageDirectionDelta: $stageDirectionDelta, dialoguesDelta: $dialoguesDelta, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'CloudMangaPage(id: $id, mangaId: $mangaId, pageIndex: $pageIndex, createdAt: $createdAt, updatedAt: $updatedAt, memoDeltaId: $memoDeltaId, stageDirectionDeltaId: $stageDirectionDeltaId, dialoguesDeltaId: $dialoguesDeltaId)';
   }
 }
 
@@ -489,11 +465,11 @@ abstract mixin class _$CloudMangaPageCopyWith<$Res>
       {String id,
       String mangaId,
       int pageIndex,
-      Map<String, dynamic> memoDelta,
-      Map<String, dynamic> stageDirectionDelta,
-      Map<String, dynamic> dialoguesDelta,
       DateTime createdAt,
-      DateTime updatedAt});
+      DateTime updatedAt,
+      String? memoDeltaId,
+      String? stageDirectionDeltaId,
+      String? dialoguesDeltaId});
 }
 
 /// @nodoc
@@ -512,11 +488,11 @@ class __$CloudMangaPageCopyWithImpl<$Res>
     Object? id = null,
     Object? mangaId = null,
     Object? pageIndex = null,
-    Object? memoDelta = null,
-    Object? stageDirectionDelta = null,
-    Object? dialoguesDelta = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? memoDeltaId = freezed,
+    Object? stageDirectionDeltaId = freezed,
+    Object? dialoguesDeltaId = freezed,
   }) {
     return _then(_CloudMangaPage(
       id: null == id
@@ -531,18 +507,6 @@ class __$CloudMangaPageCopyWithImpl<$Res>
           ? _self.pageIndex
           : pageIndex // ignore: cast_nullable_to_non_nullable
               as int,
-      memoDelta: null == memoDelta
-          ? _self._memoDelta
-          : memoDelta // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
-      stageDirectionDelta: null == stageDirectionDelta
-          ? _self._stageDirectionDelta
-          : stageDirectionDelta // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
-      dialoguesDelta: null == dialoguesDelta
-          ? _self._dialoguesDelta
-          : dialoguesDelta // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -551,6 +515,18 @@ class __$CloudMangaPageCopyWithImpl<$Res>
           ? _self.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      memoDeltaId: freezed == memoDeltaId
+          ? _self.memoDeltaId
+          : memoDeltaId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      stageDirectionDeltaId: freezed == stageDirectionDeltaId
+          ? _self.stageDirectionDeltaId
+          : stageDirectionDeltaId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      dialoguesDeltaId: freezed == dialoguesDeltaId
+          ? _self.dialoguesDeltaId
+          : dialoguesDeltaId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }

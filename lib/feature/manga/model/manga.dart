@@ -1,7 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'manga.freezed.dart';
-part 'manga.g.dart';
 
 enum MangaStartPage {
   left,
@@ -14,9 +13,16 @@ enum MangaStartPage {
       };
 }
 
-typedef MangaId = int;
-typedef MangaPageId = int;
-typedef DeltaId = int;
+/// Helper extension for MangaStartPage enum conversion
+extension MangaStartPageExt on MangaStartPage {
+  static MangaStartPage fromString(String value) {
+    return MangaStartPage.values.firstWhere((e) => e.name == value);
+  }
+}
+
+extension type MangaId(String id) {}
+extension type MangaPageId(String id) {}
+extension type DeltaId(String id) {}
 
 @freezed
 abstract class Manga with _$Manga {
@@ -24,21 +30,17 @@ abstract class Manga with _$Manga {
     required MangaId id,
     required String name,
     required MangaStartPage startPage,
-    required DeltaId ideaMemo,
+    required DeltaId ideaMemoDeltaId,
   }) = _Manga;
-
-  factory Manga.fromJson(Map<String, dynamic> json) => _$MangaFromJson(json);
 }
 
 @freezed
 abstract class MangaPage with _$MangaPage {
   const factory MangaPage({
     required MangaPageId id,
-    required DeltaId memoDelta,
-    required DeltaId stageDirectionDelta,
-    required DeltaId dialoguesDelta,
+    required MangaId mangaId,
+    required DeltaId memoDeltaId,
+    required DeltaId stageDirectionDeltaId,
+    required DeltaId dialoguesDeltaId,
   }) = _MangaPage;
-
-  factory MangaPage.fromJson(Map<String, dynamic> json) =>
-      _$MangaPageFromJson(json);
 }

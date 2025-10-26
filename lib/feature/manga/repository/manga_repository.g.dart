@@ -47,4 +47,4 @@ final class MangaRepositoryProvider extends $FunctionalProvider<MangaRepository,
   }
 }
 
-String _$mangaRepositoryHash() => r'd6a072abd46b12d0617c2ee0948cad9aa1e0f18a';
+String _$mangaRepositoryHash() => r'c46f468b4ed50bdb9b1da3faacd0fa7c2d97d035';

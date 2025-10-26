@@ -1,4 +1,4 @@
-# CLAUDE.md
+﻿# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -22,7 +22,7 @@ flutter run --dart-define=OPENAI_API_KEY=your_api_key
 
 ### Code Generation (REQUIRED after model/database changes)
 ```bash
-# Generate code for Freezed, JSON serialization, Riverpod providers, and Drift DAOs
+# Generate code for Freezed, JSON serialization, and Riverpod providers
 dart run build_runner build -d
 
 # Or use the mise task shortcut:
@@ -49,29 +49,45 @@ flutter pub upgrade --major-versions
 ### Technology Stack
 - **Flutter 3.32.4** - Cross-platform UI framework
 - **Riverpod 3.0.0-dev.15** with hooks - State management
-- **Drift 2.22.1** - SQLite ORM for local persistence
+- **Cloud Firestore 5.5.0** - Firebase cloud storage with offline persistence
+- **Firebase Auth 5.3.3** - User authentication
 - **Flutter Quill 11.4.0** - Rich text editor for manga content
 - **Freezed 3.0.6** - Immutable data classes with code generation
+- **connectivity_plus 6.0.0** - Network connectivity monitoring
 - **dart_openai 5.1.0** - AI comment generation
 
 ### Data Flow Architecture
 ```
-UI Layer (Pages/Views) 
+UI Layer (Pages/Views)
     ↓ consumes
 ViewModels (Riverpod Notifiers)
     ↓ uses
 Repositories (Data Access Layer)
-    ↓ queries
-Database (Drift/SQLite)
+    ↓ converts to/from
+Domain Models (Manga, MangaPage)
+    ↓ syncs with
+Cloud Firestore (Firebase)
+    ↓ offline support via
+Firestore Offline Persistence
 ```
 
-### Database Schema
-Three main tables with foreign key relationships:
-- **DbMangas**: Manga metadata (id, name, startPage direction, ideaMemo deltaId)
-- **DbMangaPages**: Page content (mangaId FK, pageIndex, memo/dialogue/stageDirection deltaIds)
-- **DbDeltas**: Quill Delta JSON storage for all rich text content
+### Database Schema (Firebase Firestore)
+Collection structure with automatic offline persistence:
+- **users/{userId}/mangas/{mangaId}**: Manga metadata (name, startPageDirection, createdAt, updatedAt)
+  - `ideaMemo`: Map<String, dynamic> - Embedded Quill Delta JSON
+- **users/{userId}/mangas/{mangaId}/pages/{pageId}**: Page content (pageIndex, createdAt, updatedAt)
+  - `memoDelta`: Map<String, dynamic> - Embedded Quill Delta JSON
+  - `stageDirectionDelta`: Map<String, dynamic> - Embedded Quill Delta JSON
+  - `dialoguesDelta`: Map<String, dynamic> - Embedded Quill Delta JSON
 
-All text content (memos, dialogues, stage directions) is stored as Quill Delta format in the DbDeltas table and referenced by foreign keys.
+All Deltas are embedded in parent documents for cost optimization. The repository layer maintains an in-memory DeltaCache that maps DeltaId (int) to Delta objects for efficient access and updates.
+
+### Firebase-Only Persistence Architecture
+**Key Design**: Delta objects are managed by ID reference (DeltaId: int) in the repository layer:
+1. **Cache Layer**: `DeltaCache` maintains in-memory Map<DeltaId, Delta> for fast access
+2. **Storage Layer**: Deltas embedded in CloudManga/CloudMangaPage documents
+3. **Sync Pattern**: Firestore handles automatic sync with offline persistence enabled
+4. **Connection Monitoring**: `connectivity_plus` monitors online/offline state and triggers sync on reconnect
 
 ### Key Architectural Patterns
 
@@ -81,35 +97,57 @@ All text content (memos, dialogues, stage directions) is stored as Quill Delta f
 - **Repository Pattern** abstracts data access from UI
 - **Flutter Hooks** for local widget state
 
-#### Rich Text Handling
+#### Rich Text Handling (Delta Cache Pattern)
 - All text uses Quill Delta format stored as JSON
-- Delta IDs reference the DbDeltas table
+- Domain models use DeltaId (int) instead of Delta objects directly
+- Repository cache maps DeltaId → Delta for efficient in-memory access
+- Deltas are embedded in Firestore documents (CloudManga/CloudMangaPage)
 - Export functionality converts Deltas to Markdown for AI processing
 - ClipStudio integration extracts plain text from Deltas
+- Delta cache is cleared and repopulated on each app launch from Firestore
 
 #### Code Generation Dependencies
 Files requiring regeneration after changes:
 - `*.freezed.dart` - Freezed immutable classes
-- `*.g.dart` - JSON serialization and Drift DAOs
-- Riverpod provider files with `@riverpod` annotations
+- `*.g.dart` - JSON serialization (Cloud models)
+- Riverpod provider files with `@riverpod` or `@Riverpod` annotations
+- Model files must be regenerated if any changes to `@freezed` classes or `@riverpod` providers
 
 ### Project Structure
 ```
 lib/
-├── models/          # Freezed data models (Manga, MangaPage)
-├── database/        # Drift database schema and DAOs
-├── repositories/    # Data access layer with Riverpod providers
-│   ├── manga_repository.dart    # Main data operations
-│   ├── manga_providers.dart     # Manga-specific providers
-│   └── ai_repository.dart       # OpenAI integration
-├── pages/           # Screen-level components
-│   ├── main/        # Main editor with rich text editing
-│   └── grid/        # Manga overview with drag-drop reordering
-├── views/           # Reusable UI components
-│   ├── ai_comment_area.dart     # AI feedback widget
-│   ├── manga_edit_widget.dart   # Page editing interface
-│   └── manga_page_widget.dart   # Individual page display
-└── quill_controller_hook.dart   # Custom hook for Quill editor
+├── feature/
+│   └── manga/
+│       ├── model/              # Freezed domain models (Manga, MangaPage, SyncStatus)
+│       ├── repository/         # Data access layer with Firebase integration
+│       │   ├── manga_repository.dart    # Main data operations with Delta cache
+│       │   ├── delta_cache.dart         # In-memory Delta ID cache
+│       │   ├── exceptions.dart          # Custom repository exceptions
+│       │   └── manga_providers.dart     # Riverpod providers
+│       ├── provider/            # State management and Riverpod notifiers
+│       │   ├── manga_providers.dart     # Manga stream providers
+│       │   └── manga_page_view_model.dart
+│       ├── page/                # Screen-level components
+│       │   ├── main_page.dart         # Main editor with rich text editing
+│       │   ├── manga_grid_page.dart   # Manga overview with drag-drop reordering
+│       │   └── auth_page.dart         # Firebase authentication
+│       └── view/                # Reusable UI components
+│           ├── sync_status_indicator.dart  # Online/sync status display
+│           ├── manga_edit_widget.dart      # Page editing interface
+│           ├── manga_page_widget.dart      # Individual page display
+│           └── quill_controller_hook.dart  # Custom hook for Quill editor
+├── service/
+│   ├── firebase/
+│   │   ├── firebase_service.dart       # Firestore CRUD operations
+│   │   ├── auth_service.dart           # Firebase Auth integration
+│   │   ├── model/
+│   │   │   ├── cloud_manga.dart        # Firestore document models
+│   │   │   ├── cloud_manga_page.dart
+│   │   │   └── edit_lock.dart          # Edit lock mechanism
+│   │   └── lock_manager.dart           # Collaborative edit lock management
+│   └── connection_monitor.dart         # Network state monitoring
+└── common/
+    └── logger.dart                     # Application logging
 
 ```
 
@@ -117,16 +155,25 @@ lib/
 
 ### Code Generation is Mandatory
 After modifying any of these file types, you MUST run `dart run build_runner build -d`:
-- Models with `@freezed` annotation
-- Database tables in `database.dart`
+- Models with `@freezed` annotation (all model files)
+- Cloud models in `lib/service/firebase/model/`
 - Files with `@riverpod` or `@Riverpod` annotations
 - Any file importing `*.g.dart` or `*.freezed.dart`
 
-### Database Operations
-- Foreign keys are enforced with CASCADE delete
-- All database operations are asynchronous
-- Web deployment uses SQLite WASM configuration
-- Delta storage handles rich text formatting persistence
+### Firebase-Only Persistence Notes
+- **Offline Support**: Firestore offline persistence is enabled in `lib/main.dart`
+- **Delta Cache**: Repository maintains in-memory DeltaCache for fast access
+- **Connectivity Monitoring**: Uses `connectivity_plus` to monitor network state
+- **Automatic Sync**: Firestore handles automatic sync when connection is restored
+- **No Local Database**: Drift SQLite has been removed - all data persists to Firestore
+- **Connection Restoration**: `forceSyncAll()` method manually triggers sync on reconnect
+
+### Repository Layer Pattern
+- **CloudManga/CloudMangaPage**: Firestore document models with embedded Deltas
+- **Manga/MangaPage**: Domain models with DeltaId references (not Delta objects)
+- **Conversion Extensions**: Repository provides `toManga()` and `toCloudManga()` methods
+- **Delta Access**: Domain models use DeltaId (int) for type safety
+- **Cache Pattern**: DeltaCache maps DeltaId → Delta for efficient memory usage
 
 ### Platform Support
 Configured for Windows, macOS, Linux, iOS, Android, and Web. Platform-specific code in respective directories (`windows/`, `macos/`, etc.).

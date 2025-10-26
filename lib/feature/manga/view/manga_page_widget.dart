@@ -128,7 +128,7 @@ class MangaPageWidget extends HookConsumerWidget {
         ),
         IconButton(
           onPressed: () async {
-            await _copyToClipboard(ref, value.dialoguesDelta);
+            await _copyToClipboard(ref, value.dialoguesDeltaId);
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Page $pageIndex をコピーしました')));
@@ -153,8 +153,8 @@ class MangaPageWidget extends HookConsumerWidget {
       constraints: BoxConstraints(minWidth: 300.r),
       color: Colors.black12,
       child: _QuillTextAreaWidget(
-        key: ValueKey(value.stageDirectionDelta),
-        deltaId: value.stageDirectionDelta,
+        key: ValueKey(value.stageDirectionDeltaId),
+        deltaId: value.stageDirectionDeltaId,
         placeholder: 'ト書き',
       ),
     );
@@ -166,8 +166,8 @@ class MangaPageWidget extends HookConsumerWidget {
       constraints: BoxConstraints(minWidth: 300.r),
       color: Colors.black12,
       child: _QuillTextAreaWidget(
-        key: ValueKey(value.dialoguesDelta),
-        deltaId: value.dialoguesDelta,
+        key: ValueKey(value.dialoguesDeltaId),
+        deltaId: value.dialoguesDeltaId,
         placeholder: 'セリフ',
       ),
     );
@@ -179,7 +179,7 @@ class MangaPageWidget extends HookConsumerWidget {
       constraints: BoxConstraints(minWidth: 300.r),
       color: Colors.indigo.shade100,
       child: _QuillTextAreaWidget(
-        deltaId: value.memoDelta,
+        deltaId: value.memoDeltaId,
         placeholder: 'このページで描きたいこと',
       ),
     );

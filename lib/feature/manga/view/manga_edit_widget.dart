@@ -42,7 +42,7 @@ class MangaEditWidget extends HookConsumerWidget {
                 Expanded(
                   child: TabBarView(
                     children: [
-                      Workspace(deltaId: manga.ideaMemo),
+                      Workspace(deltaId: manga.ideaMemoDeltaId),
                       MangaPageList(
                         manga: manga,
                         scrollController: scrollController,
@@ -62,7 +62,7 @@ class MangaEditWidget extends HookConsumerWidget {
                     Expanded(
                       child: Workspace(
                         key: ValueKey(manga.id),
-                        deltaId: manga.ideaMemo,
+                        deltaId: manga.ideaMemoDeltaId,
                       ),
                     ),
                     SizedBox(height: 120.r, child: AiCommentArea(manga.id)),

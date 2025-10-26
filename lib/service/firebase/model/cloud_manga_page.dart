@@ -10,11 +10,11 @@ abstract class CloudMangaPage with _$CloudMangaPage {
     required String id, // Firestore document ID
     required String mangaId, // Parent manga ID
     required int pageIndex, // Page order (0-based)
-    required Map<String, dynamic> memoDelta, // Quill Delta for memo
-    required Map<String, dynamic> stageDirectionDelta, // Quill Delta for stage directions
-    required Map<String, dynamic> dialoguesDelta, // Quill Delta for dialogues
     required DateTime createdAt, // Creation timestamp
     required DateTime updatedAt, // Last modification timestamp
+    String? memoDeltaId, // CloudDelta document ID for memoDelta
+    String? stageDirectionDeltaId, // CloudDelta document ID for stageDirectionDelta
+    String? dialoguesDeltaId, // CloudDelta document ID for dialoguesDelta
   }) = _CloudMangaPage;
 
   factory CloudMangaPage.fromJson(Map<String, dynamic> json) =>
@@ -25,11 +25,11 @@ extension CloudMangaPageExt on CloudMangaPage {
   Map<String, dynamic> toFirestore() {
     return {
       'pageIndex': pageIndex,
-      'memoDelta': memoDelta,
-      'stageDirectionDelta': stageDirectionDelta,
-      'dialoguesDelta': dialoguesDelta,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      if (memoDeltaId != null) 'memoDeltaId': memoDeltaId,
+      if (stageDirectionDeltaId != null) 'stageDirectionDeltaId': stageDirectionDeltaId,
+      if (dialoguesDeltaId != null) 'dialoguesDeltaId': dialoguesDeltaId,
     };
   }
 
@@ -42,11 +42,11 @@ extension CloudMangaPageExt on CloudMangaPage {
       id: snapshot.id,
       mangaId: mangaId,
       pageIndex: data['pageIndex'] as int,
-      memoDelta: data['memoDelta'] as Map<String, dynamic>,
-      stageDirectionDelta: data['stageDirectionDelta'] as Map<String, dynamic>,
-      dialoguesDelta: data['dialoguesDelta'] as Map<String, dynamic>,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      memoDeltaId: data['memoDeltaId'] as String?,
+      stageDirectionDeltaId: data['stageDirectionDeltaId'] as String?,
+      dialoguesDeltaId: data['dialoguesDeltaId'] as String?,
     );
   }
 }

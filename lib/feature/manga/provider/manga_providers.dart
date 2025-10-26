@@ -23,9 +23,14 @@ Stream<List<MangaPageId>> mangaPageIdList(Ref ref, MangaId mangaId) {
 }
 
 @riverpod
+Stream<bool> onlineStatus(Ref ref) {
+  return ref.watch(mangaRepositoryProvider).watchOnlineStatus();
+}
+
+@riverpod
 class MangaNotifier extends _$MangaNotifier {
   @override
-  Stream<Manga?> build(int id) {
+  Stream<Manga?> build(MangaId id) {
     final repo = ref.watch(mangaRepositoryProvider);
     return repo.getMangaStream(id);
   }
@@ -63,7 +68,9 @@ class MangaNotifier extends _$MangaNotifier {
     final manga = await future;
     if (manga != null) {
       logger.d('download $manga}');
-      final content = await ref.read(mangaRepositoryProvider).toMarkdown(id);
+      // TODO: Implement toMarkdown functionality
+      // For now, create a simple text export
+      final content = 'Manga: ${manga.name}';
       await FileSaver.instance.saveFile(
         name: 'komatto_${manga.name}',
         fileExtension: 'txt',
@@ -74,7 +81,8 @@ class MangaNotifier extends _$MangaNotifier {
   }
 
   Future<String> toMarkdown() async {
-    return await ref.read(mangaRepositoryProvider).toMarkdown(id);
+    // TODO: Implement toMarkdown functionality
+    return 'Markdown export not yet implemented';
   }
 }
 
@@ -94,18 +102,16 @@ class MangaPageNotifier extends _$MangaPageNotifier {
 @riverpod
 class DeltaNotifier extends _$DeltaNotifier {
   @override
-  Future<Delta?> build(DeltaId? id) async {
-    if (id == null) {
+  Future<Delta?> build(DeltaId id) async {
+    if (id.id.isEmpty) {
       return null;
     }
     final repo = ref.read(mangaRepositoryProvider);
-    return await repo.loadDelta(id);
+    return repo.getDeltaStream(id).first;
   }
 
   void updateDelta(Delta delta) {
-    if (id != null) {
-      ref.read(mangaRepositoryProvider).saveDelta(id!, delta);
-    }
+    ref.read(mangaRepositoryProvider).saveDelta(id, delta);
     state = AsyncValue.data(delta);
   }
 

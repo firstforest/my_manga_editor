@@ -122,13 +122,47 @@ final class MangaPageIdListFamily extends $Family
   String toString() => r'mangaPageIdListProvider';
 }
 
+@ProviderFor(onlineStatus)
+const onlineStatusProvider = OnlineStatusProvider._();
+
+final class OnlineStatusProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, Stream<bool>>
+    with $FutureModifier<bool>, $StreamProvider<bool> {
+  const OnlineStatusProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'onlineStatusProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$onlineStatusHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
+
+  @override
+  Stream<bool> create(Ref ref) {
+    return onlineStatus(ref);
+  }
+}
+
+String _$onlineStatusHash() => r'2ebc01d21f5bc1ecc40bc7e89f9dfd6cd17c12b5';
+
 @ProviderFor(MangaNotifier)
 const mangaProvider = MangaNotifierFamily._();
 
 final class MangaNotifierProvider
     extends $StreamNotifierProvider<MangaNotifier, Manga?> {
   const MangaNotifierProvider._(
-      {required MangaNotifierFamily super.from, required int super.argument})
+      {required MangaNotifierFamily super.from,
+      required MangaId super.argument})
       : super(
           retry: null,
           name: r'mangaProvider',
@@ -162,12 +196,12 @@ final class MangaNotifierProvider
   }
 }
 
-String _$mangaNotifierHash() => r'ad765c3a4b528781a056a461240d6eec34ec9d7a';
+String _$mangaNotifierHash() => r'a150efd4c1d7f0047cd99d78b40382e1d3c6dd14';
 
 final class MangaNotifierFamily extends $Family
     with
         $ClassFamilyOverride<MangaNotifier, AsyncValue<Manga?>, Manga?,
-            Stream<Manga?>, int> {
+            Stream<Manga?>, MangaId> {
   const MangaNotifierFamily._()
       : super(
           retry: null,
@@ -178,7 +212,7 @@ final class MangaNotifierFamily extends $Family
         );
 
   MangaNotifierProvider call(
-    int id,
+    MangaId id,
   ) =>
       MangaNotifierProvider._(argument: id, from: this);
 
@@ -187,11 +221,11 @@ final class MangaNotifierFamily extends $Family
 }
 
 abstract class _$MangaNotifier extends $StreamNotifier<Manga?> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as MangaId;
+  MangaId get id => _$args;
 
   Stream<Manga?> build(
-    int id,
+    MangaId id,
   );
   @$mustCallSuper
   @override
@@ -304,7 +338,7 @@ final class DeltaNotifierProvider
     extends $AsyncNotifierProvider<DeltaNotifier, Delta?> {
   const DeltaNotifierProvider._(
       {required DeltaNotifierFamily super.from,
-      required DeltaId? super.argument})
+      required DeltaId super.argument})
       : super(
           retry: null,
           name: r'deltaProvider',
@@ -338,12 +372,12 @@ final class DeltaNotifierProvider
   }
 }
 
-String _$deltaNotifierHash() => r'0e9125ff92c135ca9900a4f6c546ae9a3dfe6b91';
+String _$deltaNotifierHash() => r'74a011a1e5f1f527630afc491ad5bd3ae0d78d2a';
 
 final class DeltaNotifierFamily extends $Family
     with
         $ClassFamilyOverride<DeltaNotifier, AsyncValue<Delta?>, Delta?,
-            FutureOr<Delta?>, DeltaId?> {
+            FutureOr<Delta?>, DeltaId> {
   const DeltaNotifierFamily._()
       : super(
           retry: null,
@@ -354,7 +388,7 @@ final class DeltaNotifierFamily extends $Family
         );
 
   DeltaNotifierProvider call(
-    DeltaId? id,
+    DeltaId id,
   ) =>
       DeltaNotifierProvider._(argument: id, from: this);
 
@@ -363,11 +397,11 @@ final class DeltaNotifierFamily extends $Family
 }
 
 abstract class _$DeltaNotifier extends $AsyncNotifier<Delta?> {
-  late final _$args = ref.$arg as DeltaId?;
-  DeltaId? get id => _$args;
+  late final _$args = ref.$arg as DeltaId;
+  DeltaId get id => _$args;
 
   FutureOr<Delta?> build(
-    DeltaId? id,
+    DeltaId id,
   );
   @$mustCallSuper
   @override

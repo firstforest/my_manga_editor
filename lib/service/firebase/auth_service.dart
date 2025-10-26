@@ -17,6 +17,24 @@ class AuthService {
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
 
+  static const _scopes = ['email', 'profile'];
+  static const _webClientId =
+      '948924085739-adqjuonj6bf2le0kscqisgoptfjhbm1l.apps.googleusercontent.com';
+
+  bool _initialized = false;
+
+  /// Initialize Google Sign-In (required in v7.x)
+  /// Must be called before using any sign-in methods
+  Future<void> initialize() async {
+    if (_initialized) return;
+
+    await _googleSignIn.initialize(
+      // Web requires explicit client ID
+      clientId: kIsWeb ? _webClientId : null,
+    );
+    _initialized = true;
+  }
+
   /// Get the current authenticated user
   User? get currentUser => _firebaseAuth.currentUser;
 
@@ -27,22 +45,46 @@ class AuthService {
   /// Returns the authenticated User or null if sign-in was cancelled
   Future<User?> signInWithGoogle() async {
     try {
-      // Trigger the Google Sign-In flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      // Web platform: Use Firebase Auth popup (simpler and recommended)
+      if (kIsWeb) {
+        final GoogleAuthProvider googleProvider = GoogleAuthProvider();
+        googleProvider.addScope('email');
+        googleProvider.addScope('profile');
 
-      if (googleUser == null) {
-        // User cancelled the sign-in
-        return null;
+        // Sign in with popup
+        final userCredential =
+            await _firebaseAuth.signInWithPopup(googleProvider);
+        return userCredential.user;
       }
 
-      // Obtain auth details from the signed-in Google account
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      // Mobile/Desktop platforms: Use google_sign_in package
+      // Ensure initialized
+      await initialize();
+
+      // Check if platform supports authenticate() method
+      if (!_googleSignIn.supportsAuthenticate()) {
+        throw AuthException(
+          'This platform does not support Google Sign-In authentication',
+        );
+      }
+
+      // Authenticate with Google (v7.x API)
+      final GoogleSignInAccount googleUser =
+          await _googleSignIn.authenticate(scopeHint: _scopes);
+
+      // Get ID token from authentication
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      // Get access token from authorization client
+      final authorization =
+          await googleUser.authorizationClient.authorizeScopes(_scopes);
+      final accessToken = authorization.accessToken;
 
       // Create a new credential for Firebase
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+        accessToken: accessToken,
+        idToken: idToken,
       );
 
       // Sign in to Firebase with the Google credential
@@ -98,17 +140,8 @@ FirebaseAuth firebaseAuth(Ref ref) {
 /// Provider for GoogleSignIn instance
 @riverpod
 GoogleSignIn googleSignIn(Ref ref) {
-  return GoogleSignIn(
-    // Web requires explicit client ID
-    // Get from Google Cloud Console OAuth 2.0 Client IDs (Web application type)
-    clientId: kIsWeb
-        ? '948924085739-adqjuonj6bf2le0kscqisgoptfjhbm1l.apps.googleusercontent.com'
-        : null,
-    scopes: [
-      'email',
-      'profile',
-    ],
-  );
+  // Version 7.x uses singleton pattern
+  return GoogleSignIn.instance;
 }
 
 /// Provider for AuthService

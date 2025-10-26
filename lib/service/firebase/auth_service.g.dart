@@ -98,7 +98,7 @@ final class GoogleSignInProvider
   }
 }
 
-String _$googleSignInHash() => r'5c5c483cf335db6cb5df076cb8ed7a2fae8f6fe6';
+String _$googleSignInHash() => r'4e2e63f5b667326ad67d15b1d17165a5a6c56bc9';
 
 /// Provider for AuthService
 

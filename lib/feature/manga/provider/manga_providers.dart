@@ -68,9 +68,8 @@ class MangaNotifier extends _$MangaNotifier {
     final manga = await future;
     if (manga != null) {
       logger.d('download $manga}');
-      // TODO: Implement toMarkdown functionality
-      // For now, create a simple text export
-      final content = 'Manga: ${manga.name}';
+      final content =
+          await ref.read(mangaRepositoryProvider).toMarkdown(manga.id);
       await FileSaver.instance.saveFile(
         name: 'komatto_${manga.name}',
         fileExtension: 'txt',

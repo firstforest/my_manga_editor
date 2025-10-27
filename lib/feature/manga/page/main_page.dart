@@ -7,6 +7,7 @@ import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_grid_page.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_page_view_model.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/feature/manga/repository/auth_repository.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_edit_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_name_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/sign_in_button.dart';
@@ -20,7 +21,7 @@ class MainPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModel = ref.watch(mangaPageViewModelProvider);
-
+    final user = ref.watch(currentUserProvider);
     final scrollController = useScrollController();
 
     return Scaffold(
@@ -56,18 +57,19 @@ class MainPage extends HookConsumerWidget {
               },
               icon: const Icon(Icons.grid_view),
             ),
-          IconButton(
-            onPressed: () async {
-              if (context.mounted) {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return MangaSelectDialog();
-                    });
-              }
-            },
-            icon: const Icon(Icons.list),
-          ),
+          if (user != null)
+            IconButton(
+              onPressed: () async {
+                if (context.mounted) {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return MangaSelectDialog();
+                      });
+                }
+              },
+              icon: const Icon(Icons.list),
+            ),
           // Online status indicator
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.0),
@@ -94,18 +96,37 @@ class MainPage extends HookConsumerWidget {
       body: switch (viewModel.value?.mangaId) {
         MangaId mangaId =>
           MangaEditWidget(mangaId: mangaId, scrollController: scrollController),
-        // 自動で作るかボタンを用意する
-        null => Center(
-            child: TextButton(
-              onPressed: () {
-                ref.read(mangaPageViewModelProvider.notifier).createNewManga();
-              },
-              child: Text(
-                '新しく作品を作る',
-                style: TextStyle(fontSize: 32.r),
+        // ログイン状態に応じて表示を切り替える
+        null => user != null
+            ? Center(
+                child: TextButton(
+                  onPressed: () {
+                    ref
+                        .read(mangaPageViewModelProvider.notifier)
+                        .createNewManga();
+                  },
+                  child: Text(
+                    '新しく作品を作る',
+                    style: TextStyle(fontSize: 32.r),
+                  ),
+                ),
+              )
+            : Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'ログインしてください',
+                      style: TextStyle(fontSize: 32.r, color: Colors.grey),
+                    ),
+                    SizedBox(height: 16.r),
+                    Text(
+                      '作品を作成するにはログインが必要です',
+                      style: TextStyle(fontSize: 16.r, color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
       },
       floatingActionButton: switch (viewModel.value?.mangaId) {
         MangaId mangaId => FloatingActionButton(

@@ -23,11 +23,6 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
     state = AsyncValue.data(MangaPageViewModel(mangaId: mangaId));
   }
 
-  Future<void> clearData() async {
-    // Note: clearData is deprecated with Firebase - data is managed server-side
-    // This method is kept for backwards compatibility but does nothing
-  }
-
   Future<void> createNewManga() async {
     final mangaRepository = ref.read(mangaRepositoryProvider);
     final selectedId = await mangaRepository.createNewManga();

@@ -41,6 +41,24 @@ class AuthService {
   /// Stream of authentication state changes
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
+  /// Sign in anonymously
+  /// Returns the authenticated User
+  Future<User?> signInAnonymously() async {
+    try {
+      final userCredential = await _firebaseAuth.signInAnonymously();
+      return userCredential.user;
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase Auth specific errors
+      throw AuthException(
+        'Firebase anonymous authentication failed: ${e.message}',
+        code: e.code,
+      );
+    } catch (e) {
+      // Handle other errors
+      throw AuthException('Anonymous sign-in failed: $e');
+    }
+  }
+
   /// Sign in with Google account
   /// Returns the authenticated User or null if sign-in was cancelled
   Future<User?> signInWithGoogle() async {

@@ -92,6 +92,36 @@ class SignInButton extends HookConsumerWidget {
               : const Icon(Icons.login),
           label: Text(isLoading.value ? 'Signing in...' : 'Sign in with Google'),
         ),
+        const SizedBox(height: 8),
+        ElevatedButton.icon(
+          onPressed: isLoading.value
+              ? null
+              : () async {
+                  isLoading.value = true;
+                  errorMessage.value = null;
+
+                  try {
+                    await authRepository.signInAnonymously();
+                    // Sign-in successful
+                    // NOTE: Firestore handles sync automatically with offline persistence
+                    // No manual sync trigger needed
+                  } on AuthException catch (e) {
+                    errorMessage.value = e.message;
+                  } catch (e) {
+                    errorMessage.value = 'Unexpected error: $e';
+                  } finally {
+                    isLoading.value = false;
+                  }
+                },
+          icon: isLoading.value
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.person_outline),
+          label: Text(isLoading.value ? 'Signing in...' : 'Sign in anonymously'),
+        ),
         if (errorMessage.value != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -112,6 +142,9 @@ class SignInButton extends HookConsumerWidget {
     ValueNotifier<bool> isLoading,
     ValueNotifier<String?> errorMessage,
   ) {
+    // Check if user is anonymous
+    final isAnonymous = user.isAnonymous;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,7 +158,7 @@ class SignInButton extends HookConsumerWidget {
                   ? NetworkImage(user.photoURL!)
                   : null,
               child: user.photoURL == null
-                  ? Text(user.displayName?[0] ?? user.email?[0] ?? '?')
+                  ? Icon(isAnonymous ? Icons.person_outline : Icons.person)
                   : null,
             ),
             const SizedBox(width: 8),
@@ -134,13 +167,14 @@ class SignInButton extends HookConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  user.displayName ?? 'User',
+                  isAnonymous ? '匿名ユーザー' : (user.displayName ?? 'User'),
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                Text(
-                  user.email ?? '',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
+                if (!isAnonymous)
+                  Text(
+                    user.email ?? '',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
               ],
             ),
           ],

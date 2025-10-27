@@ -21,6 +21,13 @@ class AuthRepository {
   /// Check if user is currently signed in
   bool get isSignedIn => _authService.isSignedIn;
 
+  /// Sign in anonymously
+  /// Returns the authenticated User
+  /// Throws AuthException if sign-in fails
+  Future<User?> signInAnonymously() async {
+    return await _authService.signInAnonymously();
+  }
+
   /// Sign in with Google account
   /// Returns the authenticated User or null if sign-in was cancelled
   /// Throws AuthException if sign-in fails

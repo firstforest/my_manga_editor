@@ -515,9 +515,8 @@ class MangaRepository {
       buffer.writeln();
 
       // Add idea memo if exists
-      final ideaMemoDelta = deltas
-          .where((d) => d.fieldName == 'ideaMemo' && d.pageId == null)
-          .firstOrNull;
+      final ideaMemoDelta =
+          deltas.where((d) => d.id == manga.ideaMemoDeltaId).firstOrNull;
       if (ideaMemoDelta != null && ideaMemoDelta.ops.isNotEmpty) {
         final delta = Delta.fromJson(ideaMemoDelta.ops);
         if (delta.isNotEmpty) {
@@ -545,7 +544,7 @@ class MangaRepository {
 
         // Memo
         final memoDeltaDoc =
-            pageDeltas.where((d) => d.fieldName == 'memoDelta').firstOrNull;
+            pageDeltas.where((d) => d.id == page.memoDeltaId).firstOrNull;
         if (memoDeltaDoc != null && memoDeltaDoc.ops.isNotEmpty) {
           final memoDelta = Delta.fromJson(memoDeltaDoc.ops);
           if (memoDelta.isNotEmpty) {
@@ -562,7 +561,7 @@ class MangaRepository {
 
         // Stage Direction
         final stageDeltaDoc = pageDeltas
-            .where((d) => d.fieldName == 'stageDirectionDelta')
+            .where((d) => d.id == page.stageDirectionDeltaId)
             .firstOrNull;
         if (stageDeltaDoc != null && stageDeltaDoc.ops.isNotEmpty) {
           final stageDelta = Delta.fromJson(stageDeltaDoc.ops);
@@ -579,9 +578,8 @@ class MangaRepository {
         }
 
         // Dialogues
-        final dialoguesDeltaDoc = pageDeltas
-            .where((d) => d.fieldName == 'dialoguesDelta')
-            .firstOrNull;
+        final dialoguesDeltaDoc =
+            pageDeltas.where((d) => d.id == page.dialoguesDeltaId).firstOrNull;
         if (dialoguesDeltaDoc != null && dialoguesDeltaDoc.ops.isNotEmpty) {
           final dialoguesDelta = Delta.fromJson(dialoguesDeltaDoc.ops);
           if (dialoguesDelta.isNotEmpty) {

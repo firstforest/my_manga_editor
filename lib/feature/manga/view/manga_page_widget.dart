@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/feature/manga/model/manga.dart';
@@ -233,33 +234,39 @@ class _QuillTextAreaWidget extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final quillController = useQuillController(null);
-    final focusNode = useFocusNode();
-
-    ref.listen(deltaProvider(mangaId, deltaId), (previous, next) {
-      if (previous?.hasValue != true && next.hasValue) {
-        final initialText = next.requireValue;
-        if (initialText != null && initialText.isNotEmpty) {
-          quillController.document = Document.fromDelta(initialText);
-        }
-      }
-    });
-
-    final onTextChanged = useCallback(() {
-      final delta = quillController.document.toDelta();
+    final onTextChanged = useCallback((delta) {
       ref.read(deltaProvider(mangaId, deltaId).notifier).updateDelta(delta);
     }, [deltaId]);
 
-    useEffect(() {
-      quillController.addListener(onTextChanged);
-      return () {
-        quillController.removeListener(onTextChanged);
-      };
-    }, [deltaId]);
+    final deltaAsync = ref.watch(deltaProvider(mangaId, deltaId));
+
+    return switch (deltaAsync) {
+      AsyncData<Delta?>(:final value) => _QuillEditor(
+          placeholder: placeholder,
+          initialDelta: value,
+          onTextChanged: onTextChanged),
+      _ => SizedBox.shrink(),
+    };
+  }
+}
+
+class _QuillEditor extends HookWidget {
+  const _QuillEditor({
+    required this.placeholder,
+    required this.initialDelta,
+    required this.onTextChanged,
+  });
+
+  final String? placeholder;
+  final Delta? initialDelta;
+  final Function(Delta delta) onTextChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final quillController = useQuillController(initialDelta);
 
     return QuillEditor.basic(
         controller: quillController,
-        focusNode: focusNode,
         config: QuillEditorConfig(
           placeholder: placeholder,
           padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r),

@@ -106,7 +106,11 @@ class DeltaNotifier extends _$DeltaNotifier {
       return null;
     }
     final repo = ref.read(mangaRepositoryProvider);
-    return repo.getDeltaStream(mangaId, id).first;
+    final delta = await repo.getDeltaStream(mangaId, id).first;
+    if (delta == null || delta.isEmpty) {
+      return null;
+    }
+    return delta;
   }
 
   void updateDelta(Delta delta) {

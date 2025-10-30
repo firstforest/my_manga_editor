@@ -264,9 +264,22 @@ class _QuillEditor extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final quillController = useQuillController(initialDelta);
+    final focusNode = useFocusNode();
+
+    final listener = useCallback(() {
+      onTextChanged(quillController.document.toDelta());
+    }, []);
+
+    useEffect(() {
+      quillController.addListener(listener);
+      return () {
+        quillController.removeListener(listener);
+      };
+    }, []);
 
     return QuillEditor.basic(
         controller: quillController,
+        focusNode: focusNode,
         config: QuillEditorConfig(
           placeholder: placeholder,
           padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r),

@@ -184,9 +184,34 @@ class MangaSelectDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mangaList = ref.watch(allMangaListProvider).value ?? [];
+    final selectedMangaIds = useState<Set<MangaId>>({});
+
+    // Calculate total page count for selected manga
+    int totalPageCount = 0;
+    for (final mangaId in selectedMangaIds.value) {
+      final pageCount = ref.watch(mangaPageIdListProvider(mangaId)).maybeMap(
+        data: (data) => data.value.length,
+        orElse: () => 0,
+      );
+      totalPageCount += pageCount;
+    }
 
     return AlertDialog(
-      title: Text('漫画を選択'),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('漫画を選択'),
+          if (selectedMangaIds.value.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text(
+                '選択中: ${selectedMangaIds.value.length}作品 / 合計ページ数: $totalPageCount',
+                style: TextStyle(fontSize: 14, color: Colors.blue),
+              ),
+            ),
+        ],
+      ),
       content: SizedBox(
           width: 400,
           child: ListView.builder(
@@ -214,7 +239,19 @@ class MangaSelectDialog extends HookConsumerWidget {
                   data: (data) => data.value.length,
                   orElse: () => 0,
                 );
+                final isSelected = selectedMangaIds.value.contains(manga.id);
+
                 return ListTile(
+                  leading: Checkbox(
+                    value: isSelected,
+                    onChanged: (bool? value) {
+                      if (value == true) {
+                        selectedMangaIds.value = {...selectedMangaIds.value, manga.id};
+                      } else {
+                        selectedMangaIds.value = selectedMangaIds.value.where((id) => id != manga.id).toSet();
+                      }
+                    },
+                  ),
                   title: Text(manga.name),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

@@ -210,14 +210,28 @@ class MangaSelectDialog extends HookConsumerWidget {
                 final delta = ref
                     .watch(deltaProvider(manga.id, manga.ideaMemoDeltaId))
                     .value;
+                final pageCount = ref.watch(mangaPageIdListProvider(manga.id)).maybeMap(
+                  data: (data) => data.value.length,
+                  orElse: () => 0,
+                );
                 return ListTile(
                   title: Text(manga.name),
-                  subtitle: Text(
-                      delta != null && delta.isNotEmpty
-                          ? Document.fromDelta(delta).toPlainText()
-                          : '',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          delta != null && delta.isNotEmpty
+                              ? Document.fromDelta(delta).toPlainText()
+                              : '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                      SizedBox(height: 4),
+                      Text(
+                        'ページ数: $pageCount',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
                   onTap: () {
                     ref
                         .read(mangaPageViewModelProvider.notifier)

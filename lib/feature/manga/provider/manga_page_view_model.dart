@@ -4,6 +4,7 @@ import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'manga_page_view_model.freezed.dart';
+
 part 'manga_page_view_model.g.dart';
 
 @freezed
@@ -26,10 +27,7 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
   Future<void> createNewManga() async {
     final mangaRepository = ref.read(mangaRepositoryProvider);
     final selectedId = await mangaRepository.createNewManga();
-
-    for (int i = 0; i < 4; i++) {
-      await mangaRepository.createNewMangaPage(selectedId);
-    }
+    await mangaRepository.createNewMangaPage(selectedId);
 
     selectManga(selectedId);
   }

@@ -5,7 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart'
     show Connectivity, ConnectivityResult;
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:my_manga_editor/common/logger.dart';
-import 'package:my_manga_editor/feature/manga/model/manga.dart';
+import 'package:my_manga_editor/data/model/manga.dart';
 import 'package:my_manga_editor/data/repository/exceptions.dart'
     as repo_exceptions;
 import 'package:my_manga_editor/data/service/firebase/auth_service.dart';

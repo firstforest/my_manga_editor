@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:my_manga_editor/data/service/firebase/model/edit_lock.dart';
+import 'package:my_manga_editor_data/service/firebase/model/edit_lock.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 

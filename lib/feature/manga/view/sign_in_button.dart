@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/data/repository/auth_repository.dart';
-import 'package:my_manga_editor/data/service/firebase/auth_service.dart';
+import 'package:my_manga_editor_data/repository/auth_repository.dart';
+import 'package:my_manga_editor_data/repository/exceptions.dart';
 
 /// Widget that displays Google Sign-In and Sign-Out functionality
 /// Shows current user's email when signed in

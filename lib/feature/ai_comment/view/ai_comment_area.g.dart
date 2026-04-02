@@ -48,7 +48,7 @@ final class AiRepositoryProvider
   }
 }
 
-String _$aiRepositoryHash() => r'6d4f187715757cd92b7f44458f1cce644c7892df';
+String _$aiRepositoryHash() => r'1b622ca49b99358a79c67f521ccd25b0252a8ef8';
 
 @ProviderFor(mangaDescription)
 const mangaDescriptionProvider = MangaDescriptionFamily._();
@@ -173,7 +173,7 @@ final class AiCommentListProvider
   }
 }
 
-String _$aiCommentListHash() => r'e0f6a6e345946b4ca05c113c4a236499b9d0b57c';
+String _$aiCommentListHash() => r'0c804c09b2a7bccf81825e82105b2b2424aa08d2';
 
 final class AiCommentListFamily extends $Family
     with

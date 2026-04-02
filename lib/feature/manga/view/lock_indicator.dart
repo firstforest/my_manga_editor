@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_manga_editor/data/service/firebase/model/edit_lock.dart';
+import 'package:my_manga_editor_data/my_manga_editor_data.dart';
 
 /// Widget to display manga edit lock status
 /// Shows whether a manga is locked by another user/device

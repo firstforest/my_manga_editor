@@ -4,15 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart'
     show Connectivity, ConnectivityResult;
 import 'package:flutter_quill/quill_delta.dart';
-import 'package:my_manga_editor/common/logger.dart';
-import 'package:my_manga_editor/data/model/manga.dart';
-import 'package:my_manga_editor/data/repository/exceptions.dart'
+import 'package:my_manga_editor_common/logger.dart';
+import 'package:my_manga_editor_data/model/manga.dart';
+import 'package:my_manga_editor_data/repository/exceptions.dart'
     as repo_exceptions;
-import 'package:my_manga_editor/data/service/firebase/auth_service.dart';
-import 'package:my_manga_editor/data/service/firebase/firebase_service.dart';
-import 'package:my_manga_editor/data/service/firebase/model/cloud_delta.dart';
-import 'package:my_manga_editor/data/service/firebase/model/cloud_manga.dart';
-import 'package:my_manga_editor/data/service/firebase/model/cloud_manga_page.dart';
+import 'package:my_manga_editor_data/service/firebase/auth_service.dart';
+import 'package:my_manga_editor_data/service/firebase/firebase_service.dart';
+import 'package:my_manga_editor_data/service/firebase/model/cloud_delta.dart';
+import 'package:my_manga_editor_data/service/firebase/model/cloud_manga.dart';
+import 'package:my_manga_editor_data/service/firebase/model/cloud_manga_page.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'manga_repository.g.dart';

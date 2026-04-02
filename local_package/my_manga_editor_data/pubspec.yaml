@@ -1,0 +1,38 @@
+name: my_manga_editor_data
+description: Data layer for my_manga_editor
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.4.1 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  my_manga_editor_common:
+    path: ../my_manga_editor_common
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+  riverpod_annotation: ^3.0.2
+  hooks_riverpod: ^3.0.2
+  cloud_firestore: ^6.0.3
+  firebase_auth: ^6.1.1
+  firebase_core: ^4.2.0
+  google_sign_in: ^7.2.0
+  shared_preferences: ^2.3.4
+  connectivity_plus: ^7.0.0
+  flutter_quill: ^11.4.0
+  uuid: ^4.5.1
+  dart_openai: ^5.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.7.1
+  freezed: ^3.0.6
+  json_serializable: ^6.11.1
+  riverpod_generator: ^3.0.2
+  riverpod_lint: ^3.0.2
+
+flutter:

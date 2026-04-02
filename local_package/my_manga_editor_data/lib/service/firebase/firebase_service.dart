@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:my_manga_editor/data/service/firebase/model/cloud_delta.dart';
-import 'package:my_manga_editor/data/service/firebase/model/cloud_manga.dart';
-import 'package:my_manga_editor/data/service/firebase/model/cloud_manga_page.dart';
+import 'package:my_manga_editor_data/service/firebase/model/cloud_delta.dart';
+import 'package:my_manga_editor_data/service/firebase/model/cloud_manga.dart';
+import 'package:my_manga_editor_data/service/firebase/model/cloud_manga_page.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'firebase_service.g.dart';

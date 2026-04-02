@@ -27,7 +27,9 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:joemuller.com)",
       "WebFetch(domain:firebase.flutter.dev)",
-      "Bash(xargs basename:*)"
+      "Bash(xargs basename:*)",
+      "Bash(git mv:*)",
+      "Bash(find lib:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,189 +1,131 @@
-﻿# CLAUDE.md
+# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-**My Manga Editor** (漫画制作用プロットエディター) is a Flutter cross-platform desktop application for manga creators to manage story plots, dialogues, and page layouts. The app integrates with ClipStudio Paint for seamless workflow integration.
+**My Manga Editor** (漫画制作用プロットエディター) is a Flutter cross-platform desktop application for manga creators to manage story plots, dialogues, and page layouts. Integrates with ClipStudio Paint for seamless workflow.
 
 ## Development Commands
 
-### Setup & Run
 ```bash
-# Install development tools (requires mise: https://mise.jdx.dev/)
+# Setup (requires mise: https://mise.jdx.dev/)
 mise i
 
-# Run the application
+# Run
 flutter run
+flutter run --dart-define=OPENAI_API_KEY=your_key  # with AI comment feature
 
-# Run with OpenAI API key (for AI comment feature)
-flutter run --dart-define=OPENAI_API_KEY=your_api_key
-```
+# Code generation (REQUIRED after model/provider changes)
+dart run build_runner build -d   # or: mise run gen
 
-### Code Generation (REQUIRED after model/database changes)
-```bash
-# Generate code for Freezed, JSON serialization, and Riverpod providers
-dart run build_runner build -d
-
-# Or use the mise task shortcut:
-mise run gen
-```
-
-### Code Quality
-```bash
-# Analyze code for issues
+# Quality
 flutter analyze
-
-# Run tests
 flutter test
-
-# Check outdated dependencies
-flutter pub outdated
-
-# Update dependencies
-flutter pub upgrade --major-versions
+flutter test test/feature/manga/provider/manga_providers_test.dart  # single test
 ```
 
-## Architecture Overview
+## Architecture
 
-### Technology Stack
-- **Flutter 3.32.4** - Cross-platform UI framework
-- **Riverpod 3.0.0-dev.15** with hooks - State management
-- **Cloud Firestore 5.5.0** - Firebase cloud storage with offline persistence
-- **Firebase Auth 5.3.3** - User authentication
-- **Flutter Quill 11.4.0** - Rich text editor for manga content
-- **Freezed 3.0.6** - Immutable data classes with code generation
-- **connectivity_plus 6.0.0** - Network connectivity monitoring
-- **dart_openai 5.1.0** - AI comment generation
-
-### Data Flow Architecture
+### Data Flow
 ```
-UI Layer (Pages/Views)
-    ↓ consumes
-ViewModels (Riverpod Notifiers)
-    ↓ uses
-Repositories (Data Access Layer)
-    ↓ converts to/from
-Domain Models (Manga, MangaPage)
-    ↓ syncs with
-Cloud Firestore (Firebase)
-    ↓ offline support via
-Firestore Offline Persistence
+UI (Pages/Views) → ViewModels (Riverpod Notifiers) → Repository → Domain Models ↔ Firestore
 ```
 
-### Database Schema (Firebase Firestore)
-Collection structure with automatic offline persistence:
-- **users/{userId}/mangas/{mangaId}**: Manga metadata (name, startPageDirection, createdAt, updatedAt)
-  - `ideaMemo`: Map<String, dynamic> - Embedded Quill Delta JSON
-- **users/{userId}/mangas/{mangaId}/pages/{pageId}**: Page content (pageIndex, createdAt, updatedAt)
-  - `memoDelta`: Map<String, dynamic> - Embedded Quill Delta JSON
-  - `stageDirectionDelta`: Map<String, dynamic> - Embedded Quill Delta JSON
-  - `dialoguesDelta`: Map<String, dynamic> - Embedded Quill Delta JSON
+### Key Technology
+- **Flutter 3.32.4**, **Riverpod 3.x** (with hooks), **Freezed** for immutable models
+- **Cloud Firestore** with offline persistence (no local database)
+- **Flutter Quill** for rich text editing (Delta format)
+- **dart_openai** for AI comment generation
 
-All Deltas are embedded in parent documents for cost optimization. The repository layer maintains an in-memory DeltaCache that maps DeltaId (int) to Delta objects for efficient access and updates.
+### Firestore Schema
+```
+users/{userId}/mangas/{mangaId}           → CloudManga (name, startPageDirection, editLock)
+users/{userId}/mangas/{mangaId}/pages/    → CloudMangaPage (pageIndex)
+users/{userId}/mangas/{mangaId}/deltas/   → CloudDelta (ops, fieldName, pageId?)
+```
 
-### Firebase-Only Persistence Architecture
-**Key Design**: Delta objects are managed by ID reference (DeltaId: int) in the repository layer:
-1. **Cache Layer**: `DeltaCache` maintains in-memory Map<DeltaId, Delta> for fast access
-2. **Storage Layer**: Deltas embedded in CloudManga/CloudMangaPage documents
-3. **Sync Pattern**: Firestore handles automatic sync with offline persistence enabled
-4. **Connection Monitoring**: `connectivity_plus` monitors online/offline state and triggers sync on reconnect
+Deltas are stored in a **separate `deltas` subcollection** (not embedded in parent documents). Each CloudDelta has a `fieldName` ('ideaMemo', 'memoDelta', 'stageDirectionDelta', 'dialoguesDelta') and optional `pageId` for page-level deltas.
 
-### Key Architectural Patterns
+### Domain Model ID Types (Extension Types)
+Defined in `lib/feature/manga/model/manga.dart`:
+- `MangaId(String)`, `MangaPageId(String)`, `DeltaId(String)` — type-safe ID wrappers
+- Domain models (`Manga`, `MangaPage`) reference Deltas by `DeltaId`, not by Delta objects
 
-#### State Management
-- **Riverpod Providers** for dependency injection and state management
-- **ViewModels** (`*_view_model.dart`) handle complex UI state
-- **Repository Pattern** abstracts data access from UI
-- **Flutter Hooks** for local widget state
+### Repository Pattern
+- `MangaRepository` (keepAlive Riverpod provider) handles all data operations
+- Maintains `_pageToMangaMap` for MangaPageId → MangaId reverse lookups
+- Connectivity monitoring via `connectivity_plus` with automatic sync on reconnect
+- Converts between `CloudManga`/`CloudMangaPage`/`CloudDelta` (Firestore) and `Manga`/`MangaPage` (domain)
 
-#### Rich Text Handling (Delta Cache Pattern)
-- All text uses Quill Delta format stored as JSON
-- Domain models use DeltaId (int) instead of Delta objects directly
-- Repository cache maps DeltaId → Delta for efficient in-memory access
-- Deltas are embedded in Firestore documents (CloudManga/CloudMangaPage)
-- Export functionality converts Deltas to Markdown for AI processing
-- ClipStudio integration extracts plain text from Deltas
-- Delta cache is cleared and repopulated on each app launch from Firestore
+### Edit Lock System
+- `LockManager` prevents concurrent editing via Firestore transactions
+- Lock duration: 60s, heartbeat: 30s, tracked by device ID
+- `EditLock` embedded in CloudManga document
 
-#### Code Generation Dependencies
-Files requiring regeneration after changes:
-- `*.freezed.dart` - Freezed immutable classes
-- `*.g.dart` - JSON serialization (Cloud models)
-- Riverpod provider files with `@riverpod` or `@Riverpod` annotations
-- Model files must be regenerated if any changes to `@freezed` classes or `@riverpod` providers
+### Riverpod Provider Patterns
+- `@riverpod` (function-style) for streams/futures: `allMangaList`, `mangaPageIdList`, `onlineStatus`
+- `@Riverpod(keepAlive: true)` for persistent state: `MangaRepository`, `FirebaseService`
+- `@riverpod` class notifiers for complex UI state: `MangaPageViewModelNotifier`
 
 ### Project Structure
 ```
 lib/
+├── hooks/                          # Custom Flutter hooks
+│   └── quill_controller_hook.dart
 ├── feature/
-│   └── manga/
-│       ├── model/              # Freezed domain models (Manga, MangaPage, SyncStatus)
-│       ├── repository/         # Data access layer with Firebase integration
-│       │   ├── manga_repository.dart    # Main data operations with Delta cache
-│       │   ├── delta_cache.dart         # In-memory Delta ID cache
-│       │   ├── exceptions.dart          # Custom repository exceptions
-│       │   └── manga_providers.dart     # Riverpod providers
-│       ├── provider/            # State management and Riverpod notifiers
-│       │   ├── manga_providers.dart     # Manga stream providers
+│   ├── ai_comment/                 # AI comment generation (OpenAI)
+│   │   ├── repository/ai_repository.dart
+│   │   └── view/ai_comment_area.dart
+│   ├── setting/                    # App settings (SharedPreferences)
+│   │   ├── repository/setting_repository.dart
+│   │   └── page/setting_page.dart
+│   └── manga/                      # Core manga editing feature
+│       ├── model/manga.dart        # Domain models (Manga, MangaPage, ID types)
+│       ├── repository/             # Data access layer
+│       │   ├── manga_repository.dart
+│       │   ├── auth_repository.dart
+│       │   └── exceptions.dart
+│       ├── provider/               # Riverpod state management
+│       │   ├── manga_providers.dart
 │       │   └── manga_page_view_model.dart
-│       ├── page/                # Screen-level components
-│       │   ├── main_page.dart         # Main editor with rich text editing
-│       │   ├── manga_grid_page.dart   # Manga overview with drag-drop reordering
-│       │   └── auth_page.dart         # Firebase authentication
-│       └── view/                # Reusable UI components
-│           ├── sync_status_indicator.dart  # Online/sync status display
-│           ├── manga_edit_widget.dart      # Page editing interface
-│           ├── manga_page_widget.dart      # Individual page display
-│           └── quill_controller_hook.dart  # Custom hook for Quill editor
-├── service/
-│   ├── firebase/
-│   │   ├── firebase_service.dart       # Firestore CRUD operations
-│   │   ├── auth_service.dart           # Firebase Auth integration
-│   │   ├── model/
-│   │   │   ├── cloud_manga.dart        # Firestore document models
-│   │   │   ├── cloud_manga_page.dart
-│   │   │   └── edit_lock.dart          # Edit lock mechanism
-│   │   └── lock_manager.dart           # Collaborative edit lock management
-│   └── connection_monitor.dart         # Network state monitoring
-└── common/
-    └── logger.dart                     # Application logging
-
+│       ├── page/                   # Screen-level components
+│       │   ├── main_page.dart
+│       │   └── manga_grid_page.dart
+│       └── view/                   # Reusable UI components
+│           ├── tategaki.dart       # Vertical Japanese text rendering
+│           ├── workspace.dart
+│           ├── lock_indicator.dart
+│           └── ...
+├── service/firebase/               # Firebase integration layer
+│   ├── firebase_service.dart       # Firestore CRUD
+│   ├── auth_service.dart           # Firebase Auth + Google Sign-In
+│   ├── firebase_config.dart        # Firestore settings (persistence, cache)
+│   ├── lock_manager.dart           # Collaborative edit lock
+│   └── model/                      # Firestore document models
+│       ├── cloud_manga.dart
+│       ├── cloud_manga_page.dart
+│       ├── cloud_delta.dart
+│       └── edit_lock.dart
+└── common/logger.dart
 ```
 
 ## Critical Development Notes
 
 ### Code Generation is Mandatory
-After modifying any of these file types, you MUST run `dart run build_runner build -d`:
-- Models with `@freezed` annotation (all model files)
+After modifying any of these, run `dart run build_runner build -d`:
+- `@freezed` classes (model files)
+- `@riverpod` / `@Riverpod` annotated providers
 - Cloud models in `lib/service/firebase/model/`
-- Files with `@riverpod` or `@Riverpod` annotations
 - Any file importing `*.g.dart` or `*.freezed.dart`
 
-### Firebase-Only Persistence Notes
-- **Offline Support**: Firestore offline persistence is enabled in `lib/main.dart`
-- **Delta Cache**: Repository maintains in-memory DeltaCache for fast access
-- **Connectivity Monitoring**: Uses `connectivity_plus` to monitor network state
-- **Automatic Sync**: Firestore handles automatic sync when connection is restored
-- **No Local Database**: Drift SQLite has been removed - all data persists to Firestore
-- **Connection Restoration**: `forceSyncAll()` method manually triggers sync on reconnect
-
-### Repository Layer Pattern
-- **CloudManga/CloudMangaPage**: Firestore document models with embedded Deltas
-- **Manga/MangaPage**: Domain models with DeltaId references (not Delta objects)
-- **Conversion Extensions**: Repository provides `toManga()` and `toCloudManga()` methods
-- **Delta Access**: Domain models use DeltaId (int) for type safety
-- **Cache Pattern**: DeltaCache maps DeltaId → Delta for efficient memory usage
-
-### Platform Support
-Configured for Windows, macOS, Linux, iOS, Android, and Web. Platform-specific code in respective directories (`windows/`, `macos/`, etc.).
+Generated files (`*.g.dart`, `*.freezed.dart`) are excluded from analysis via `analysis_options.yaml`.
 
 ### Testing
-Unit tests focus on repository layer with Mockito. Test files in `test/repositories/`.
+- Tests in `test/feature/manga/provider/` using Mockito with `@GenerateNiceMocks`
+- Uses `ProviderContainer` for Riverpod provider isolation
+- `fake_cloud_firestore` package available for Firestore mocking
 
-## AI Integration
-The app supports OpenAI-powered comment generation on manga content. Pass API key via environment:
-```bash
-flutter run --dart-define=OPENAI_API_KEY=your_key
-```
-AI comments analyze manga plot and page content to provide creative feedback.
+### CI/CD
+- GitHub Actions deploys Flutter Web to GitHub Pages on push to `main`
+- Workflow: `.github/workflows/main.yml`

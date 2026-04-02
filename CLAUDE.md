@@ -18,6 +18,8 @@ flutter run --dart-define=OPENAI_API_KEY=your_key  # with AI comment feature
 
 # Code generation (REQUIRED after model/provider changes)
 dart run build_runner build -d   # or: mise run gen
+# For data layer changes (models, repositories, services):
+cd local_package/my_manga_editor_data && dart run build_runner build -d && cd -
 
 # Quality
 flutter analyze
@@ -106,8 +108,9 @@ Defined in `local_package/my_manga_editor_data/lib/model/manga.dart`:
 After modifying any of these, run `dart run build_runner build -d`:
 - `@freezed` classes (model files)
 - `@riverpod` / `@Riverpod` annotated providers
-- Cloud models in `local_package/my_manga_editor_data/lib/service/firebase/model/`
 - Any file importing `*.g.dart` or `*.freezed.dart`
+
+**Important:** Root and data package have separate `build_runner` configs. Changes under `local_package/my_manga_editor_data/` require running `build_runner` from that directory (see Development Commands). Root `build_runner` does NOT process local packages.
 
 Generated files (`*.g.dart`, `*.freezed.dart`) are excluded from analysis via `analysis_options.yaml`.
 

@@ -3,7 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/feature/manga/model/manga.dart';
+import 'package:my_manga_editor/data/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_grid_page.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_page_view_model.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
@@ -190,9 +190,9 @@ class MangaSelectDialog extends HookConsumerWidget {
     int totalPageCount = 0;
     for (final mangaId in selectedMangaIds.value) {
       final pageCount = ref.watch(mangaPageIdListProvider(mangaId)).maybeMap(
-        data: (data) => data.value.length,
-        orElse: () => 0,
-      );
+            data: (data) => data.value.length,
+            orElse: () => 0,
+          );
       totalPageCount += pageCount;
     }
 
@@ -235,10 +235,11 @@ class MangaSelectDialog extends HookConsumerWidget {
                 final delta = ref
                     .watch(deltaProvider(manga.id, manga.ideaMemoDeltaId))
                     .value;
-                final pageCount = ref.watch(mangaPageIdListProvider(manga.id)).maybeMap(
-                  data: (data) => data.value.length,
-                  orElse: () => 0,
-                );
+                final pageCount =
+                    ref.watch(mangaPageIdListProvider(manga.id)).maybeMap(
+                          data: (data) => data.value.length,
+                          orElse: () => 0,
+                        );
                 final isSelected = selectedMangaIds.value.contains(manga.id);
 
                 return ListTile(
@@ -246,9 +247,14 @@ class MangaSelectDialog extends HookConsumerWidget {
                     value: isSelected,
                     onChanged: (bool? value) {
                       if (value == true) {
-                        selectedMangaIds.value = {...selectedMangaIds.value, manga.id};
+                        selectedMangaIds.value = {
+                          ...selectedMangaIds.value,
+                          manga.id
+                        };
                       } else {
-                        selectedMangaIds.value = selectedMangaIds.value.where((id) => id != manga.id).toSet();
+                        selectedMangaIds.value = selectedMangaIds.value
+                            .where((id) => id != manga.id)
+                            .toSet();
                       }
                     },
                   ),

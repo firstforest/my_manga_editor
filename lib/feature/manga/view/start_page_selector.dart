@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/feature/manga/model/manga.dart';
+import 'package:my_manga_editor/data/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 
 class StartPageSelector extends HookConsumerWidget {
@@ -28,9 +28,7 @@ class StartPageSelector extends HookConsumerWidget {
               .toList(),
           onChanged: (value) {
             if (value != null) {
-              ref
-                  .read(mangaProvider(mangaId).notifier)
-                  .updateStartPage(value);
+              ref.read(mangaProvider(mangaId).notifier).updateStartPage(value);
             }
           },
         ),

@@ -26,7 +26,8 @@
       "WebFetch(domain:stackoverflow.com)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:joemuller.com)",
-      "WebFetch(domain:firebase.flutter.dev)"
+      "WebFetch(domain:firebase.flutter.dev)",
+      "Bash(xargs basename:*)"
     ],
     "deny": [],
     "ask": []

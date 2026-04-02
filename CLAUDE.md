@@ -29,7 +29,8 @@ flutter test test/feature/manga/provider/manga_providers_test.dart  # single tes
 
 ### Data Flow
 ```
-UI (feature/) → ViewModels (Riverpod Notifiers) → Repository (data/repository/) → Service (data/service/) ↔ Firestore
+UI (lib/feature/) → ViewModels (Riverpod Notifiers) → Repository → Service ↔ Firestore
+                                                        ↑ local_package/my_manga_editor_data/
 ```
 
 ### Key Technology
@@ -37,6 +38,37 @@ UI (feature/) → ViewModels (Riverpod Notifiers) → Repository (data/repositor
 - **Cloud Firestore** with offline persistence (no local database)
 - **Flutter Quill** for rich text editing (Delta format)
 - **dart_openai** for AI comment generation
+
+### Multi-Package Structure
+The project is split into three packages:
+- **my_manga_editor** (root) — UI layer (`lib/feature/`, `lib/hooks/`)
+- **my_manga_editor_data** (`local_package/my_manga_editor_data/`) — data layer (repository, service, domain model)
+- **my_manga_editor_common** (`local_package/my_manga_editor_common/`) — shared utilities (logger)
+
+```
+lib/                                        # UI layer (root package)
+├── feature/
+│   ├── manga/                              # Core manga editing
+│   │   ├── provider/                       # Riverpod providers & view models
+│   │   ├── page/                           # Screen-level: main_page, manga_grid_page
+│   │   └── view/                           # Widgets: tategaki, workspace, lock_indicator, etc.
+│   ├── ai_comment/view/                    # AI comment generation (OpenAI)
+│   └── setting/page/                       # App settings (SharedPreferences)
+├── hooks/quill_controller_hook.dart
+└── main.dart
+
+local_package/my_manga_editor_data/lib/     # Data layer
+├── model/manga.dart                        # Domain models (Manga, MangaPage, ID types)
+├── repository/                             # manga, auth, ai, setting repositories
+└── service/firebase/                       # Firebase integration
+    ├── firebase_service.dart               # Firestore CRUD
+    ├── auth_service.dart                   # Firebase Auth + Google Sign-In
+    ├── lock_manager.dart                   # Collaborative edit lock
+    └── model/                              # Firestore document models (CloudManga, etc.)
+
+local_package/my_manga_editor_common/lib/   # Shared utilities
+└── logger.dart
+```
 
 ### Firestore Schema
 ```
@@ -48,7 +80,7 @@ users/{userId}/mangas/{mangaId}/deltas/   → CloudDelta (ops, fieldName, pageId
 Deltas are stored in a **separate `deltas` subcollection** (not embedded in parent documents). Each CloudDelta has a `fieldName` ('ideaMemo', 'memoDelta', 'stageDirectionDelta', 'dialoguesDelta') and optional `pageId` for page-level deltas.
 
 ### Domain Model ID Types (Extension Types)
-Defined in `lib/feature/manga/model/manga.dart`:
+Defined in `local_package/my_manga_editor_data/lib/model/manga.dart`:
 - `MangaId(String)`, `MangaPageId(String)`, `DeltaId(String)` — type-safe ID wrappers
 - Domain models (`Manga`, `MangaPage`) reference Deltas by `DeltaId`, not by Delta objects
 
@@ -68,56 +100,13 @@ Defined in `lib/feature/manga/model/manga.dart`:
 - `@Riverpod(keepAlive: true)` for persistent state: `MangaRepository`, `FirebaseService`
 - `@riverpod` class notifiers for complex UI state: `MangaPageViewModelNotifier`
 
-### Project Structure
-```
-lib/
-├── hooks/                          # Custom Flutter hooks
-│   └── quill_controller_hook.dart
-├── data/                           # Data layer (service + repository)
-│   ├── service/firebase/           # Firebase integration layer
-│   │   ├── firebase_service.dart   # Firestore CRUD
-│   │   ├── auth_service.dart       # Firebase Auth + Google Sign-In
-│   │   ├── firebase_config.dart    # Firestore settings (persistence, cache)
-│   │   ├── lock_manager.dart       # Collaborative edit lock
-│   │   └── model/                  # Firestore document models
-│   │       ├── cloud_manga.dart
-│   │       ├── cloud_manga_page.dart
-│   │       ├── cloud_delta.dart
-│   │       └── edit_lock.dart
-│   └── repository/                 # Data access layer
-│       ├── manga_repository.dart
-│       ├── auth_repository.dart
-│       ├── ai_repository.dart
-│       ├── setting_repository.dart
-│       └── exceptions.dart
-├── feature/
-│   ├── ai_comment/                 # AI comment generation (OpenAI)
-│   │   └── view/ai_comment_area.dart
-│   ├── setting/                    # App settings (SharedPreferences)
-│   │   └── page/setting_page.dart
-│   └── manga/                      # Core manga editing feature
-│       ├── model/manga.dart        # Domain models (Manga, MangaPage, ID types)
-│       ├── provider/               # Riverpod state management
-│       │   ├── manga_providers.dart
-│       │   └── manga_page_view_model.dart
-│       ├── page/                   # Screen-level components
-│       │   ├── main_page.dart
-│       │   └── manga_grid_page.dart
-│       └── view/                   # Reusable UI components
-│           ├── tategaki.dart       # Vertical Japanese text rendering
-│           ├── workspace.dart
-│           ├── lock_indicator.dart
-│           └── ...
-└── common/logger.dart
-```
-
 ## Critical Development Notes
 
 ### Code Generation is Mandatory
 After modifying any of these, run `dart run build_runner build -d`:
 - `@freezed` classes (model files)
 - `@riverpod` / `@Riverpod` annotated providers
-- Cloud models in `lib/service/firebase/model/`
+- Cloud models in `local_package/my_manga_editor_data/lib/service/firebase/model/`
 - Any file importing `*.g.dart` or `*.freezed.dart`
 
 Generated files (`*.g.dart`, `*.freezed.dart`) are excluded from analysis via `analysis_options.yaml`.

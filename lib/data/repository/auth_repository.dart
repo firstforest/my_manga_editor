@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:my_manga_editor/service/firebase/auth_service.dart';
+import 'package:my_manga_editor/data/service/firebase/auth_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_repository.g.dart';

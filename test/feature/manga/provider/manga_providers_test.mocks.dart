@@ -9,7 +9,7 @@ import 'package:flutter_quill/quill_delta.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i7;
 import 'package:my_manga_editor/feature/manga/model/manga.dart' as _i4;
-import 'package:my_manga_editor/feature/manga/repository/manga_repository.dart'
+import 'package:my_manga_editor/data/repository/manga_repository.dart'
     as _i2;
 
 import 'manga_providers_test.dart' as _i5;

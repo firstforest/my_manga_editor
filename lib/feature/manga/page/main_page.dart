@@ -7,7 +7,7 @@ import 'package:my_manga_editor/feature/manga/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_grid_page.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_page_view_model.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
-import 'package:my_manga_editor/feature/manga/repository/auth_repository.dart';
+import 'package:my_manga_editor/data/repository/auth_repository.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_edit_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_name_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/sign_in_button.dart';

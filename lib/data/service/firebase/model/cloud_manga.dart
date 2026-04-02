@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:my_manga_editor/service/firebase/model/edit_lock.dart';
+import 'package:my_manga_editor/data/service/firebase/model/edit_lock.dart';
 
 part 'cloud_manga.freezed.dart';
 part 'cloud_manga.g.dart';

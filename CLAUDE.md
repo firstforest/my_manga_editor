@@ -29,7 +29,7 @@ flutter test test/feature/manga/provider/manga_providers_test.dart  # single tes
 
 ### Data Flow
 ```
-UI (Pages/Views) → ViewModels (Riverpod Notifiers) → Repository → Domain Models ↔ Firestore
+UI (feature/) → ViewModels (Riverpod Notifiers) → Repository (data/repository/) → Service (data/service/) ↔ Firestore
 ```
 
 ### Key Technology
@@ -73,19 +73,30 @@ Defined in `lib/feature/manga/model/manga.dart`:
 lib/
 ├── hooks/                          # Custom Flutter hooks
 │   └── quill_controller_hook.dart
+├── data/                           # Data layer (service + repository)
+│   ├── service/firebase/           # Firebase integration layer
+│   │   ├── firebase_service.dart   # Firestore CRUD
+│   │   ├── auth_service.dart       # Firebase Auth + Google Sign-In
+│   │   ├── firebase_config.dart    # Firestore settings (persistence, cache)
+│   │   ├── lock_manager.dart       # Collaborative edit lock
+│   │   └── model/                  # Firestore document models
+│   │       ├── cloud_manga.dart
+│   │       ├── cloud_manga_page.dart
+│   │       ├── cloud_delta.dart
+│   │       └── edit_lock.dart
+│   └── repository/                 # Data access layer
+│       ├── manga_repository.dart
+│       ├── auth_repository.dart
+│       ├── ai_repository.dart
+│       ├── setting_repository.dart
+│       └── exceptions.dart
 ├── feature/
 │   ├── ai_comment/                 # AI comment generation (OpenAI)
-│   │   ├── repository/ai_repository.dart
 │   │   └── view/ai_comment_area.dart
 │   ├── setting/                    # App settings (SharedPreferences)
-│   │   ├── repository/setting_repository.dart
 │   │   └── page/setting_page.dart
 │   └── manga/                      # Core manga editing feature
 │       ├── model/manga.dart        # Domain models (Manga, MangaPage, ID types)
-│       ├── repository/             # Data access layer
-│       │   ├── manga_repository.dart
-│       │   ├── auth_repository.dart
-│       │   └── exceptions.dart
 │       ├── provider/               # Riverpod state management
 │       │   ├── manga_providers.dart
 │       │   └── manga_page_view_model.dart
@@ -97,16 +108,6 @@ lib/
 │           ├── workspace.dart
 │           ├── lock_indicator.dart
 │           └── ...
-├── service/firebase/               # Firebase integration layer
-│   ├── firebase_service.dart       # Firestore CRUD
-│   ├── auth_service.dart           # Firebase Auth + Google Sign-In
-│   ├── firebase_config.dart        # Firestore settings (persistence, cache)
-│   ├── lock_manager.dart           # Collaborative edit lock
-│   └── model/                      # Firestore document models
-│       ├── cloud_manga.dart
-│       ├── cloud_manga_page.dart
-│       ├── cloud_delta.dart
-│       └── edit_lock.dart
 └── common/logger.dart
 ```
 

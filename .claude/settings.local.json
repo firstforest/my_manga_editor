@@ -29,7 +29,11 @@
       "WebFetch(domain:firebase.flutter.dev)",
       "Bash(xargs basename:*)",
       "Bash(git mv:*)",
-      "Bash(find lib:*)"
+      "Bash(find lib:*)",
+      "Bash(sed -i '' \"s|package:my_manga_editor/data/|package:my_manga_editor_data/|g\" local_package/my_manga_editor_data/lib/repository/auth_repository.dart local_package/my_manga_editor_data/lib/repository/manga_repository.dart local_package/my_manga_editor_data/lib/service/firebase/firebase_service.dart local_package/my_manga_editor_data/lib/service/firebase/model/cloud_manga.dart local_package/my_manga_editor_data/lib/service/firebase/lock_manager.dart)",
+      "Bash(sed -i '' \"s|package:my_manga_editor/common/logger.dart|package:my_manga_editor_common/logger.dart|g\" local_package/my_manga_editor_data/lib/repository/manga_repository.dart)",
+      "Bash(xargs sed:*)",
+      "Bash(mise x:*)"
     ],
     "deny": [],
     "ask": []

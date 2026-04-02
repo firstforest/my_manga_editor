@@ -5,11 +5,11 @@ import 'package:firebase_core/firebase_core.dart';
 /// Call this once in main() before runApp().
 Future<void> initializeFirebase({required FirebaseOptions options}) async {
   await Firebase.initializeApp(options: options);
-  await configureFirestore();
+  await _configureFirestore();
 }
 
 /// Configure Firestore settings for offline persistence
-Future<void> configureFirestore() async {
+Future<void> _configureFirestore() async {
   final firestore = FirebaseFirestore.instance;
 
   // Configure offline persistence

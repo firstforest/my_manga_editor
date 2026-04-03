@@ -11,7 +11,7 @@ import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
 import 'package:my_manga_editor/feature/manga/view/sync_status_indicator.dart';
-import 'package:my_manga_editor/feature/manga/view/tategaki.dart';
+import 'package:my_manga_editor/widgets/tategaki.dart';
 
 class MangaGridPage extends HookConsumerWidget {
   MangaGridPage({

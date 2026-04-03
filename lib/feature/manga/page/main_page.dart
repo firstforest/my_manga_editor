@@ -11,7 +11,7 @@ import 'package:my_manga_editor/feature/manga/view/manga_edit_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_name_widget.dart';
 import 'package:my_manga_editor/feature/auth/view/sign_in_button.dart';
 import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
-import 'package:my_manga_editor/feature/manga/view/manga_select_dialog.dart';
+import 'package:my_manga_editor/feature/manga/page/manga_select_page.dart';
 import 'package:my_manga_editor/feature/manga/view/sync_status_indicator.dart';
 import 'package:my_manga_editor/feature/setting/page/setting_page.dart';
 
@@ -59,14 +59,12 @@ class MainPage extends HookConsumerWidget {
             ),
           if (user != null)
             IconButton(
-              onPressed: () async {
-                if (context.mounted) {
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return MangaSelectDialog();
-                      });
-                }
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const MangaSelectPage(),
+                  ),
+                );
               },
               icon: const Icon(Icons.list),
             ),

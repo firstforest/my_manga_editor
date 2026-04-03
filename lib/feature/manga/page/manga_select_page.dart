@@ -38,26 +38,25 @@ class MangaSelectPage extends HookConsumerWidget {
               ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: '新規作成',
+            onPressed: () async {
+              await ref
+                  .read(mangaPageViewModelProvider.notifier)
+                  .createNewManga();
+              if (context.mounted) {
+                Navigator.pop(context);
+              }
+            },
+          ),
+        ],
       ),
       body: ListView.builder(
-        itemCount: mangaList.length + 1,
+        itemCount: mangaList.length,
         itemBuilder: (context, index) {
-          if (index == 0) {
-            return ListTile(
-              leading: const Icon(Icons.add),
-              title: const Text('新規作成'),
-              subtitle: const Text('新しい漫画を作成します'),
-              onTap: () async {
-                await ref
-                    .read(mangaPageViewModelProvider.notifier)
-                    .createNewManga();
-                if (context.mounted) {
-                  Navigator.pop(context);
-                }
-              },
-            );
-          }
-          final manga = mangaList[index - 1];
+          final manga = mangaList[index];
           final delta = ref
               .watch(deltaProvider(manga.id, manga.ideaMemoDeltaId))
               .value;

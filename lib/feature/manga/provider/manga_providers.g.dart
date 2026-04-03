@@ -196,7 +196,7 @@ final class MangaNotifierProvider
   }
 }
 
-String _$mangaNotifierHash() => r'bf0ef882127b473fa901aeff0079a45f709a0b37';
+String _$mangaNotifierHash() => r'01dd5a577e31a4f097a1fd94a4a0e6e2bb7851df';
 
 final class MangaNotifierFamily extends $Family
     with

@@ -81,6 +81,23 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i3.Future<void>);
 
   @override
+  _i3.Future<void> updateMangaStatus(
+    _i4.MangaId? id,
+    _i4.MangaStatus? status,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateMangaStatus,
+          [
+            id,
+            status,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
   _i3.Future<void> updateStartPage(
     _i4.MangaId? id,
     _i4.MangaStartPage? value,

@@ -1,43 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_page_view_model.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/feature/manga/view/kanban_column.dart';
 
-class MangaSelectPage extends HookConsumerWidget {
+class MangaSelectPage extends ConsumerWidget {
   const MangaSelectPage({super.key});
+
+  static const _columns = [
+    (status: MangaStatus.idea, title: 'アイデア'),
+    (status: MangaStatus.inProgress, title: '制作中'),
+    (status: MangaStatus.complete, title: '完成'),
+  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mangaList = ref.watch(allMangaListProvider).value ?? [];
-    final selectedMangaIds = useState<Set<MangaId>>({});
 
-    // Calculate total page count for selected manga
-    int totalPageCount = 0;
-    for (final mangaId in selectedMangaIds.value) {
-      final pageCount = ref.watch(mangaPageIdListProvider(mangaId)).maybeMap(
-            data: (data) => data.value.length,
-            orElse: () => 0,
-          );
-      totalPageCount += pageCount;
-    }
+    final mangaByStatus = <MangaStatus, List<Manga>>{
+      for (final status in MangaStatus.values)
+        status: mangaList.where((m) => m.status == status).toList(),
+    };
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('漫画を選択'),
-            if (selectedMangaIds.value.isNotEmpty)
-              Text(
-                '選択中: ${selectedMangaIds.value.length}作品 / 合計ページ数: $totalPageCount',
-                style: TextStyle(fontSize: 14, color: Colors.blue),
-              ),
-          ],
-        ),
+        title: const Text('漫画を選択'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -53,67 +41,24 @@ class MangaSelectPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: mangaList.length,
-        itemBuilder: (context, index) {
-          final manga = mangaList[index];
-          final delta = ref
-              .watch(deltaProvider(manga.id, manga.ideaMemoDeltaId))
-              .value;
-          final pageCount =
-              ref.watch(mangaPageIdListProvider(manga.id)).maybeMap(
-                    data: (data) => data.value.length,
-                    orElse: () => 0,
-                  );
-          final isSelected = selectedMangaIds.value.contains(manga.id);
-
-          return ListTile(
-            leading: Checkbox(
-              value: isSelected,
-              onChanged: (bool? value) {
-                if (value == true) {
-                  selectedMangaIds.value = {
-                    ...selectedMangaIds.value,
-                    manga.id
-                  };
-                } else {
-                  selectedMangaIds.value = selectedMangaIds.value
-                      .where((id) => id != manga.id)
-                      .toSet();
-                }
-              },
-            ),
-            title: Text(manga.name),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                    delta != null && delta.isNotEmpty
-                        ? Document.fromDelta(delta).toPlainText()
-                        : '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                SizedBox(height: 4),
-                Text(
-                  'ページ数: $pageCount',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+      body: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final column in _columns)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: KanbanColumn(
+                    status: column.status,
+                    title: column.title,
+                    mangaList: mangaByStatus[column.status] ?? [],
+                  ),
                 ),
-              ],
-            ),
-            onTap: () {
-              ref
-                  .read(mangaPageViewModelProvider.notifier)
-                  .selectManga(manga.id);
-              Navigator.pop(context);
-            },
-            trailing: IconButton(
-              onPressed: () {
-                ref.read(mangaProvider(manga.id).notifier).delete();
-              },
-              icon: Icon(Icons.delete),
-            ),
-          );
-        },
+              ),
+          ],
+        ),
       ),
     );
   }

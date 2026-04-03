@@ -64,6 +64,10 @@ class MangaNotifier extends _$MangaNotifier {
     ref.read(mangaRepositoryProvider).updateStartPage(id, value);
   }
 
+  void updateStatus(MangaStatus status) {
+    ref.read(mangaRepositoryProvider).updateMangaStatus(id, status);
+  }
+
   Future<void> download() async {
     final manga = await future;
     if (manga != null) {

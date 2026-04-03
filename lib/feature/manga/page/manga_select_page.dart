@@ -4,6 +4,7 @@ import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_page_view_model.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/feature/manga/view/kanban_column.dart';
+import 'package:my_manga_editor/router.dart';
 
 class MangaSelectPage extends ConsumerWidget {
   const MangaSelectPage({super.key});
@@ -31,11 +32,11 @@ class MangaSelectPage extends ConsumerWidget {
             icon: const Icon(Icons.add),
             tooltip: '新規作成',
             onPressed: () async {
-              await ref
+              final mangaId = await ref
                   .read(mangaPageViewModelProvider.notifier)
                   .createNewManga();
               if (context.mounted) {
-                Navigator.pop(context);
+                ref.read(routerProvider).go('/manga/${mangaId.id}');
               }
             },
           ),

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/feature/manga/provider/manga_page_view_model.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/router.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 
 class KanbanCard extends ConsumerWidget {
@@ -51,8 +51,7 @@ class KanbanCard extends ConsumerWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          ref.read(mangaPageViewModelProvider.notifier).selectManga(manga.id);
-          Navigator.pop(context);
+          ref.read(routerProvider).go('/manga/${manga.id.id}');
         },
         child: Padding(
           padding: const EdgeInsets.all(12),

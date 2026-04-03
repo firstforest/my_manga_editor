@@ -24,11 +24,12 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
     state = AsyncValue.data(MangaPageViewModel(mangaId: mangaId));
   }
 
-  Future<void> createNewManga() async {
+  Future<MangaId> createNewManga() async {
     final mangaRepository = ref.read(mangaRepositoryProvider);
     final selectedId = await mangaRepository.createNewManga();
     await mangaRepository.createNewMangaPage(selectedId);
 
     selectManga(selectedId);
+    return selectedId;
   }
 }

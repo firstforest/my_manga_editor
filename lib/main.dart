@@ -3,7 +3,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:my_manga_editor/feature/manga/page/main_page.dart';
+import 'package:my_manga_editor/router.dart';
 import 'package:my_manga_editor_data/my_manga_editor_data.dart';
 
 import 'firebase_options.dart';
@@ -18,13 +18,13 @@ Future<void> main() async {
   runApp(const ScreenUtilInit(child: ProviderScope(child: MyApp())));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
+    return MaterialApp.router(
       title: '漫画プロットエディタ Komatto',
       theme: ThemeData(
         textTheme: GoogleFonts.notoSansJpTextTheme(
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       localizationsDelegates: FlutterQuillLocalizations.localizationsDelegates,
-      home: const MainPage(),
+      routerConfig: router,
     );
   }
 }

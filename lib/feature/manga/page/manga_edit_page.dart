@@ -44,12 +44,6 @@ class MangaEditPage extends HookConsumerWidget {
             },
             icon: const Icon(Icons.grid_view),
           ),
-          IconButton(
-            onPressed: () {
-              ref.read(routerProvider).go('/');
-            },
-            icon: const Icon(Icons.list),
-          ),
           // Online status indicator
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.0),

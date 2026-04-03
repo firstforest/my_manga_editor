@@ -30,7 +30,7 @@ GoRouter router(Ref ref) {
       final isLoginRoute = state.matchedLocation == '/login';
 
       if (!isLoggedIn && !isLoginRoute) return '/login';
-      if (isLoggedIn && isLoginRoute) return '/';
+      if (isLoggedIn && isLoginRoute) return '/manga';
       return null;
     },
     routes: [
@@ -39,22 +39,24 @@ GoRouter router(Ref ref) {
         builder: (context, state) => const LoginPage(),
       ),
       GoRoute(
-        path: '/',
+        path: '/manga',
         builder: (context, state) => const MangaSelectPage(),
-      ),
-      GoRoute(
-        path: '/manga/:mangaId',
-        builder: (context, state) {
-          final mangaId = MangaId(state.pathParameters['mangaId']!);
-          return MangaEditPage(mangaId: mangaId);
-        },
         routes: [
           GoRoute(
-            path: 'grid',
+            path: ':mangaId',
             builder: (context, state) {
               final mangaId = MangaId(state.pathParameters['mangaId']!);
-              return MangaGridPage(mangaId: mangaId);
+              return MangaEditPage(mangaId: mangaId);
             },
+            routes: [
+              GoRoute(
+                path: 'grid',
+                builder: (context, state) {
+                  final mangaId = MangaId(state.pathParameters['mangaId']!);
+                  return MangaGridPage(mangaId: mangaId);
+                },
+              ),
+            ],
           ),
         ],
       ),

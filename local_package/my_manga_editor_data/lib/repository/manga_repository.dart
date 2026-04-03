@@ -506,9 +506,9 @@ class MangaRepository {
 
   /// Watch online status for UI indicator
   /// Monitors network connectivity status
-  Stream<bool> watchOnlineStatus() {
-    _emitOnlineStatus();
-    return _onlineStatusController.stream;
+  Stream<bool> watchOnlineStatus() async* {
+    yield _isOnline;
+    yield* _onlineStatusController.stream;
   }
 
   // ============================================================================

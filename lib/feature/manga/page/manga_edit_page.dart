@@ -7,7 +7,6 @@ import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/router.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_edit_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_name_widget.dart';
-import 'package:my_manga_editor/feature/auth/view/sign_in_button.dart';
 import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
 import 'package:my_manga_editor/feature/manga/view/sync_status_indicator.dart';
 
@@ -62,11 +61,6 @@ class MangaEditPage extends HookConsumerWidget {
               ref.read(routerProvider).go('/settings');
             },
             icon: const Icon(Icons.settings),
-          ),
-          // Firebase Authentication Button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: const SignInButton(),
           ),
         ],
       ),

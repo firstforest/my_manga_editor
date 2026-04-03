@@ -22,7 +22,8 @@ mixin _$CloudManga {
   DateTime get updatedAt; // Last modification timestamp
   String? get ideaMemoDeltaId; // CloudDelta document ID for ideaMemo
   @JsonKey(name: 'editLock')
-  EditLock? get editLock;
+  EditLock? get editLock; // Optional edit lock
+  String? get status;
 
   /// Create a copy of CloudManga
   /// with the given fields replaced by the non-null parameter values.
@@ -51,17 +52,27 @@ mixin _$CloudManga {
             (identical(other.ideaMemoDeltaId, ideaMemoDeltaId) ||
                 other.ideaMemoDeltaId == ideaMemoDeltaId) &&
             (identical(other.editLock, editLock) ||
-                other.editLock == editLock));
+                other.editLock == editLock) &&
+            (identical(other.status, status) || other.status == status));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, userId, name,
-      startPageDirection, createdAt, updatedAt, ideaMemoDeltaId, editLock);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      userId,
+      name,
+      startPageDirection,
+      createdAt,
+      updatedAt,
+      ideaMemoDeltaId,
+      editLock,
+      status);
 
   @override
   String toString() {
-    return 'CloudManga(id: $id, userId: $userId, name: $name, startPageDirection: $startPageDirection, createdAt: $createdAt, updatedAt: $updatedAt, ideaMemoDeltaId: $ideaMemoDeltaId, editLock: $editLock)';
+    return 'CloudManga(id: $id, userId: $userId, name: $name, startPageDirection: $startPageDirection, createdAt: $createdAt, updatedAt: $updatedAt, ideaMemoDeltaId: $ideaMemoDeltaId, editLock: $editLock, status: $status)';
   }
 }
 
@@ -79,7 +90,8 @@ abstract mixin class $CloudMangaCopyWith<$Res> {
       DateTime createdAt,
       DateTime updatedAt,
       String? ideaMemoDeltaId,
-      @JsonKey(name: 'editLock') EditLock? editLock});
+      @JsonKey(name: 'editLock') EditLock? editLock,
+      String? status});
 
   $EditLockCopyWith<$Res>? get editLock;
 }
@@ -104,6 +116,7 @@ class _$CloudMangaCopyWithImpl<$Res> implements $CloudMangaCopyWith<$Res> {
     Object? updatedAt = null,
     Object? ideaMemoDeltaId = freezed,
     Object? editLock = freezed,
+    Object? status = freezed,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -138,6 +151,10 @@ class _$CloudMangaCopyWithImpl<$Res> implements $CloudMangaCopyWith<$Res> {
           ? _self.editLock
           : editLock // ignore: cast_nullable_to_non_nullable
               as EditLock?,
+      status: freezed == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 
@@ -257,7 +274,8 @@ extension CloudMangaPatterns on CloudManga {
             DateTime createdAt,
             DateTime updatedAt,
             String? ideaMemoDeltaId,
-            @JsonKey(name: 'editLock') EditLock? editLock)?
+            @JsonKey(name: 'editLock') EditLock? editLock,
+            String? status)?
         $default, {
     required TResult orElse(),
   }) {
@@ -272,7 +290,8 @@ extension CloudMangaPatterns on CloudManga {
             _that.createdAt,
             _that.updatedAt,
             _that.ideaMemoDeltaId,
-            _that.editLock);
+            _that.editLock,
+            _that.status);
       case _:
         return orElse();
     }
@@ -301,7 +320,8 @@ extension CloudMangaPatterns on CloudManga {
             DateTime createdAt,
             DateTime updatedAt,
             String? ideaMemoDeltaId,
-            @JsonKey(name: 'editLock') EditLock? editLock)
+            @JsonKey(name: 'editLock') EditLock? editLock,
+            String? status)
         $default,
   ) {
     final _that = this;
@@ -315,7 +335,8 @@ extension CloudMangaPatterns on CloudManga {
             _that.createdAt,
             _that.updatedAt,
             _that.ideaMemoDeltaId,
-            _that.editLock);
+            _that.editLock,
+            _that.status);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -343,7 +364,8 @@ extension CloudMangaPatterns on CloudManga {
             DateTime createdAt,
             DateTime updatedAt,
             String? ideaMemoDeltaId,
-            @JsonKey(name: 'editLock') EditLock? editLock)?
+            @JsonKey(name: 'editLock') EditLock? editLock,
+            String? status)?
         $default,
   ) {
     final _that = this;
@@ -357,7 +379,8 @@ extension CloudMangaPatterns on CloudManga {
             _that.createdAt,
             _that.updatedAt,
             _that.ideaMemoDeltaId,
-            _that.editLock);
+            _that.editLock,
+            _that.status);
       case _:
         return null;
     }
@@ -375,7 +398,8 @@ class _CloudManga implements CloudManga {
       required this.createdAt,
       required this.updatedAt,
       this.ideaMemoDeltaId,
-      @JsonKey(name: 'editLock') this.editLock});
+      @JsonKey(name: 'editLock') this.editLock,
+      this.status});
   factory _CloudManga.fromJson(Map<String, dynamic> json) =>
       _$CloudMangaFromJson(json);
 
@@ -403,6 +427,9 @@ class _CloudManga implements CloudManga {
   @override
   @JsonKey(name: 'editLock')
   final EditLock? editLock;
+// Optional edit lock
+  @override
+  final String? status;
 
   /// Create a copy of CloudManga
   /// with the given fields replaced by the non-null parameter values.
@@ -436,17 +463,27 @@ class _CloudManga implements CloudManga {
             (identical(other.ideaMemoDeltaId, ideaMemoDeltaId) ||
                 other.ideaMemoDeltaId == ideaMemoDeltaId) &&
             (identical(other.editLock, editLock) ||
-                other.editLock == editLock));
+                other.editLock == editLock) &&
+            (identical(other.status, status) || other.status == status));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, userId, name,
-      startPageDirection, createdAt, updatedAt, ideaMemoDeltaId, editLock);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      userId,
+      name,
+      startPageDirection,
+      createdAt,
+      updatedAt,
+      ideaMemoDeltaId,
+      editLock,
+      status);
 
   @override
   String toString() {
-    return 'CloudManga(id: $id, userId: $userId, name: $name, startPageDirection: $startPageDirection, createdAt: $createdAt, updatedAt: $updatedAt, ideaMemoDeltaId: $ideaMemoDeltaId, editLock: $editLock)';
+    return 'CloudManga(id: $id, userId: $userId, name: $name, startPageDirection: $startPageDirection, createdAt: $createdAt, updatedAt: $updatedAt, ideaMemoDeltaId: $ideaMemoDeltaId, editLock: $editLock, status: $status)';
   }
 }
 
@@ -466,7 +503,8 @@ abstract mixin class _$CloudMangaCopyWith<$Res>
       DateTime createdAt,
       DateTime updatedAt,
       String? ideaMemoDeltaId,
-      @JsonKey(name: 'editLock') EditLock? editLock});
+      @JsonKey(name: 'editLock') EditLock? editLock,
+      String? status});
 
   @override
   $EditLockCopyWith<$Res>? get editLock;
@@ -492,6 +530,7 @@ class __$CloudMangaCopyWithImpl<$Res> implements _$CloudMangaCopyWith<$Res> {
     Object? updatedAt = null,
     Object? ideaMemoDeltaId = freezed,
     Object? editLock = freezed,
+    Object? status = freezed,
   }) {
     return _then(_CloudManga(
       id: null == id
@@ -526,6 +565,10 @@ class __$CloudMangaCopyWithImpl<$Res> implements _$CloudMangaCopyWith<$Res> {
           ? _self.editLock
           : editLock // ignore: cast_nullable_to_non_nullable
               as EditLock?,
+      status: freezed == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 

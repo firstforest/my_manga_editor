@@ -16,6 +16,7 @@ abstract class CloudManga with _$CloudManga {
     required DateTime updatedAt, // Last modification timestamp
     String? ideaMemoDeltaId, // CloudDelta document ID for ideaMemo
     @JsonKey(name: 'editLock') EditLock? editLock, // Optional edit lock
+    String? status, // Manga status: 'idea', 'inProgress', 'complete'
   }) = _CloudManga;
 
   factory CloudManga.fromJson(Map<String, dynamic> json) =>
@@ -33,6 +34,7 @@ extension CloudMangaExt on CloudManga {
       'updatedAt': Timestamp.fromDate(updatedAt),
       if (ideaMemoDeltaId != null) 'ideaMemoDeltaId': ideaMemoDeltaId,
       if (editLock != null) 'editLock': editLock!.toJson(),
+      if (status != null) 'status': status,
     };
   }
 
@@ -52,6 +54,7 @@ extension CloudMangaExt on CloudManga {
       editLock: data['editLock'] != null
           ? EditLock.fromJson(data['editLock'] as Map<String, dynamic>)
           : null,
+      status: data['status'] as String?,
     );
   }
 }

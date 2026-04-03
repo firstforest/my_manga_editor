@@ -76,6 +76,7 @@ class MangaRepository {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         editLock: null,
+        status: MangaStatus.idea.name,
       );
 
       // Upload manga document to Firestore
@@ -162,6 +163,23 @@ class MangaRepository {
       logger.d('Updated manga name: $id -> $name');
     } on repo_exceptions.ValidationException {
       rethrow;
+    } on FirebaseException catch (e) {
+      throw _handleFirebaseException(e);
+    }
+  }
+
+  /// Update manga status
+  Future<void> updateMangaStatus(MangaId id, MangaStatus status) async {
+    try {
+      final userId = _authService.currentUser?.uid;
+      if (userId == null) {
+        throw repo_exceptions.AuthException();
+      }
+
+      await _firebaseService.updateManga(id.id, {
+        'status': status.name,
+      });
+      logger.d('Updated manga status: $id -> ${status.name}');
     } on FirebaseException catch (e) {
       throw _handleFirebaseException(e);
     }
@@ -667,6 +685,7 @@ extension CloudMangaConversion on CloudManga {
       name: name,
       startPage: MangaStartPageExt.fromString(startPageDirection),
       ideaMemoDeltaId: DeltaId(ideaMemoDeltaId ?? ''),
+      status: MangaStatusExt.fromString(status),
     );
   }
 }
@@ -683,6 +702,7 @@ extension MangaToCloudConversion on Manga {
       updatedAt: DateTime.now(),
       ideaMemoDeltaId: ideaMemoDeltaId.id,
       editLock: null,
+      status: status.name,
     );
   }
 }

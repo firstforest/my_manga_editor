@@ -17,6 +17,7 @@ _CloudManga _$CloudMangaFromJson(Map<String, dynamic> json) => _CloudManga(
       editLock: json['editLock'] == null
           ? null
           : EditLock.fromJson(json['editLock'] as Map<String, dynamic>),
+      status: json['status'] as String?,
     );
 
 Map<String, dynamic> _$CloudMangaToJson(_CloudManga instance) =>
@@ -29,4 +30,5 @@ Map<String, dynamic> _$CloudMangaToJson(_CloudManga instance) =>
       'updatedAt': instance.updatedAt.toIso8601String(),
       'ideaMemoDeltaId': instance.ideaMemoDeltaId,
       'editLock': instance.editLock,
+      'status': instance.status,
     };

@@ -20,6 +20,23 @@ extension MangaStartPageExt on MangaStartPage {
   }
 }
 
+enum MangaStatus {
+  idea,
+  inProgress,
+  complete,
+}
+
+/// Helper extension for MangaStatus enum conversion
+extension MangaStatusExt on MangaStatus {
+  static MangaStatus fromString(String? value) {
+    if (value == null) return MangaStatus.idea;
+    return MangaStatus.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => MangaStatus.idea,
+    );
+  }
+}
+
 extension type MangaId(String id) {}
 extension type MangaPageId(String id) {}
 extension type DeltaId(String id) {}
@@ -31,6 +48,7 @@ abstract class Manga with _$Manga {
     required String name,
     required MangaStartPage startPage,
     required DeltaId ideaMemoDeltaId,
+    required MangaStatus status,
   }) = _Manga;
 }
 

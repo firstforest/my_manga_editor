@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:my_manga_editor/feature/auth/page/login_page.dart';
-import 'package:my_manga_editor/feature/manga/page/main_page.dart';
+import 'package:my_manga_editor/feature/manga/page/manga_edit_page.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_grid_page.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_select_page.dart';
 import 'package:my_manga_editor/feature/setting/page/setting_page.dart';
@@ -46,7 +46,7 @@ GoRouter router(Ref ref) {
         path: '/manga/:mangaId',
         builder: (context, state) {
           final mangaId = MangaId(state.pathParameters['mangaId']!);
-          return MainPage(mangaId: mangaId);
+          return MangaEditPage(mangaId: mangaId);
         },
         routes: [
           GoRoute(

@@ -11,8 +11,8 @@ import 'package:my_manga_editor/feature/auth/view/sign_in_button.dart';
 import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
 import 'package:my_manga_editor/feature/manga/view/sync_status_indicator.dart';
 
-class MainPage extends HookConsumerWidget {
-  const MainPage({super.key, required this.mangaId});
+class MangaEditPage extends HookConsumerWidget {
+  const MangaEditPage({super.key, required this.mangaId});
 
   final MangaId mangaId;
 

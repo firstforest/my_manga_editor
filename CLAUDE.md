@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**My Manga Editor** — Flutter desktop app for manga plot editing. Integrates with ClipStudio Paint.
+**My Manga Editor** — Flutter desktop app (Windows/macOS) for manga plot editing. Pages have 3 editing areas: memo, dialogue (セリフ), stage direction (ト書き). Exports dialogue text for ClipStudio Paint integration.
 
 ## Development Commands
 
@@ -18,7 +18,8 @@ flutter run --dart-define=OPENAI_API_KEY=your_key  # with AI comment feature
 
 # Code generation (REQUIRED after model/provider changes)
 dart run build_runner build -d   # or: mise run gen
-# For data layer changes — see .claude/rules/data-layer.md
+# Data layer has separate build_runner:
+cd local_package/my_manga_editor_data && dart run build_runner build -d && cd -
 
 # Quality
 flutter analyze
@@ -38,10 +39,25 @@ UI (lib/feature/) → ViewModels (Riverpod Notifiers) → Repository → Service
 - **my_manga_editor_data** (`local_package/my_manga_editor_data/`) — data layer (repository, service, domain model)
 - **my_manga_editor_common** (`local_package/my_manga_editor_common/`) — shared utilities (logger)
 
+### Feature Structure
+```
+lib/feature/{name}/
+  ├── page/       # screen-level widgets
+  ├── view/       # reusable sub-widgets
+  └── provider/   # Riverpod providers & view models
+```
+
 ### Key Technology
 - **Flutter 3.32.4**, **Riverpod 3.x** (with hooks), **Freezed** for immutable models
 - **Cloud Firestore** with offline persistence (no local database)
 - **Flutter Quill** for rich text editing (Delta format)
+- **go_router** for routing (auth guard redirects unauthenticated users to `/login`)
+- Widgets use `HookConsumerWidget` or `ConsumerWidget` as needed
+
+### Testing
+- `ProviderContainer` with overrides for Riverpod provider isolation
+- `@GenerateNiceMocks` (Mockito) for mock generation
+- Tests in `test/feature/manga/provider/`
 
 ## Critical Notes
 

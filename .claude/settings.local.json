@@ -34,7 +34,8 @@
       "Bash(sed -i '' \"s|package:my_manga_editor/common/logger.dart|package:my_manga_editor_common/logger.dart|g\" local_package/my_manga_editor_data/lib/repository/manga_repository.dart)",
       "Bash(xargs sed:*)",
       "Bash(mise x:*)",
-      "Bash(wc -l /Users/firstforest/workspace/my_manga_editor/lib/feature/manga/page/*.dart /Users/firstforest/workspace/my_manga_editor/lib/feature/manga/provider/*.dart /Users/firstforest/workspace/my_manga_editor/lib/feature/manga/view/*.dart)"
+      "Bash(wc -l /Users/firstforest/workspace/my_manga_editor/lib/feature/manga/page/*.dart /Users/firstforest/workspace/my_manga_editor/lib/feature/manga/provider/*.dart /Users/firstforest/workspace/my_manga_editor/lib/feature/manga/view/*.dart)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

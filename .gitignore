@@ -54,6 +54,9 @@ app.*.map.json
 .firebase/
 **/google-services.json
 **/GoogleService-Info.plist
+# Allow env-specific firebase configs to be tracked
+!firebase/*/google-services.json
+!firebase/*/GoogleService-Info.plist
 firebase-debug.log
 firestore-debug.log
 pubspec.lock

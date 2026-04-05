@@ -11,15 +11,15 @@ class AuthService {
   AuthService({
     required FirebaseAuth firebaseAuth,
     required GoogleSignIn googleSignIn,
+    this.webClientId,
   })  : _firebaseAuth = firebaseAuth,
         _googleSignIn = googleSignIn;
 
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  final String? webClientId;
 
   static const _scopes = ['email', 'profile'];
-  static const _webClientId =
-      '948924085739-adqjuonj6bf2le0kscqisgoptfjhbm1l.apps.googleusercontent.com';
 
   bool _initialized = false;
 
@@ -30,7 +30,7 @@ class AuthService {
 
     await _googleSignIn.initialize(
       // Web requires explicit client ID
-      clientId: kIsWeb ? _webClientId : null,
+      clientId: kIsWeb ? webClientId : null,
     );
     _initialized = true;
   }
@@ -162,11 +162,18 @@ GoogleSignIn googleSignIn(Ref ref) {
   return GoogleSignIn.instance;
 }
 
+/// Provider for web OAuth client ID (override per environment)
+@riverpod
+String? webClientId(Ref ref) {
+  return null;
+}
+
 /// Provider for AuthService
 @riverpod
 AuthService authService(Ref ref) {
   return AuthService(
     firebaseAuth: ref.watch(firebaseAuthProvider),
     googleSignIn: ref.watch(googleSignInProvider),
+    webClientId: ref.watch(webClientIdProvider),
   );
 }

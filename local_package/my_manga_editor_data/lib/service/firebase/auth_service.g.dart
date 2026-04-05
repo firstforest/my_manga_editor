@@ -100,6 +100,52 @@ final class GoogleSignInProvider
 
 String _$googleSignInHash() => r'4e2e63f5b667326ad67d15b1d17165a5a6c56bc9';
 
+/// Provider for web OAuth client ID (override per environment)
+
+@ProviderFor(webClientId)
+const webClientIdProvider = WebClientIdProvider._();
+
+/// Provider for web OAuth client ID (override per environment)
+
+final class WebClientIdProvider
+    extends $FunctionalProvider<String?, String?, String?>
+    with $Provider<String?> {
+  /// Provider for web OAuth client ID (override per environment)
+  const WebClientIdProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'webClientIdProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$webClientIdHash();
+
+  @$internal
+  @override
+  $ProviderElement<String?> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  String? create(Ref ref) {
+    return webClientId(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$webClientIdHash() => r'5526426155ff90bef9e124653e798813737e9e2a';
+
 /// Provider for AuthService
 
 @ProviderFor(authService)
@@ -144,4 +190,4 @@ final class AuthServiceProvider
   }
 }
 
-String _$authServiceHash() => r'd5a904bc9cd3ec6b7fce5b3d924e66d6854ea8f2';
+String _$authServiceHash() => r'1bb5a510bf1994e613cb509430743552bb463783';

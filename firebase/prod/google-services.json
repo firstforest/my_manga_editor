@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "948924085739",
+    "project_id": "my-manga-editor",
+    "storage_bucket": "my-manga-editor.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:948924085739:android:b23952687331b4dca815ae",
+        "android_client_info": {
+          "package_name": "jp.firstforest.manga.editor.my_manga_editor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "948924085739-adqjuonj6bf2le0kscqisgoptfjhbm1l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6Qn6V2RmNxwzJV0I_OCHpQ2ozqUsjWzA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "948924085739-adqjuonj6bf2le0kscqisgoptfjhbm1l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "948924085739-r6ji6m3r9emq3hg4tbhvo38ajspv77gi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "jp.firstforest.manga.editor.myMangaEditor"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

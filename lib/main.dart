@@ -3,19 +3,27 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:my_manga_editor/env_config.dart';
 import 'package:my_manga_editor/router.dart';
 import 'package:my_manga_editor_data/my_manga_editor_data.dart';
-
-import 'firebase_options.dart';
 
 Future<void> main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await initializeFirebase(options: DefaultFirebaseOptions.currentPlatform);
+  final env = EnvConfig.current;
 
-  runApp(const ScreenUtilInit(child: ProviderScope(child: MyApp())));
+  // Initialize Firebase with environment-specific options
+  await initializeFirebase(options: env.firebaseOptions);
+
+  runApp(ScreenUtilInit(
+    child: ProviderScope(
+      overrides: [
+        webClientIdProvider.overrideWithValue(env.webClientId),
+      ],
+      child: const MyApp(),
+    ),
+  ));
 }
 
 class MyApp extends ConsumerWidget {

@@ -53,12 +53,19 @@ abstract class Manga with _$Manga {
 }
 
 @freezed
+abstract class SceneUnit with _$SceneUnit {
+  const factory SceneUnit({
+    required DeltaId dialoguesDeltaId,
+    required DeltaId stageDirectionDeltaId,
+  }) = _SceneUnit;
+}
+
+@freezed
 abstract class MangaPage with _$MangaPage {
   const factory MangaPage({
     required MangaPageId id,
     required MangaId mangaId,
     required DeltaId memoDeltaId,
-    required DeltaId stageDirectionDeltaId,
-    required DeltaId dialoguesDeltaId,
+    required List<SceneUnit> sceneUnits,
   }) = _MangaPage;
 }

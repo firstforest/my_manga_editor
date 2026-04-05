@@ -34,15 +34,23 @@ users/{userId}/
 
 ### MangaPage
 
-漫画の1ページ。3つの編集エリア（メモ・セリフ・ト書き）を持つ。
+漫画の1ページ。メモと複数の SceneUnit（セリフ+ト書きのペア）を持つ。
 
 | フィールド | 型 | 説明 |
 |---|---|---|
 | id | `MangaPageId` | ページ識別子 |
 | mangaId | `MangaId` | 親 Manga への参照 |
 | memoDeltaId | `DeltaId` | メモ用 Delta |
-| stageDirectionDeltaId | `DeltaId` | ト書き用 Delta |
+| sceneUnits | `List<SceneUnit>` | セリフ+ト書きのペアのリスト |
+
+### SceneUnit
+
+セリフとト書きのペア。1ページに複数持てる。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
 | dialoguesDeltaId | `DeltaId` | セリフ用 Delta |
+| stageDirectionDeltaId | `DeltaId` | ト書き用 Delta |
 
 ### 型安全 ID
 
@@ -89,8 +97,9 @@ Firestore `mangas/{mangaId}/pages/{pageId}` ドキュメント。
 | createdAt | `DateTime` | 作成日時 |
 | updatedAt | `DateTime` | 更新日時 |
 | memoDeltaId | `String?` | メモ Delta ID |
-| stageDirectionDeltaId | `String?` | ト書き Delta ID |
-| dialoguesDeltaId | `String?` | セリフ Delta ID |
+| sceneUnits | `List<Map>?` | SceneUnit リスト (各要素: `{dialoguesDeltaId, stageDirectionDeltaId}`) |
+| stageDirectionDeltaId | `String?` | (レガシー) 旧ト書き Delta ID — 読み取り専用、マイグレーション用 |
+| dialoguesDeltaId | `String?` | (レガシー) 旧セリフ Delta ID — 読み取り専用、マイグレーション用 |
 
 ### CloudDelta
 
@@ -127,17 +136,19 @@ CloudManga に埋め込まれる同時編集防止用ロック。
 Manga (1) ──── (N) MangaPage
   │                    │
   │ ideaMemoDeltaId    │ memoDeltaId
-  │                    │ stageDirectionDeltaId
-  │                    │ dialoguesDeltaId
+  │                    │ sceneUnits: List<SceneUnit>
+  │                    │   └─ dialoguesDeltaId + stageDirectionDeltaId
   ▼                    ▼
 Delta ◄──────────────────
   (deltas サブコレクションに一括格納)
 ```
 
 - Manga は 1つの ideaMemo Delta を持つ
-- MangaPage は 3つの Delta (メモ・ト書き・セリフ) を持つ
+- MangaPage は 1つのメモ Delta と複数の SceneUnit を持つ
+- 各 SceneUnit は セリフ Delta + ト書き Delta のペア
 - Delta はすべて `mangas/{mangaId}/deltas/` サブコレクションにフラットに格納
 - Delta の `fieldName` と `pageId` でどのエンティティのどのフィールドかを識別
+- 旧データ（`dialoguesDeltaId` / `stageDirectionDeltaId` フィールド）は読み取り時に自動で `sceneUnits` 形式に変換（遅延マイグレーション）
 
 ## データ変換フロー
 

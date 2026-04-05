@@ -25,111 +25,107 @@ class MangaPageWidget extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final page = ref.watch(mangaPageProvider(mangaPageId));
 
-    final tabController = useTabController(initialLength: 3);
-    final currentPageIndex = useState(1);
-    final pageController =
-        usePageController(initialPage: currentPageIndex.value);
+    return page.when(
+        data: (value) => LayoutBuilder(builder: (context, constraints) {
+              return switch (constraints.maxWidth) {
+                < 480 => _MobileLayout(
+                    pageIndex: pageIndex,
+                    startPage: startPage,
+                    mangaPageId: mangaPageId,
+                    page: value,
+                  ),
+                _ => _DesktopLayout(
+                    pageIndex: pageIndex,
+                    startPage: startPage,
+                    mangaPageId: mangaPageId,
+                    page: value,
+                  ),
+              };
+            }),
+        error: (_, __) => Text('error'),
+        loading: () => const CircularProgressIndicator());
+  }
+}
 
-    return SizedBox(
-      height: 300.r,
-      child: page.when(
-          data: (value) => LayoutBuilder(builder: (context, constraints) {
-                return switch (constraints.maxWidth) {
-                  < 480 => Column(
-                      children: [
-                        _buildToolBar(ref, value, context),
-                        Expanded(
-                          child: PageView(
-                            controller: pageController,
-                            onPageChanged: (index) {
-                              tabController.index = index;
-                              currentPageIndex.value = index;
-                            },
-                            children: [
-                              _buildMemo(value),
-                              _buildDialogues(value),
-                              _buildStageDirection(value),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              onPressed: 0 < currentPageIndex.value
-                                  ? () {
-                                      pageController.previousPage(
-                                        duration:
-                                            const Duration(milliseconds: 400),
-                                        curve: Curves.easeInOut,
-                                      );
-                                    }
-                                  : null,
-                              icon: Icon(Icons.arrow_left_rounded),
-                            ),
-                            TabPageSelector(
-                              controller: tabController,
-                            ),
-                            IconButton(
-                              onPressed: currentPageIndex.value < 3 - 1
-                                  ? () {
-                                      pageController.nextPage(
-                                        duration:
-                                            const Duration(milliseconds: 400),
-                                        curve: Curves.easeInOut,
-                                      );
-                                    }
-                                  : null,
-                              icon: Icon(Icons.arrow_right_rounded),
-                            ),
-                          ],
-                        )
-                      ],
+class _DesktopLayout extends HookConsumerWidget {
+  const _DesktopLayout({
+    required this.pageIndex,
+    required this.startPage,
+    required this.mangaPageId,
+    required this.page,
+  });
+
+  final int pageIndex;
+  final MangaStartPage startPage;
+  final MangaPageId mangaPageId;
+  final MangaPage page;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildToolBar(ref, context),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 1,
+              child: _buildMemo(),
+            ),
+            SizedBox(width: 4.r),
+            Expanded(
+              flex: 5,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (int i = 0; i < page.sceneUnits.length; i++) ...[
+                    if (i > 0) SizedBox(height: 4.r),
+                    SizedBox(
+                      height: 300.r,
+                      child: _SceneUnitWidget(
+                        mangaId: page.mangaId,
+                        sceneUnit: page.sceneUnits[i],
+                        index: i,
+                        canRemove: page.sceneUnits.length > 1,
+                        onRemove: () {
+                          ref
+                              .read(mangaPageProvider(mangaPageId).notifier)
+                              .removeSceneUnit(i);
+                        },
+                      ),
                     ),
-                  _ => Column(
-                      children: [
-                        _buildToolBar(ref, value, context),
-                        Expanded(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // buildColumn(ref, value, context, deletePage),
-                              Expanded(
-                                flex: 1,
-                                child: _buildMemo(value),
-                              ),
-                              SizedBox(width: 4.r),
-                              Expanded(
-                                flex: 3,
-                                child: _buildDialogues(value),
-                              ),
-                              SizedBox(width: 2.r),
-                              Expanded(
-                                flex: 2,
-                                child: _buildStageDirection(value),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                  ],
+                  SizedBox(height: 4.r),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      onPressed: () {
+                        ref
+                            .read(mangaPageProvider(mangaPageId).notifier)
+                            .addSceneUnit();
+                      },
+                      icon: const Icon(Icons.add),
+                      tooltip: 'カットを追加',
                     ),
-                };
-              }),
-          error: (_, __) => Text('error'),
-          loading: () => const CircularProgressIndicator()),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
-  Row _buildToolBar(WidgetRef ref, MangaPage value, BuildContext context) {
+  Row _buildToolBar(WidgetRef ref, BuildContext context) {
     return Row(
       children: [
         _buildPageIndicator(),
-        SizedBox(
-          width: 4.r,
-        ),
+        SizedBox(width: 4.r),
         IconButton(
           onPressed: () async {
-            await _copyToClipboard(ref, value.mangaId, value.dialoguesDeltaId);
+            await _copyAllDialoguesToClipboard(ref, page);
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Page $pageIndex をコピーしました')));
@@ -148,42 +144,14 @@ class MangaPageWidget extends HookConsumerWidget {
     );
   }
 
-  Container _buildStageDirection(MangaPage value) {
+  Container _buildMemo() {
     return Container(
-      height: double.infinity,
-      constraints: BoxConstraints(minWidth: 300.r),
-      color: Colors.black12,
-      child: _QuillTextAreaWidget(
-        key: ValueKey(value.stageDirectionDeltaId),
-        mangaId: value.mangaId,
-        deltaId: value.stageDirectionDeltaId,
-        placeholder: 'ト書き',
-      ),
-    );
-  }
-
-  Container _buildDialogues(MangaPage value) {
-    return Container(
-      height: double.infinity,
-      constraints: BoxConstraints(minWidth: 300.r),
-      color: Colors.black12,
-      child: _QuillTextAreaWidget(
-        key: ValueKey(value.dialoguesDeltaId),
-        mangaId: value.mangaId,
-        deltaId: value.dialoguesDeltaId,
-        placeholder: 'セリフ',
-      ),
-    );
-  }
-
-  Container _buildMemo(MangaPage value) {
-    return Container(
-      height: double.infinity,
+      height: 300.r,
       constraints: BoxConstraints(minWidth: 300.r),
       color: Colors.indigo.shade100,
       child: _QuillTextAreaWidget(
-        mangaId: value.mangaId,
-        deltaId: value.memoDeltaId,
+        mangaId: page.mangaId,
+        deltaId: page.memoDeltaId,
         placeholder: 'このページで描きたいこと',
       ),
     );
@@ -197,27 +165,243 @@ class MangaPageWidget extends HookConsumerWidget {
       ),
     );
   }
+}
 
-  static String _startPageToString(MangaStartPage startPage) {
-    return switch (startPage) {
-      MangaStartPage.left => 'L',
-      MangaStartPage.right => 'R',
-    };
+class _MobileLayout extends HookConsumerWidget {
+  const _MobileLayout({
+    required this.pageIndex,
+    required this.startPage,
+    required this.mangaPageId,
+    required this.page,
+  });
+
+  final int pageIndex;
+  final MangaStartPage startPage;
+  final MangaPageId mangaPageId;
+  final MangaPage page;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final totalPages = 1 + page.sceneUnits.length * 2;
+    final tabController = useTabController(initialLength: totalPages);
+    final currentPageIndex = useState(1);
+    final pageController =
+        usePageController(initialPage: currentPageIndex.value);
+
+    // Build page list: memo, then for each sceneUnit: dialogue, stageDirection
+    final pages = <Widget>[
+      _buildMemo(),
+      for (final unit in page.sceneUnits) ...[
+        _buildDialogues(unit),
+        _buildStageDirection(unit),
+      ],
+    ];
+
+    return SizedBox(
+      height: 300.r,
+      child: Column(
+        children: [
+          _buildToolBar(ref, context),
+          Expanded(
+            child: PageView(
+              controller: pageController,
+              onPageChanged: (index) {
+                tabController.index = index;
+                currentPageIndex.value = index;
+              },
+              children: pages,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                onPressed: 0 < currentPageIndex.value
+                    ? () {
+                        pageController.previousPage(
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    : null,
+                icon: Icon(Icons.arrow_left_rounded),
+              ),
+              TabPageSelector(
+                controller: tabController,
+              ),
+              IconButton(
+                onPressed: currentPageIndex.value < totalPages - 1
+                    ? () {
+                        pageController.nextPage(
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    : null,
+                icon: Icon(Icons.arrow_right_rounded),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
   }
 
-  Future<void> _copyToClipboard(
-      WidgetRef ref, MangaId mangaId, DeltaId deltaId) async {
-    final delta = await ref
-        .read(deltaProvider(mangaId, deltaId).notifier)
+  Row _buildToolBar(WidgetRef ref, BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          '$pageIndex${_startPageToString(pageIndex.isOdd ? startPage : startPage.reverted)}',
+          style: const TextStyle(color: Colors.black54),
+        ),
+        SizedBox(width: 4.r),
+        IconButton(
+          onPressed: () async {
+            await _copyAllDialoguesToClipboard(ref, page);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Page $pageIndex をコピーしました')));
+            }
+          },
+          icon: const Icon(Icons.copy),
+        ),
+        Spacer(),
+        IconButton(
+          onPressed: () {
+            ref.read(mangaPageProvider(mangaPageId).notifier).delete();
+          },
+          icon: const Icon(Icons.delete),
+        ),
+      ],
+    );
+  }
+
+  Container _buildMemo() {
+    return Container(
+      height: double.infinity,
+      constraints: BoxConstraints(minWidth: 300.r),
+      color: Colors.indigo.shade100,
+      child: _QuillTextAreaWidget(
+        mangaId: page.mangaId,
+        deltaId: page.memoDeltaId,
+        placeholder: 'このページで描きたいこと',
+      ),
+    );
+  }
+
+  Container _buildDialogues(SceneUnit unit) {
+    return Container(
+      height: double.infinity,
+      constraints: BoxConstraints(minWidth: 300.r),
+      color: Colors.black12,
+      child: _QuillTextAreaWidget(
+        key: ValueKey(unit.dialoguesDeltaId),
+        mangaId: page.mangaId,
+        deltaId: unit.dialoguesDeltaId,
+        placeholder: 'セリフ',
+      ),
+    );
+  }
+
+  Container _buildStageDirection(SceneUnit unit) {
+    return Container(
+      height: double.infinity,
+      constraints: BoxConstraints(minWidth: 300.r),
+      color: Colors.black12,
+      child: _QuillTextAreaWidget(
+        key: ValueKey(unit.stageDirectionDeltaId),
+        mangaId: page.mangaId,
+        deltaId: unit.stageDirectionDeltaId,
+        placeholder: 'ト書き',
+      ),
+    );
+  }
+}
+
+class _SceneUnitWidget extends StatelessWidget {
+  const _SceneUnitWidget({
+    required this.mangaId,
+    required this.sceneUnit,
+    required this.index,
+    required this.canRemove,
+    required this.onRemove,
+  });
+
+  final MangaId mangaId;
+  final SceneUnit sceneUnit;
+  final int index;
+  final bool canRemove;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Container(
+            height: double.infinity,
+            color: Colors.black12,
+            child: _QuillTextAreaWidget(
+              key: ValueKey(sceneUnit.dialoguesDeltaId),
+              mangaId: mangaId,
+              deltaId: sceneUnit.dialoguesDeltaId,
+              placeholder: 'セリフ',
+            ),
+          ),
+        ),
+        SizedBox(width: 2.r),
+        Expanded(
+          flex: 2,
+          child: Container(
+            height: double.infinity,
+            color: Colors.black12,
+            child: _QuillTextAreaWidget(
+              key: ValueKey(sceneUnit.stageDirectionDeltaId),
+              mangaId: mangaId,
+              deltaId: sceneUnit.stageDirectionDeltaId,
+              placeholder: 'ト書き',
+            ),
+          ),
+        ),
+        if (canRemove)
+          IconButton(
+            onPressed: onRemove,
+            icon: const Icon(Icons.close, size: 16),
+            tooltip: 'カットを削除',
+          ),
+      ],
+    );
+  }
+}
+
+String _startPageToString(MangaStartPage startPage) {
+  return switch (startPage) {
+    MangaStartPage.left => 'L',
+    MangaStartPage.right => 'R',
+  };
+}
+
+Future<void> _copyAllDialoguesToClipboard(
+    WidgetRef ref, MangaPage page) async {
+  final parts = <String>[];
+  for (final unit in page.sceneUnits) {
+    final text = await ref
+        .read(deltaProvider(page.mangaId, unit.dialoguesDeltaId).notifier)
         .exportPlainText();
-    final clipboard = SystemClipboard.instance;
-    if (clipboard == null || delta.isEmpty) {
-      return; // Clipboard API is not supported on this platform.
+    if (text.isNotEmpty) {
+      parts.add(text);
     }
-    final item = DataWriterItem();
-    item.add(Formats.plainText(delta));
-    await clipboard.write([item]);
   }
+  final combined = parts.join('\n\n');
+  final clipboard = SystemClipboard.instance;
+  if (clipboard == null || combined.isEmpty) {
+    return;
+  }
+  final item = DataWriterItem();
+  item.add(Formats.plainText(combined));
+  await clipboard.write([item]);
 }
 
 class _QuillTextAreaWidget extends HookConsumerWidget {

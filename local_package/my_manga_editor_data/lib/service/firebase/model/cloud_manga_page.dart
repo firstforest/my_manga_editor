@@ -13,8 +13,10 @@ abstract class CloudMangaPage with _$CloudMangaPage {
     required DateTime createdAt, // Creation timestamp
     required DateTime updatedAt, // Last modification timestamp
     String? memoDeltaId, // CloudDelta document ID for memoDelta
-    String? stageDirectionDeltaId, // CloudDelta document ID for stageDirectionDelta
-    String? dialoguesDeltaId, // CloudDelta document ID for dialoguesDelta
+    List<Map<String, dynamic>>? sceneUnits, // List of {dialoguesDeltaId, stageDirectionDeltaId}
+    // Legacy fields (read-only, for migration)
+    @JsonKey(includeToJson: false) String? stageDirectionDeltaId,
+    @JsonKey(includeToJson: false) String? dialoguesDeltaId,
   }) = _CloudMangaPage;
 
   factory CloudMangaPage.fromJson(Map<String, dynamic> json) =>
@@ -28,8 +30,7 @@ extension CloudMangaPageExt on CloudMangaPage {
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
       if (memoDeltaId != null) 'memoDeltaId': memoDeltaId,
-      if (stageDirectionDeltaId != null) 'stageDirectionDeltaId': stageDirectionDeltaId,
-      if (dialoguesDeltaId != null) 'dialoguesDeltaId': dialoguesDeltaId,
+      if (sceneUnits != null) 'sceneUnits': sceneUnits,
     };
   }
 
@@ -38,6 +39,23 @@ extension CloudMangaPageExt on CloudMangaPage {
     String mangaId,
   ) {
     final data = snapshot.data()!;
+
+    // Lazy migration: convert legacy fields to sceneUnits
+    List<Map<String, dynamic>>? sceneUnits;
+    if (data['sceneUnits'] != null) {
+      sceneUnits = (data['sceneUnits'] as List<dynamic>)
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+    } else if (data['dialoguesDeltaId'] != null ||
+        data['stageDirectionDeltaId'] != null) {
+      sceneUnits = [
+        {
+          'dialoguesDeltaId': data['dialoguesDeltaId'] as String?,
+          'stageDirectionDeltaId': data['stageDirectionDeltaId'] as String?,
+        }
+      ];
+    }
+
     return CloudMangaPage(
       id: snapshot.id,
       mangaId: mangaId,
@@ -45,8 +63,7 @@ extension CloudMangaPageExt on CloudMangaPage {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
       memoDeltaId: data['memoDeltaId'] as String?,
-      stageDirectionDeltaId: data['stageDirectionDeltaId'] as String?,
-      dialoguesDeltaId: data['dialoguesDeltaId'] as String?,
+      sceneUnits: sceneUnits,
     );
   }
 }

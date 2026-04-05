@@ -337,33 +337,28 @@ class MangaRepository {
       // Track the mapping for later lookups
       _pageToMangaMap[MangaPageId(pageId)] = mangaId;
 
-      // Create empty deltas for the three page fields
+      // Create memo delta
       final emptyDelta = Delta();
-      final fieldNames = ['memoDelta', 'stageDirectionDelta', 'dialoguesDelta'];
-      final deltaIdMap = <String, String>{}; // fieldName -> firestoreDeltaId
+      final memoDelta = CloudDelta(
+        id: '',
+        mangaId: mangaId.id,
+        ops: emptyDelta.toJson() as List<dynamic>,
+        fieldName: 'memoDelta',
+        pageId: pageId,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      final memoDeltaFirestoreId =
+          await _firebaseService.createDelta(mangaId.id, memoDelta);
 
-      for (final fieldName in fieldNames) {
-        // Create delta document in Firestore
-        final cloudDelta = CloudDelta(
-          id: '',
-          mangaId: mangaId.id,
-          ops: emptyDelta.toJson() as List<dynamic>,
-          fieldName: fieldName,
-          pageId: pageId,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        );
-        final firestoreDeltaId =
-            await _firebaseService.createDelta(mangaId.id, cloudDelta);
-
-        deltaIdMap[fieldName] = firestoreDeltaId;
-      }
+      // Create one initial SceneUnit (dialogue + stageDirection)
+      final sceneUnit =
+          await _createSceneUnitDeltas(mangaId.id, pageId, emptyDelta);
 
       // Update page document with delta ID references
       await _firebaseService.updateMangaPage(mangaId.id, pageId, {
-        'memoDeltaId': deltaIdMap['memoDelta'],
-        'stageDirectionDeltaId': deltaIdMap['stageDirectionDelta'],
-        'dialoguesDeltaId': deltaIdMap['dialoguesDelta'],
+        'memoDeltaId': memoDeltaFirestoreId,
+        'sceneUnits': [sceneUnit],
       });
 
       logger.d('Created new manga page: $pageId for manga: $mangaId');
@@ -512,6 +507,121 @@ class MangaRepository {
   }
 
   // ============================================================================
+  // SceneUnit Operations
+  // ============================================================================
+
+  /// Add a new SceneUnit (dialogue + stageDirection pair) to a page
+  Future<void> addSceneUnit(MangaId mangaId, MangaPageId pageId) async {
+    try {
+      final userId = _authService.currentUser?.uid;
+      if (userId == null) {
+        throw repo_exceptions.AuthException();
+      }
+
+      final emptyDelta = Delta();
+      final sceneUnit =
+          await _createSceneUnitDeltas(mangaId.id, pageId.id, emptyDelta);
+
+      // Fetch current page to get existing sceneUnits
+      final currentPage =
+          await _firebaseService.fetchMangaPage(mangaId.id, pageId.id);
+      if (currentPage == null) {
+        throw repo_exceptions.NotFoundException('MangaPage', pageId.id);
+      }
+
+      final existingUnits =
+          List<Map<String, dynamic>>.from(currentPage.sceneUnits ?? []);
+      existingUnits.add(sceneUnit);
+
+      await _firebaseService.updateMangaPage(mangaId.id, pageId.id, {
+        'sceneUnits': existingUnits,
+        'updatedAt': DateTime.now(),
+      });
+
+      logger.d('Added SceneUnit to page: $pageId');
+    } on FirebaseException catch (e) {
+      throw _handleFirebaseException(e);
+    }
+  }
+
+  /// Remove a SceneUnit at the given index from a page
+  Future<void> removeSceneUnit(
+      MangaId mangaId, MangaPageId pageId, int index) async {
+    try {
+      final userId = _authService.currentUser?.uid;
+      if (userId == null) {
+        throw repo_exceptions.AuthException();
+      }
+
+      final currentPage =
+          await _firebaseService.fetchMangaPage(mangaId.id, pageId.id);
+      if (currentPage == null) {
+        throw repo_exceptions.NotFoundException('MangaPage', pageId.id);
+      }
+
+      final existingUnits =
+          List<Map<String, dynamic>>.from(currentPage.sceneUnits ?? []);
+      if (index < 0 || index >= existingUnits.length || existingUnits.length <= 1) {
+        return; // Cannot remove if out of bounds or last remaining unit
+      }
+
+      final removed = existingUnits.removeAt(index);
+
+      // Delete associated delta documents
+      final dialoguesDeltaId = removed['dialoguesDeltaId'] as String?;
+      final stageDirectionDeltaId = removed['stageDirectionDeltaId'] as String?;
+      if (dialoguesDeltaId != null) {
+        await _firebaseService.deleteDelta(mangaId.id, dialoguesDeltaId);
+      }
+      if (stageDirectionDeltaId != null) {
+        await _firebaseService.deleteDelta(mangaId.id, stageDirectionDeltaId);
+      }
+
+      await _firebaseService.updateMangaPage(mangaId.id, pageId.id, {
+        'sceneUnits': existingUnits,
+        'updatedAt': DateTime.now(),
+      });
+
+      logger.d('Removed SceneUnit at index $index from page: $pageId');
+    } on FirebaseException catch (e) {
+      throw _handleFirebaseException(e);
+    }
+  }
+
+  /// Helper: create dialogue + stageDirection delta pair for a SceneUnit
+  Future<Map<String, dynamic>> _createSceneUnitDeltas(
+      String mangaId, String pageId, Delta emptyDelta) async {
+    final dialogueDelta = CloudDelta(
+      id: '',
+      mangaId: mangaId,
+      ops: emptyDelta.toJson() as List<dynamic>,
+      fieldName: 'dialoguesDelta',
+      pageId: pageId,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    final dialogueDeltaId =
+        await _firebaseService.createDelta(mangaId, dialogueDelta);
+
+    final stageDirectionDelta = CloudDelta(
+      id: '',
+      mangaId: mangaId,
+      ops: emptyDelta.toJson() as List<dynamic>,
+      fieldName: 'stageDirectionDelta',
+      pageId: pageId,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    final stageDirectionDeltaId =
+        await _firebaseService.createDelta(mangaId, stageDirectionDelta);
+
+    return {
+      'dialoguesDeltaId': dialogueDeltaId,
+      'stageDirectionDeltaId': stageDirectionDeltaId,
+    };
+  }
+
+  // ============================================================================
   // Export & Utilities
   // ============================================================================
 
@@ -577,38 +687,51 @@ class MangaRepository {
           }
         }
 
-        // Stage Direction
-        final stageDeltaDoc = pageDeltas
-            .where((d) => d.id == page.stageDirectionDeltaId)
-            .firstOrNull;
-        if (stageDeltaDoc != null && stageDeltaDoc.ops.isNotEmpty) {
-          final stageDelta = Delta.fromJson(stageDeltaDoc.ops);
-          if (stageDelta.isNotEmpty) {
-            buffer.writeln('### ト書き');
-            for (final op in stageDelta.toList()) {
-              if (op.data is String) {
-                buffer.write(op.data);
-              }
-            }
-            buffer.writeln();
+        // SceneUnits
+        final domainPage = page.toMangaPage();
+        for (int j = 0; j < domainPage.sceneUnits.length; j++) {
+          final unit = domainPage.sceneUnits[j];
+          if (domainPage.sceneUnits.length > 1) {
+            buffer.writeln('### カット ${j + 1}');
             buffer.writeln();
           }
-        }
 
-        // Dialogues
-        final dialoguesDeltaDoc =
-            pageDeltas.where((d) => d.id == page.dialoguesDeltaId).firstOrNull;
-        if (dialoguesDeltaDoc != null && dialoguesDeltaDoc.ops.isNotEmpty) {
-          final dialoguesDelta = Delta.fromJson(dialoguesDeltaDoc.ops);
-          if (dialoguesDelta.isNotEmpty) {
-            buffer.writeln('### セリフ');
-            for (final op in dialoguesDelta.toList()) {
-              if (op.data is String) {
-                buffer.write(op.data);
+          // Stage Direction
+          final stageDeltaDoc = pageDeltas
+              .where((d) => d.id == unit.stageDirectionDeltaId.id)
+              .firstOrNull;
+          if (stageDeltaDoc != null && stageDeltaDoc.ops.isNotEmpty) {
+            final stageDelta = Delta.fromJson(stageDeltaDoc.ops);
+            if (stageDelta.isNotEmpty) {
+              buffer.writeln(
+                  domainPage.sceneUnits.length > 1 ? '#### ト書き' : '### ト書き');
+              for (final op in stageDelta.toList()) {
+                if (op.data is String) {
+                  buffer.write(op.data);
+                }
               }
+              buffer.writeln();
+              buffer.writeln();
             }
-            buffer.writeln();
-            buffer.writeln();
+          }
+
+          // Dialogues
+          final dialoguesDeltaDoc = pageDeltas
+              .where((d) => d.id == unit.dialoguesDeltaId.id)
+              .firstOrNull;
+          if (dialoguesDeltaDoc != null && dialoguesDeltaDoc.ops.isNotEmpty) {
+            final dialoguesDelta = Delta.fromJson(dialoguesDeltaDoc.ops);
+            if (dialoguesDelta.isNotEmpty) {
+              buffer.writeln(
+                  domainPage.sceneUnits.length > 1 ? '#### セリフ' : '### セリフ');
+              for (final op in dialoguesDelta.toList()) {
+                if (op.data is String) {
+                  buffer.write(op.data);
+                }
+              }
+              buffer.writeln();
+              buffer.writeln();
+            }
           }
         }
       }
@@ -710,12 +833,19 @@ extension MangaToCloudConversion on Manga {
 /// Extension for converting CloudMangaPage to MangaPage
 extension CloudMangaPageConversion on CloudMangaPage {
   MangaPage toMangaPage() {
+    final units = (sceneUnits ?? []).map((map) {
+      return SceneUnit(
+        dialoguesDeltaId: DeltaId(map['dialoguesDeltaId'] as String? ?? ''),
+        stageDirectionDeltaId:
+            DeltaId(map['stageDirectionDeltaId'] as String? ?? ''),
+      );
+    }).toList();
+
     return MangaPage(
       id: MangaPageId(id),
       mangaId: MangaId(mangaId),
       memoDeltaId: DeltaId(memoDeltaId ?? ''),
-      stageDirectionDeltaId: DeltaId(stageDirectionDeltaId ?? ''),
-      dialoguesDeltaId: DeltaId(dialoguesDeltaId ?? ''),
+      sceneUnits: units,
     );
   }
 }
@@ -728,8 +858,12 @@ extension MangaPageToCloudConversion on MangaPage {
       mangaId: mangaId.id,
       pageIndex: pageIndex,
       memoDeltaId: memoDeltaId.id,
-      stageDirectionDeltaId: stageDirectionDeltaId.id,
-      dialoguesDeltaId: dialoguesDeltaId.id,
+      sceneUnits: sceneUnits
+          .map((unit) => {
+                'dialoguesDeltaId': unit.dialoguesDeltaId.id,
+                'stageDirectionDeltaId': unit.stageDirectionDeltaId.id,
+              })
+          .toList(),
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );

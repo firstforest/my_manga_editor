@@ -14,6 +14,9 @@ _CloudMangaPage _$CloudMangaPageFromJson(Map<String, dynamic> json) =>
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       memoDeltaId: json['memoDeltaId'] as String?,
+      sceneUnits: (json['sceneUnits'] as List<dynamic>?)
+          ?.map((e) => e as Map<String, dynamic>)
+          .toList(),
       stageDirectionDeltaId: json['stageDirectionDeltaId'] as String?,
       dialoguesDeltaId: json['dialoguesDeltaId'] as String?,
     );
@@ -26,6 +29,5 @@ Map<String, dynamic> _$CloudMangaPageToJson(_CloudMangaPage instance) =>
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
       'memoDeltaId': instance.memoDeltaId,
-      'stageDirectionDeltaId': instance.stageDirectionDeltaId,
-      'dialoguesDeltaId': instance.dialoguesDeltaId,
+      'sceneUnits': instance.sceneUnits,
     };

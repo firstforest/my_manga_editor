@@ -280,6 +280,42 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i3.Stream<bool>);
 
   @override
+  _i3.Future<void> addSceneUnit(
+    _i4.MangaId? mangaId,
+    _i4.MangaPageId? pageId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addSceneUnit,
+          [
+            mangaId,
+            pageId,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> removeSceneUnit(
+    _i4.MangaId? mangaId,
+    _i4.MangaPageId? pageId,
+    int? index,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #removeSceneUnit,
+          [
+            mangaId,
+            pageId,
+            index,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
   _i3.Future<String> toMarkdown(_i4.MangaId? mangaId) => (super.noSuchMethod(
         Invocation.method(
           #toMarkdown,

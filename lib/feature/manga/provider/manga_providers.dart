@@ -100,6 +100,20 @@ class MangaPageNotifier extends _$MangaPageNotifier {
   void delete() {
     ref.read(mangaRepositoryProvider).deleteMangaPage(pageId);
   }
+
+  Future<void> addSceneUnit() async {
+    final page = await future;
+    await ref
+        .read(mangaRepositoryProvider)
+        .addSceneUnit(page.mangaId, pageId);
+  }
+
+  Future<void> removeSceneUnit(int index) async {
+    final page = await future;
+    await ref
+        .read(mangaRepositoryProvider)
+        .removeSceneUnit(page.mangaId, pageId, index);
+  }
 }
 
 @riverpod

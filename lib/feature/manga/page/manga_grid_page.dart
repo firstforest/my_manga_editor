@@ -139,9 +139,13 @@ class MangaGridPageView extends HookConsumerWidget {
                 Expanded(
                   child: mangaPage.map(
                     data: (mangaPage) {
+                      if (mangaPage.value.sceneUnits.isEmpty) {
+                        return Text('セリフなし');
+                      }
+                      final firstUnit = mangaPage.value.sceneUnits.first;
                       final delta = ref.watch(deltaProvider(
                         mangaPage.value.mangaId,
-                        mangaPage.value.dialoguesDeltaId,
+                        firstUnit.dialoguesDeltaId,
                       ));
                       return switch (delta.value) {
                         Delta d when d.isNotEmpty => SingleChildScrollView(

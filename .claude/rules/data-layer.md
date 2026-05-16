@@ -6,11 +6,7 @@ paths:
 # Data Layer (my_manga_editor_data)
 
 ## Code Generation
-This package has its own `build_runner`. Run from this directory:
-```bash
-cd local_package/my_manga_editor_data && dart run build_runner build -d && cd -
-```
-Root `build_runner` does NOT process this package.
+このパッケージは独立した `build_runner` を持つ。コード生成全般のルールは [code-generation.md](./code-generation.md) を参照。
 
 ## Firestore Schema
 ```

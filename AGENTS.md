@@ -4,7 +4,8 @@ This file provides guidance to coding agents when working with code in this repo
 
 ## Project Overview
 
-**My Manga Editor** — Flutter desktop app (Windows/macOS) for manga plot editing. Pages have 3 editing areas: memo, dialogue (セリフ), stage direction (ト書き). Exports dialogue text for ClipStudio Paint integration.
+**My Manga Editor** — Flutter desktop / Web app for manga plot editing.
+Pages have 3 editing areas: memo, dialogue (セリフ), stage direction (ト書き). Exports dialogue text for ClipStudio Paint integration.
 
 ## Development Commands
 
@@ -15,11 +16,11 @@ mise i
 # Run
 flutter run
 flutter run --dart-define=OPENAI_API_KEY=your_key  # with AI comment feature
+flutter run --dart-define=ENV=prod                 # switch Firebase project (default: dev)
 
 # Code generation (REQUIRED after model/provider changes)
-dart run build_runner build -d   # or: mise run gen
-# Data layer has separate build_runner:
-cd local_package/my_manga_editor_data && dart run build_runner build -d && cd -
+dart run build_runner build -d                                # root package
+cd local_package/my_manga_editor_data && dart run build_runner build -d && cd -  # data package
 
 # Quality
 flutter analyze
@@ -27,43 +28,28 @@ flutter test
 flutter test test/feature/manga/provider/manga_providers_test.dart  # single test
 ```
 
-## Architecture
+## Architecture (Summary)
 
-### Data Flow
 ```
-UI (lib/feature/) → ViewModels (Riverpod Notifiers) → Repository → Service ↔ Firestore
-```
-
-### Multi-Package Structure
-- **my_manga_editor** (root) — UI layer (`lib/feature/`, `lib/hooks/`)
-- **my_manga_editor_data** (`local_package/my_manga_editor_data/`) — data layer (repository, service, domain model)
-- **my_manga_editor_common** (`local_package/my_manga_editor_common/`) — shared utilities (logger)
-
-### Feature Structure
-```
-lib/feature/{name}/
-  ├── page/       # screen-level widgets
-  ├── view/       # reusable sub-widgets
-  └── provider/   # Riverpod providers & view models
+UI (lib/feature/) → Riverpod Notifier → Repository → Service → Firestore
 ```
 
-### Key Technology
-- **Flutter 3.32.4**, **Riverpod 3.x** (with hooks), **Freezed** for immutable models
-- **Cloud Firestore** with offline persistence (no local database)
-- **Flutter Quill** for rich text editing (Delta format)
-- **go_router** for routing (auth guard redirects unauthenticated users to `/login`)
-- Widgets use `HookConsumerWidget` or `ConsumerWidget` as needed
+- **Root package** (`lib/`) — UI 層。`feature/{auth,manga,ai_comment,setting}` で機能別に分割
+- **`my_manga_editor_data`** (`local_package/`) — データ層。`repository/ service/ model/` の3層
+- **`my_manga_editor_common`** (`local_package/`) — 共有ユーティリティ（logger）
 
-### Testing
-- `ProviderContainer` with overrides for Riverpod provider isolation
-- `@GenerateNiceMocks` (Mockito) for mock generation
-- Tests in `test/feature/manga/provider/`
+詳細は **[docs/design/architecture.md](docs/design/architecture.md)** を参照（全体俯瞰・レイヤー構造・技術スタック）。
 
-## Critical Notes
+## Reference Documentation
 
-### Code Generation is Mandatory
-After modifying `@freezed` classes, `@riverpod` providers, or any file importing `*.g.dart`/`*.freezed.dart`, run `dart run build_runner build -d`. Root and data package have **separate** `build_runner` — see `.claude/rules/data-layer.md`.
+作業対象に応じて以下を必ず参照する。
 
-### CI/CD
-- GitHub Actions deploys Flutter Web to GitHub Pages on push to `main`
-- Workflow: `.github/workflows/main.yml`
+| 作業対象 | 参照ドキュメント |
+|---|---|
+| 全体アーキテクチャ・レイヤー構造 | [docs/design/architecture.md](docs/design/architecture.md) |
+| ドメインモデル / Firestore スキーマ | [docs/design/data-model.md](docs/design/data-model.md) |
+| `@freezed` / `@riverpod` を含む `.dart` 編集時 | [.claude/rules/code-generation.md](.claude/rules/code-generation.md) |
+| `local_package/my_manga_editor_data/**` 編集時 | [.claude/rules/data-layer.md](.claude/rules/data-layer.md) |
+| Riverpod Provider 追加・テスト時 | [.claude/rules/providers.md](.claude/rules/providers.md) |
+| `lib/router.dart` / 画面追加時 | [.claude/rules/routing.md](.claude/rules/routing.md) |
+| `.github/workflows/**` 編集時 | [.claude/rules/ci.md](.claude/rules/ci.md) |

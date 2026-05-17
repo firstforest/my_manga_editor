@@ -1,13 +1,12 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:connectivity_plus/connectivity_plus.dart'
-    show Connectivity, ConnectivityResult;
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:my_manga_editor_common/logger.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor_data/repository/exceptions.dart'
     as repo_exceptions;
+import 'package:my_manga_editor_data/service/connectivity_service.dart';
 import 'package:my_manga_editor_data/service/firebase/auth_service.dart';
 import 'package:my_manga_editor_data/service/firebase/firebase_service.dart';
 import 'package:my_manga_editor_data/service/firebase/model/cloud_delta.dart';
@@ -21,10 +20,12 @@ part 'manga_repository.g.dart';
 MangaRepository mangaRepository(Ref ref) {
   final firebaseService = ref.watch(firebaseServiceProvider);
   final authService = ref.watch(authServiceProvider);
+  final connectivityService = ref.watch(connectivityServiceProvider);
 
   return MangaRepository(
     firebaseService: firebaseService,
     authService: authService,
+    connectivityService: connectivityService,
   );
 }
 
@@ -36,13 +37,16 @@ class MangaRepository {
   MangaRepository({
     required FirebaseService firebaseService,
     required AuthService authService,
+    required ConnectivityService connectivityService,
   })  : _firebaseService = firebaseService,
-        _authService = authService {
+        _authService = authService,
+        _connectivityService = connectivityService {
     _initializeConnectivityMonitoring();
   }
 
   final FirebaseService _firebaseService;
   final AuthService _authService;
+  final ConnectivityService _connectivityService;
 
   // Track mangaId for each pageId to enable efficient lookups
   final Map<MangaPageId, MangaId> _pageToMangaMap = {};
@@ -51,7 +55,7 @@ class MangaRepository {
   final StreamController<bool> _onlineStatusController =
       StreamController<bool>.broadcast();
   bool _isOnline = true;
-  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  StreamSubscription<bool>? _connectivitySubscription;
 
   // ============================================================================
   // Manga CRUD Operations
@@ -767,9 +771,9 @@ class MangaRepository {
   /// Initialize connectivity monitoring
   void _initializeConnectivityMonitoring() {
     _connectivitySubscription =
-        Connectivity().onConnectivityChanged.listen((result) {
+        _connectivityService.onConnectivityChanged().listen((isOnline) {
       final wasOnline = _isOnline;
-      _isOnline = !result.contains(ConnectivityResult.none);
+      _isOnline = isOnline;
 
       if (wasOnline != _isOnline) {
         logger.d('Connection state changed: $_isOnline');
@@ -778,8 +782,8 @@ class MangaRepository {
     });
 
     // Check initial connectivity
-    Connectivity().checkConnectivity().then((result) {
-      _isOnline = !result.contains(ConnectivityResult.none);
+    _connectivityService.isOnline().then((isOnline) {
+      _isOnline = isOnline;
       _emitOnlineStatus();
     });
   }

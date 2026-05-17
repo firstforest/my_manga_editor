@@ -11,6 +11,7 @@ export 'repository/setting_repository.dart';
 
 // Services
 export 'service/firebase/auth_service.dart' hide AuthException;
+export 'service/connectivity_service.dart';
 
 // Config
 export 'service/firebase/firebase_config.dart';

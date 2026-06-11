@@ -27,7 +27,7 @@ jobs:
           REPOSITORY=$(echo ${{ github.repository }} | sed -e "s#.*/##")
           echo "repository=$REPOSITORY" >> $GITHUB_OUTPUT
       - name: Build Flutter Web
-        run: flutter build web --release --base-href /${{ steps.base-href.outputs.repository }}/
+        run: flutter build web --release --dart-define=ENV=prod --base-href /${{ steps.base-href.outputs.repository }}/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

@@ -81,7 +81,7 @@ class MangaGridPage extends HookConsumerWidget {
                 .read(mangaProvider(mangaId).notifier)
                 .reorderPage(newOrder.whereType<MangaPageId>().toList(), 0, 0);
           },
-          enableLongPress: false,
+          longPressDelay: Duration.zero,
           children: generatedChildren,
           builder: (children) {
             return Directionality(

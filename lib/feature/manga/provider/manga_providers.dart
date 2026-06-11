@@ -42,11 +42,10 @@ class MangaNotifier extends _$MangaNotifier {
     await reorderPage(pageIdList, pageIdList.length - 1, index);
   }
 
+  // newIndex は ReorderableListView.onReorderItem と同様に
+  // oldIndex の要素を取り除いた後のリストに対する挿入位置を受け取る
   Future<void> reorderPage(
       List<MangaPageId> pageIdList, int oldIndex, int newIndex) async {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
     final item = pageIdList.removeAt(oldIndex);
     pageIdList.insert(newIndex, item);
     ref.read(mangaRepositoryProvider).reorderPages(id, pageIdList);

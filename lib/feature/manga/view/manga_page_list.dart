@@ -59,7 +59,7 @@ class MangaPageList extends HookConsumerWidget {
         );
       },
       itemCount: pageIdList.length,
-      onReorder: (oldIndex, newIndex) {
+      onReorderItem: (oldIndex, newIndex) {
         ref
             .read(mangaProvider(manga.id).notifier)
             .reorderPage(pageIdList, oldIndex, newIndex);

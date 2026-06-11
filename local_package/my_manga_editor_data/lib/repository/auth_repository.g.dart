@@ -11,7 +11,7 @@ part of 'auth_repository.dart';
 /// Provider for AuthRepository
 
 @ProviderFor(authRepository)
-const authRepositoryProvider = AuthRepositoryProvider._();
+final authRepositoryProvider = AuthRepositoryProvider._();
 
 /// Provider for AuthRepository
 
@@ -19,7 +19,7 @@ final class AuthRepositoryProvider
     extends $FunctionalProvider<AuthRepository, AuthRepository, AuthRepository>
     with $Provider<AuthRepository> {
   /// Provider for AuthRepository
-  const AuthRepositoryProvider._()
+  AuthRepositoryProvider._()
       : super(
           from: null,
           argument: null,
@@ -58,7 +58,7 @@ String _$authRepositoryHash() => r'd04d5da6ef3cfca33e285367ac34cef75d65ec40';
 /// Provides a stream of the current user (null if signed out)
 
 @ProviderFor(authStateStream)
-const authStateStreamProvider = AuthStateStreamProvider._();
+final authStateStreamProvider = AuthStateStreamProvider._();
 
 /// Provider for current authentication state
 /// Provides a stream of the current user (null if signed out)
@@ -68,7 +68,7 @@ final class AuthStateStreamProvider
     with $FutureModifier<User?>, $StreamProvider<User?> {
   /// Provider for current authentication state
   /// Provides a stream of the current user (null if signed out)
-  const AuthStateStreamProvider._()
+  AuthStateStreamProvider._()
       : super(
           from: null,
           argument: null,
@@ -100,7 +100,7 @@ String _$authStateStreamHash() => r'abd44d92438bc1d6f34e89f482991f7f364c7e70';
 /// This is a computed provider that listens to authStateStream
 
 @ProviderFor(currentUser)
-const currentUserProvider = CurrentUserProvider._();
+final currentUserProvider = CurrentUserProvider._();
 
 /// Provider for current user
 /// Provides the current user or null if signed out
@@ -111,7 +111,7 @@ final class CurrentUserProvider extends $FunctionalProvider<User?, User?, User?>
   /// Provider for current user
   /// Provides the current user or null if signed out
   /// This is a computed provider that listens to authStateStream
-  const CurrentUserProvider._()
+  CurrentUserProvider._()
       : super(
           from: null,
           argument: null,

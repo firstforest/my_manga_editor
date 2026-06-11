@@ -11,7 +11,7 @@ part of 'firebase_service.dart';
 /// Provider for FirebaseFirestore instance
 
 @ProviderFor(firebaseFirestore)
-const firebaseFirestoreProvider = FirebaseFirestoreProvider._();
+final firebaseFirestoreProvider = FirebaseFirestoreProvider._();
 
 /// Provider for FirebaseFirestore instance
 
@@ -20,7 +20,7 @@ final class FirebaseFirestoreProvider extends $FunctionalProvider<
     FirebaseFirestore,
     FirebaseFirestore> with $Provider<FirebaseFirestore> {
   /// Provider for FirebaseFirestore instance
-  const FirebaseFirestoreProvider._()
+  FirebaseFirestoreProvider._()
       : super(
           from: null,
           argument: null,
@@ -59,14 +59,14 @@ String _$firebaseFirestoreHash() => r'963402713bf9b7cc1fb259d619d9b0184d4dcec1';
 /// Provider for FirebaseService
 
 @ProviderFor(firebaseService)
-const firebaseServiceProvider = FirebaseServiceProvider._();
+final firebaseServiceProvider = FirebaseServiceProvider._();
 
 /// Provider for FirebaseService
 
 final class FirebaseServiceProvider extends $FunctionalProvider<FirebaseService,
     FirebaseService, FirebaseService> with $Provider<FirebaseService> {
   /// Provider for FirebaseService
-  const FirebaseServiceProvider._()
+  FirebaseServiceProvider._()
       : super(
           from: null,
           argument: null,

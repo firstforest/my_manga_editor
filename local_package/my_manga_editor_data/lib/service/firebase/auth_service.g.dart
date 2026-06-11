@@ -11,7 +11,7 @@ part of 'auth_service.dart';
 /// Provider for FirebaseAuth instance
 
 @ProviderFor(firebaseAuth)
-const firebaseAuthProvider = FirebaseAuthProvider._();
+final firebaseAuthProvider = FirebaseAuthProvider._();
 
 /// Provider for FirebaseAuth instance
 
@@ -19,7 +19,7 @@ final class FirebaseAuthProvider
     extends $FunctionalProvider<FirebaseAuth, FirebaseAuth, FirebaseAuth>
     with $Provider<FirebaseAuth> {
   /// Provider for FirebaseAuth instance
-  const FirebaseAuthProvider._()
+  FirebaseAuthProvider._()
       : super(
           from: null,
           argument: null,
@@ -57,7 +57,7 @@ String _$firebaseAuthHash() => r'912368c3df3f72e4295bf7a8cda93b9c5749d923';
 /// Provider for GoogleSignIn instance
 
 @ProviderFor(googleSignIn)
-const googleSignInProvider = GoogleSignInProvider._();
+final googleSignInProvider = GoogleSignInProvider._();
 
 /// Provider for GoogleSignIn instance
 
@@ -65,7 +65,7 @@ final class GoogleSignInProvider
     extends $FunctionalProvider<GoogleSignIn, GoogleSignIn, GoogleSignIn>
     with $Provider<GoogleSignIn> {
   /// Provider for GoogleSignIn instance
-  const GoogleSignInProvider._()
+  GoogleSignInProvider._()
       : super(
           from: null,
           argument: null,
@@ -103,7 +103,7 @@ String _$googleSignInHash() => r'4e2e63f5b667326ad67d15b1d17165a5a6c56bc9';
 /// Provider for web OAuth client ID (override per environment)
 
 @ProviderFor(webClientId)
-const webClientIdProvider = WebClientIdProvider._();
+final webClientIdProvider = WebClientIdProvider._();
 
 /// Provider for web OAuth client ID (override per environment)
 
@@ -111,7 +111,7 @@ final class WebClientIdProvider
     extends $FunctionalProvider<String?, String?, String?>
     with $Provider<String?> {
   /// Provider for web OAuth client ID (override per environment)
-  const WebClientIdProvider._()
+  WebClientIdProvider._()
       : super(
           from: null,
           argument: null,
@@ -149,7 +149,7 @@ String _$webClientIdHash() => r'5526426155ff90bef9e124653e798813737e9e2a';
 /// Provider for AuthService
 
 @ProviderFor(authService)
-const authServiceProvider = AuthServiceProvider._();
+final authServiceProvider = AuthServiceProvider._();
 
 /// Provider for AuthService
 
@@ -157,7 +157,7 @@ final class AuthServiceProvider
     extends $FunctionalProvider<AuthService, AuthService, AuthService>
     with $Provider<AuthService> {
   /// Provider for AuthService
-  const AuthServiceProvider._()
+  AuthServiceProvider._()
       : super(
           from: null,
           argument: null,

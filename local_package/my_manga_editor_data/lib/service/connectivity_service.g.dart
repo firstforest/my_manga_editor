@@ -10,13 +10,13 @@ part of 'connectivity_service.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(connectivityService)
-const connectivityServiceProvider = ConnectivityServiceProvider._();
+final connectivityServiceProvider = ConnectivityServiceProvider._();
 
 final class ConnectivityServiceProvider extends $FunctionalProvider<
     ConnectivityService,
     ConnectivityService,
     ConnectivityService> with $Provider<ConnectivityService> {
-  const ConnectivityServiceProvider._()
+  ConnectivityServiceProvider._()
       : super(
           from: null,
           argument: null,

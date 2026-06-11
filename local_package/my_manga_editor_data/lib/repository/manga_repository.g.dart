@@ -10,11 +10,11 @@ part of 'manga_repository.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(mangaRepository)
-const mangaRepositoryProvider = MangaRepositoryProvider._();
+final mangaRepositoryProvider = MangaRepositoryProvider._();
 
 final class MangaRepositoryProvider extends $FunctionalProvider<MangaRepository,
     MangaRepository, MangaRepository> with $Provider<MangaRepository> {
-  const MangaRepositoryProvider._()
+  MangaRepositoryProvider._()
       : super(
           from: null,
           argument: null,

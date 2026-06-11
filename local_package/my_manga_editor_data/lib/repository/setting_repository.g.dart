@@ -11,7 +11,7 @@ part of 'setting_repository.dart';
 /// SharedPreferencesのプロバイダー
 
 @ProviderFor(sharedPreferences)
-const sharedPreferencesProvider = SharedPreferencesProvider._();
+final sharedPreferencesProvider = SharedPreferencesProvider._();
 
 /// SharedPreferencesのプロバイダー
 
@@ -23,7 +23,7 @@ final class SharedPreferencesProvider extends $FunctionalProvider<
         $FutureModifier<SharedPreferences>,
         $FutureProvider<SharedPreferences> {
   /// SharedPreferencesのプロバイダー
-  const SharedPreferencesProvider._()
+  SharedPreferencesProvider._()
       : super(
           from: null,
           argument: null,
@@ -54,7 +54,7 @@ String _$sharedPreferencesHash() => r'd22b545aefe95500327f9dce52c645d746349271';
 /// SettingRepositoryのプロバイダー
 
 @ProviderFor(settingRepository)
-const settingRepositoryProvider = SettingRepositoryProvider._();
+final settingRepositoryProvider = SettingRepositoryProvider._();
 
 /// SettingRepositoryのプロバイダー
 
@@ -63,7 +63,7 @@ final class SettingRepositoryProvider extends $FunctionalProvider<
     SettingRepository,
     SettingRepository> with $Provider<SettingRepository> {
   /// SettingRepositoryのプロバイダー
-  const SettingRepositoryProvider._()
+  SettingRepositoryProvider._()
       : super(
           from: null,
           argument: null,
@@ -102,13 +102,13 @@ String _$settingRepositoryHash() => r'e24f289aa5e04dbc622fe53c79455ab7a49737c1';
 /// OpenAI API Keyのストリームプロバイダー
 
 @ProviderFor(OpenAiApiKey)
-const openAiApiKeyProvider = OpenAiApiKeyProvider._();
+final openAiApiKeyProvider = OpenAiApiKeyProvider._();
 
 /// OpenAI API Keyのストリームプロバイダー
 final class OpenAiApiKeyProvider
     extends $NotifierProvider<OpenAiApiKey, String?> {
   /// OpenAI API Keyのストリームプロバイダー
-  const OpenAiApiKeyProvider._()
+  OpenAiApiKeyProvider._()
       : super(
           from: null,
           argument: null,
@@ -143,11 +143,10 @@ abstract class _$OpenAiApiKey extends $Notifier<String?> {
   String? build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<String?, String?>;
     final element = ref.element as $ClassProviderElement<
         AnyNotifier<String?, String?>, String?, Object?, Object?>;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

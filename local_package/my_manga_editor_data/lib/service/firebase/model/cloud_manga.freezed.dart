@@ -14,15 +14,15 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$CloudManga {
-  String get id; // Firestore document ID
-  String get userId; // Owner UID
-  String get name; // Manga title
-  String get startPageDirection; // 'left' or 'right'
-  DateTime get createdAt; // Creation timestamp
-  DateTime get updatedAt; // Last modification timestamp
-  String? get ideaMemoDeltaId; // CloudDelta document ID for ideaMemo
+  String get id;
+  String get userId;
+  String get name;
+  String get startPageDirection;
+  DateTime get createdAt;
+  DateTime get updatedAt;
+  String? get ideaMemoDeltaId;
   @JsonKey(name: 'editLock')
-  EditLock? get editLock; // Optional edit lock
+  EditLock? get editLock;
   String? get status;
 
   /// Create a copy of CloudManga
@@ -405,29 +405,21 @@ class _CloudManga implements CloudManga {
 
   @override
   final String id;
-// Firestore document ID
   @override
   final String userId;
-// Owner UID
   @override
   final String name;
-// Manga title
   @override
   final String startPageDirection;
-// 'left' or 'right'
   @override
   final DateTime createdAt;
-// Creation timestamp
   @override
   final DateTime updatedAt;
-// Last modification timestamp
   @override
   final String? ideaMemoDeltaId;
-// CloudDelta document ID for ideaMemo
   @override
   @JsonKey(name: 'editLock')
   final EditLock? editLock;
-// Optional edit lock
   @override
   final String? status;
 

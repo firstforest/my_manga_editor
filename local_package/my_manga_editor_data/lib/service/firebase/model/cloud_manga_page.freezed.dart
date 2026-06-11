@@ -14,15 +14,13 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$CloudMangaPage {
-  String get id; // Firestore document ID
-  String get mangaId; // Parent manga ID
-  int get pageIndex; // Page order (0-based)
-  DateTime get createdAt; // Creation timestamp
-  DateTime get updatedAt; // Last modification timestamp
-  String? get memoDeltaId; // CloudDelta document ID for memoDelta
-  List<Map<String, dynamic>>?
-      get sceneUnits; // List of {dialoguesDeltaId, stageDirectionDeltaId}
-// Legacy fields (read-only, for migration)
+  String get id;
+  String get mangaId;
+  int get pageIndex;
+  DateTime get createdAt;
+  DateTime get updatedAt;
+  String? get memoDeltaId;
+  List<Map<String, dynamic>>? get sceneUnits;
   @JsonKey(includeToJson: false)
   String? get stageDirectionDeltaId;
   @JsonKey(includeToJson: false)
@@ -397,24 +395,17 @@ class _CloudMangaPage implements CloudMangaPage {
 
   @override
   final String id;
-// Firestore document ID
   @override
   final String mangaId;
-// Parent manga ID
   @override
   final int pageIndex;
-// Page order (0-based)
   @override
   final DateTime createdAt;
-// Creation timestamp
   @override
   final DateTime updatedAt;
-// Last modification timestamp
   @override
   final String? memoDeltaId;
-// CloudDelta document ID for memoDelta
   final List<Map<String, dynamic>>? _sceneUnits;
-// CloudDelta document ID for memoDelta
   @override
   List<Map<String, dynamic>>? get sceneUnits {
     final value = _sceneUnits;
@@ -424,8 +415,6 @@ class _CloudMangaPage implements CloudMangaPage {
     return EqualUnmodifiableListView(value);
   }
 
-// List of {dialoguesDeltaId, stageDirectionDeltaId}
-// Legacy fields (read-only, for migration)
   @override
   @JsonKey(includeToJson: false)
   final String? stageDirectionDeltaId;

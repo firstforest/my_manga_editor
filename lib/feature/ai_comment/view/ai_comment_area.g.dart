@@ -10,12 +10,12 @@ part of 'ai_comment_area.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(aiRepository)
-const aiRepositoryProvider = AiRepositoryProvider._();
+final aiRepositoryProvider = AiRepositoryProvider._();
 
 final class AiRepositoryProvider
     extends $FunctionalProvider<AiRepository, AiRepository, AiRepository>
     with $Provider<AiRepository> {
-  const AiRepositoryProvider._()
+  AiRepositoryProvider._()
       : super(
           from: null,
           argument: null,
@@ -51,12 +51,12 @@ final class AiRepositoryProvider
 String _$aiRepositoryHash() => r'1b622ca49b99358a79c67f521ccd25b0252a8ef8';
 
 @ProviderFor(mangaDescription)
-const mangaDescriptionProvider = MangaDescriptionFamily._();
+final mangaDescriptionProvider = MangaDescriptionFamily._();
 
 final class MangaDescriptionProvider
     extends $FunctionalProvider<AsyncValue<String>, String, FutureOr<String>>
     with $FutureModifier<String>, $FutureProvider<String> {
-  const MangaDescriptionProvider._(
+  MangaDescriptionProvider._(
       {required MangaDescriptionFamily super.from,
       required MangaId super.argument})
       : super(
@@ -106,7 +106,7 @@ String _$mangaDescriptionHash() => r'af379cc6a3925f9f2d123e0fc8dfa9f2130970c0';
 
 final class MangaDescriptionFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<String>, MangaId> {
-  const MangaDescriptionFamily._()
+  MangaDescriptionFamily._()
       : super(
           retry: null,
           name: r'mangaDescriptionProvider',
@@ -125,11 +125,11 @@ final class MangaDescriptionFamily extends $Family
 }
 
 @ProviderFor(AiCommentList)
-const aiCommentListProvider = AiCommentListFamily._();
+final aiCommentListProvider = AiCommentListFamily._();
 
 final class AiCommentListProvider
     extends $NotifierProvider<AiCommentList, List<AiComment>> {
-  const AiCommentListProvider._(
+  AiCommentListProvider._(
       {required AiCommentListFamily super.from,
       required MangaId super.argument})
       : super(
@@ -179,7 +179,7 @@ final class AiCommentListFamily extends $Family
     with
         $ClassFamilyOverride<AiCommentList, List<AiComment>, List<AiComment>,
             List<AiComment>, MangaId> {
-  const AiCommentListFamily._()
+  AiCommentListFamily._()
       : super(
           retry: null,
           name: r'aiCommentListProvider',
@@ -206,16 +206,17 @@ abstract class _$AiCommentList extends $Notifier<List<AiComment>> {
   );
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build(
-      _$args,
-    );
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<AiComment>, List<AiComment>>;
     final element = ref.element as $ClassProviderElement<
         AnyNotifier<List<AiComment>, List<AiComment>>,
         List<AiComment>,
         Object?,
         Object?>;
-    element.handleValue(ref, created);
+    return element.handleCreate(
+        ref,
+        () => build(
+              _$args,
+            ));
   }
 }

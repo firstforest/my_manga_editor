@@ -10,12 +10,12 @@ part of 'manga_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(allMangaList)
-const allMangaListProvider = AllMangaListProvider._();
+final allMangaListProvider = AllMangaListProvider._();
 
 final class AllMangaListProvider extends $FunctionalProvider<
         AsyncValue<List<Manga>>, List<Manga>, Stream<List<Manga>>>
     with $FutureModifier<List<Manga>>, $StreamProvider<List<Manga>> {
-  const AllMangaListProvider._()
+  AllMangaListProvider._()
       : super(
           from: null,
           argument: null,
@@ -44,7 +44,7 @@ final class AllMangaListProvider extends $FunctionalProvider<
 String _$allMangaListHash() => r'5f074610a4e477f0f97b8e41b457128d81c2be2d';
 
 @ProviderFor(mangaPageIdList)
-const mangaPageIdListProvider = MangaPageIdListFamily._();
+final mangaPageIdListProvider = MangaPageIdListFamily._();
 
 final class MangaPageIdListProvider extends $FunctionalProvider<
         AsyncValue<List<MangaPageId>>,
@@ -53,7 +53,7 @@ final class MangaPageIdListProvider extends $FunctionalProvider<
     with
         $FutureModifier<List<MangaPageId>>,
         $StreamProvider<List<MangaPageId>> {
-  const MangaPageIdListProvider._(
+  MangaPageIdListProvider._(
       {required MangaPageIdListFamily super.from,
       required MangaId super.argument})
       : super(
@@ -104,7 +104,7 @@ String _$mangaPageIdListHash() => r'f1bfa90b042b6b7553332844e1d271e4119251dd';
 
 final class MangaPageIdListFamily extends $Family
     with $FunctionalFamilyOverride<Stream<List<MangaPageId>>, MangaId> {
-  const MangaPageIdListFamily._()
+  MangaPageIdListFamily._()
       : super(
           retry: null,
           name: r'mangaPageIdListProvider',
@@ -123,12 +123,12 @@ final class MangaPageIdListFamily extends $Family
 }
 
 @ProviderFor(onlineStatus)
-const onlineStatusProvider = OnlineStatusProvider._();
+final onlineStatusProvider = OnlineStatusProvider._();
 
 final class OnlineStatusProvider
     extends $FunctionalProvider<AsyncValue<bool>, bool, Stream<bool>>
     with $FutureModifier<bool>, $StreamProvider<bool> {
-  const OnlineStatusProvider._()
+  OnlineStatusProvider._()
       : super(
           from: null,
           argument: null,
@@ -156,11 +156,11 @@ final class OnlineStatusProvider
 String _$onlineStatusHash() => r'2ebc01d21f5bc1ecc40bc7e89f9dfd6cd17c12b5';
 
 @ProviderFor(MangaNotifier)
-const mangaProvider = MangaNotifierFamily._();
+final mangaProvider = MangaNotifierFamily._();
 
 final class MangaNotifierProvider
     extends $StreamNotifierProvider<MangaNotifier, Manga?> {
-  const MangaNotifierProvider._(
+  MangaNotifierProvider._(
       {required MangaNotifierFamily super.from,
       required MangaId super.argument})
       : super(
@@ -202,7 +202,7 @@ final class MangaNotifierFamily extends $Family
     with
         $ClassFamilyOverride<MangaNotifier, AsyncValue<Manga?>, Manga?,
             Stream<Manga?>, MangaId> {
-  const MangaNotifierFamily._()
+  MangaNotifierFamily._()
       : super(
           retry: null,
           name: r'mangaProvider',
@@ -229,26 +229,27 @@ abstract class _$MangaNotifier extends $StreamNotifier<Manga?> {
   );
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build(
-      _$args,
-    );
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<Manga?>, Manga?>;
     final element = ref.element as $ClassProviderElement<
         AnyNotifier<AsyncValue<Manga?>, Manga?>,
         AsyncValue<Manga?>,
         Object?,
         Object?>;
-    element.handleValue(ref, created);
+    return element.handleCreate(
+        ref,
+        () => build(
+              _$args,
+            ));
   }
 }
 
 @ProviderFor(MangaPageNotifier)
-const mangaPageProvider = MangaPageNotifierFamily._();
+final mangaPageProvider = MangaPageNotifierFamily._();
 
 final class MangaPageNotifierProvider
     extends $StreamNotifierProvider<MangaPageNotifier, MangaPage> {
-  const MangaPageNotifierProvider._(
+  MangaPageNotifierProvider._(
       {required MangaPageNotifierFamily super.from,
       required MangaPageId super.argument})
       : super(
@@ -290,7 +291,7 @@ final class MangaPageNotifierFamily extends $Family
     with
         $ClassFamilyOverride<MangaPageNotifier, AsyncValue<MangaPage>,
             MangaPage, Stream<MangaPage>, MangaPageId> {
-  const MangaPageNotifierFamily._()
+  MangaPageNotifierFamily._()
       : super(
           retry: null,
           name: r'mangaPageProvider',
@@ -317,26 +318,27 @@ abstract class _$MangaPageNotifier extends $StreamNotifier<MangaPage> {
   );
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build(
-      _$args,
-    );
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<MangaPage>, MangaPage>;
     final element = ref.element as $ClassProviderElement<
         AnyNotifier<AsyncValue<MangaPage>, MangaPage>,
         AsyncValue<MangaPage>,
         Object?,
         Object?>;
-    element.handleValue(ref, created);
+    return element.handleCreate(
+        ref,
+        () => build(
+              _$args,
+            ));
   }
 }
 
 @ProviderFor(DeltaNotifier)
-const deltaProvider = DeltaNotifierFamily._();
+final deltaProvider = DeltaNotifierFamily._();
 
 final class DeltaNotifierProvider
     extends $AsyncNotifierProvider<DeltaNotifier, Delta?> {
-  const DeltaNotifierProvider._(
+  DeltaNotifierProvider._(
       {required DeltaNotifierFamily super.from,
       required (
         MangaId,
@@ -389,7 +391,7 @@ final class DeltaNotifierFamily extends $Family
               MangaId,
               DeltaId,
             )> {
-  const DeltaNotifierFamily._()
+  DeltaNotifierFamily._()
       : super(
           retry: null,
           name: r'deltaProvider',
@@ -425,17 +427,18 @@ abstract class _$DeltaNotifier extends $AsyncNotifier<Delta?> {
   );
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build(
-      _$args.$1,
-      _$args.$2,
-    );
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<Delta?>, Delta?>;
     final element = ref.element as $ClassProviderElement<
         AnyNotifier<AsyncValue<Delta?>, Delta?>,
         AsyncValue<Delta?>,
         Object?,
         Object?>;
-    element.handleValue(ref, created);
+    return element.handleCreate(
+        ref,
+        () => build(
+              _$args.$1,
+              _$args.$2,
+            ));
   }
 }

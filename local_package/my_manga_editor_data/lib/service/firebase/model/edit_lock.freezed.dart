@@ -14,9 +14,9 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$EditLock {
-  String get lockedBy; // User UID who holds the lock
-  DateTime get lockedAt; // Lock acquisition time
-  DateTime get expiresAt; // Lock expiration time (TTL)
+  String get lockedBy;
+  DateTime get lockedAt;
+  DateTime get expiresAt;
   String get deviceId;
 
   /// Create a copy of EditLock
@@ -284,13 +284,10 @@ class _EditLock implements EditLock {
 
   @override
   final String lockedBy;
-// User UID who holds the lock
   @override
   final DateTime lockedAt;
-// Lock acquisition time
   @override
   final DateTime expiresAt;
-// Lock expiration time (TTL)
   @override
   final String deviceId;
 

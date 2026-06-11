@@ -11,7 +11,7 @@ part of 'lock_manager.dart';
 /// Manages edit locks for manga documents to prevent concurrent modifications
 
 @ProviderFor(lockManager)
-const lockManagerProvider = LockManagerProvider._();
+final lockManagerProvider = LockManagerProvider._();
 
 /// Manages edit locks for manga documents to prevent concurrent modifications
 
@@ -19,7 +19,7 @@ final class LockManagerProvider
     extends $FunctionalProvider<LockManager, LockManager, LockManager>
     with $Provider<LockManager> {
   /// Manages edit locks for manga documents to prevent concurrent modifications
-  const LockManagerProvider._()
+  LockManagerProvider._()
       : super(
           from: null,
           argument: null,

@@ -10,11 +10,11 @@ part of 'manga_page_view_model.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(MangaPageViewModelNotifier)
-const mangaPageViewModelProvider = MangaPageViewModelNotifierProvider._();
+final mangaPageViewModelProvider = MangaPageViewModelNotifierProvider._();
 
 final class MangaPageViewModelNotifierProvider extends $AsyncNotifierProvider<
     MangaPageViewModelNotifier, MangaPageViewModel> {
-  const MangaPageViewModelNotifierProvider._()
+  MangaPageViewModelNotifierProvider._()
       : super(
           from: null,
           argument: null,
@@ -41,8 +41,7 @@ abstract class _$MangaPageViewModelNotifier
   FutureOr<MangaPageViewModel> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<MangaPageViewModel>, MangaPageViewModel>;
     final element = ref.element as $ClassProviderElement<
@@ -50,6 +49,6 @@ abstract class _$MangaPageViewModelNotifier
         AsyncValue<MangaPageViewModel>,
         Object?,
         Object?>;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

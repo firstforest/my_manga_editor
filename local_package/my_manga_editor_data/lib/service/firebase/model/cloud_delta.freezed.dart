@@ -14,14 +14,12 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$CloudDelta {
-  String get id; // Firestore document ID
-  String get mangaId; // Parent manga ID
-  List<dynamic> get ops; // Quill Delta operations
-  String
-      get fieldName; // 'ideaMemo', 'memoDelta', 'stageDirectionDelta', 'dialoguesDelta'
-  String?
-      get pageId; // Page ID if this delta belongs to a page (null for ideaMemo)
-  DateTime get createdAt; // Creation timestamp
+  String get id;
+  String get mangaId;
+  List<dynamic> get ops;
+  String get fieldName;
+  String? get pageId;
+  DateTime get createdAt;
   DateTime get updatedAt;
 
   /// Create a copy of CloudDelta
@@ -339,12 +337,9 @@ class _CloudDelta implements CloudDelta {
 
   @override
   final String id;
-// Firestore document ID
   @override
   final String mangaId;
-// Parent manga ID
   final List<dynamic> _ops;
-// Parent manga ID
   @override
   List<dynamic> get ops {
     if (_ops is EqualUnmodifiableListView) return _ops;
@@ -352,16 +347,12 @@ class _CloudDelta implements CloudDelta {
     return EqualUnmodifiableListView(_ops);
   }
 
-// Quill Delta operations
   @override
   final String fieldName;
-// 'ideaMemo', 'memoDelta', 'stageDirectionDelta', 'dialoguesDelta'
   @override
   final String? pageId;
-// Page ID if this delta belongs to a page (null for ideaMemo)
   @override
   final DateTime createdAt;
-// Creation timestamp
   @override
   final DateTime updatedAt;
 

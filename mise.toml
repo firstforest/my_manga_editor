@@ -1,5 +1,5 @@
 [tools]
-flutter = "3.32.4"
+flutter = "3.44.1"
 ruby = "latest"
 
 [tasks.gen]

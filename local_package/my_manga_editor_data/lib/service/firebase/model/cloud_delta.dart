@@ -23,9 +23,15 @@ abstract class CloudDelta with _$CloudDelta {
 }
 
 extension CloudDeltaExt on CloudDelta {
+  /// 現行スキーマバージョン。
+  /// スキーマ変更時はインクリメントし、fromFirestore に移行ステップを追記する。
+  /// 過去の移行ステップは編集しない (.claude/rules/data-layer.md 参照)。
+  static const schemaVersion = 1;
+
   // Convert CloudDelta to Firestore document data
   Map<String, dynamic> toFirestore() {
     return {
+      'schemaVersion': schemaVersion,
       'ops': ops,
       'fieldName': fieldName,
       if (pageId != null) 'pageId': pageId,
@@ -40,6 +46,8 @@ extension CloudDeltaExt on CloudDelta {
     String mangaId,
   ) {
     final data = snapshot.data()!;
+    // schemaVersion は現在 v1 のみ (なし = v1)。
+    // バージョン追加時はここに単方向アップグレードチェーンを追記する。
     return CloudDelta(
       id: snapshot.id,
       mangaId: mangaId,

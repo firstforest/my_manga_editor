@@ -24,9 +24,15 @@ abstract class CloudManga with _$CloudManga {
 }
 
 extension CloudMangaExt on CloudManga {
+  /// 現行スキーマバージョン。
+  /// スキーマ変更時はインクリメントし、fromFirestore に移行ステップを追記する。
+  /// 過去の移行ステップは編集しない (.claude/rules/data-layer.md 参照)。
+  static const schemaVersion = 1;
+
   // Convert CloudManga to Firestore document data
   Map<String, dynamic> toFirestore() {
     return {
+      'schemaVersion': schemaVersion,
       'userId': userId,
       'name': name,
       'startPageDirection': startPageDirection,
@@ -43,6 +49,8 @@ extension CloudMangaExt on CloudManga {
     DocumentSnapshot<Map<String, dynamic>> snapshot,
   ) {
     final data = snapshot.data()!;
+    // schemaVersion は現在 v1 のみ (なし = v1)。
+    // バージョン追加時はここに単方向アップグレードチェーンを追記する。
     return CloudManga(
       id: snapshot.id,
       userId: data['userId'] as String,

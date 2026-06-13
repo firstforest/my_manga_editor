@@ -24,8 +24,16 @@ abstract class CloudMangaPage with _$CloudMangaPage {
 }
 
 extension CloudMangaPageExt on CloudMangaPage {
+  /// 現行スキーマバージョン。
+  /// スキーマ変更時はインクリメントし、fromFirestore に移行ステップを追記する。
+  /// 過去の移行ステップは編集しない (.claude/rules/data-layer.md 参照)。
+  ///
+  /// 版履歴: docs/design/data-model.md の「スキーマバージョン履歴」
+  static const schemaVersion = 2;
+
   Map<String, dynamic> toFirestore() {
     return {
+      'schemaVersion': schemaVersion,
       'pageIndex': pageIndex,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
@@ -38,22 +46,13 @@ extension CloudMangaPageExt on CloudMangaPage {
     DocumentSnapshot<Map<String, dynamic>> snapshot,
     String mangaId,
   ) {
-    final data = snapshot.data()!;
+    var data = snapshot.data()!;
 
-    // Lazy migration: convert legacy fields to sceneUnits
-    List<Map<String, dynamic>>? sceneUnits;
-    if (data['sceneUnits'] != null) {
-      sceneUnits = (data['sceneUnits'] as List<dynamic>)
-          .map((e) => Map<String, dynamic>.from(e as Map))
-          .toList();
-    } else if (data['dialoguesDeltaId'] != null ||
-        data['stageDirectionDeltaId'] != null) {
-      sceneUnits = [
-        {
-          'dialoguesDeltaId': data['dialoguesDeltaId'] as String?,
-          'stageDirectionDeltaId': data['stageDirectionDeltaId'] as String?,
-        }
-      ];
+    // 単方向アップグレードチェーン: 旧版を読み込み時に段階的に最新版へ変換する
+    // (lazy migration)。schemaVersion フィールドがないドキュメントは v1 とみなす。
+    final version = data['schemaVersion'] as int? ?? 1;
+    if (version < 2) {
+      data = _migrateV1ToV2(data);
     }
 
     return CloudMangaPage(
@@ -63,7 +62,32 @@ extension CloudMangaPageExt on CloudMangaPage {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
       memoDeltaId: data['memoDeltaId'] as String?,
-      sceneUnits: sceneUnits,
+      sceneUnits: (data['sceneUnits'] as List<dynamic>?)
+          ?.map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
     );
+  }
+
+  /// v1 → v2: トップレベルの dialoguesDeltaId / stageDirectionDeltaId を
+  /// sceneUnits 配列 1 要素に変換する。
+  /// schemaVersion 導入前に書かれた v2 形式 (sceneUnits あり・schemaVersion なし)
+  /// はそのまま通す。
+  static Map<String, dynamic> _migrateV1ToV2(Map<String, dynamic> data) {
+    if (data['sceneUnits'] != null) {
+      return data;
+    }
+    if (data['dialoguesDeltaId'] == null &&
+        data['stageDirectionDeltaId'] == null) {
+      return data;
+    }
+    return {
+      ...data,
+      'sceneUnits': [
+        {
+          'dialoguesDeltaId': data['dialoguesDeltaId'] as String?,
+          'stageDirectionDeltaId': data['stageDirectionDeltaId'] as String?,
+        }
+      ],
+    };
   }
 }

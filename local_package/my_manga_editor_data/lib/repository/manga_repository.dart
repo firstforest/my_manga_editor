@@ -538,6 +538,7 @@ class MangaRepository {
       existingUnits.add(sceneUnit);
 
       await _firebaseService.updateMangaPage(mangaId.id, pageId.id, {
+        'schemaVersion': CloudMangaPageExt.schemaVersion,
         'sceneUnits': existingUnits,
         'updatedAt': DateTime.now(),
       });
@@ -582,6 +583,7 @@ class MangaRepository {
       }
 
       await _firebaseService.updateMangaPage(mangaId.id, pageId.id, {
+        'schemaVersion': CloudMangaPageExt.schemaVersion,
         'sceneUnits': existingUnits,
         'updatedAt': DateTime.now(),
       });

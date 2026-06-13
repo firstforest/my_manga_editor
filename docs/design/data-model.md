@@ -75,6 +75,7 @@ Firestore `mangas/{mangaId}` ドキュメント。
 
 | フィールド | 型 | 説明 |
 |---|---|---|
+| schemaVersion | `int` | スキーマバージョン (なし = 1)。現行: 1 |
 | id | `String` | ドキュメント ID |
 | userId | `String` | 所有者 UID |
 | name | `String` | 作品名 |
@@ -91,6 +92,7 @@ Firestore `mangas/{mangaId}/pages/{pageId}` ドキュメント。
 
 | フィールド | 型 | 説明 |
 |---|---|---|
+| schemaVersion | `int` | スキーマバージョン (なし = 1)。現行: 2 |
 | id | `String` | ドキュメント ID |
 | mangaId | `String` | 親 Manga ID |
 | pageIndex | `int` | ページ順序 (0始まり) |
@@ -107,6 +109,7 @@ Firestore `mangas/{mangaId}/deltas/{deltaId}` ドキュメント。Flutter Quill
 
 | フィールド | 型 | 説明 |
 |---|---|---|
+| schemaVersion | `int` | スキーマバージョン (なし = 1)。現行: 1 |
 | id | `String` | ドキュメント ID |
 | mangaId | `String` | 親 Manga ID |
 | ops | `List<dynamic>` | Quill Delta operations |
@@ -129,6 +132,28 @@ CloudManga に埋め込まれる同時編集防止用ロック。
 - ロック有効期間: 60秒
 - ハートビート間隔: 30秒
 - `isExpired` / `isOwnedBy(userId)` で状態確認
+
+## スキーマバージョンと移行
+
+各 Cloud モデルはドキュメントに `schemaVersion` フィールドを持つ（フィールドなし = v1）。
+読み込みは `fromFirestore` 内の**単方向アップグレードチェーン**で最新版へ変換する（lazy migration）。
+書き込みは常に最新版の形式 + 現行の `schemaVersion` で行う。
+
+運用ルール（詳細は [.claude/rules/data-layer.md](../../.claude/rules/data-layer.md) と
+[docs/notes/firestore-schema-migration.md](../notes/firestore-schema-migration.md) を参照）:
+
+- 過去の移行ステップは編集せず、新しいステップを追記するだけ
+- expand-contract: 旧フィールドは旧クライアントの消滅を確認するまで削除しない
+- スキーマ変更時は `test/data_migration/fixtures/` に変更前の版の fixture を追加する
+
+### スキーマバージョン履歴
+
+| モデル | 版 | 変更内容 | 移行方法 | 旧フィールド削除 (contract) |
+|---|---|---|---|---|
+| CloudManga | 1 | 初版 | — | — |
+| CloudMangaPage | 1 | 初版 (`stageDirectionDeltaId` / `dialoguesDeltaId` をトップレベルに保持) | — | — |
+| CloudMangaPage | 2 | SceneUnit 導入。セリフ+ト書きのペアを `sceneUnits` 配列に保持 | 読み込み時に旧2フィールドを `sceneUnits` 1要素へ変換 (`_migrateV1ToV2`) | 未定 (v1 クライアント消滅後) |
+| CloudDelta | 1 | 初版 | — | — |
 
 ## エンティティ関係図
 

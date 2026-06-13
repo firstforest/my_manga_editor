@@ -1,0 +1,20 @@
+{
+  "description": "v1: main (SceneUnit導入前) が書いたページ。旧フィールドをトップレベルに持つ",
+  "document": {
+    "pageIndex": 0,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-01-01T00:00:00Z",
+    "memoDeltaId": "memo-1",
+    "stageDirectionDeltaId": "stage-1",
+    "dialoguesDeltaId": "dialogue-1"
+  },
+  "expected": {
+    "memoDeltaId": "memo-1",
+    "sceneUnits": [
+      {
+        "dialoguesDeltaId": "dialogue-1",
+        "stageDirectionDeltaId": "stage-1"
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "description": "v1: delta 参照を一切持たないページ (作成直後の中間状態)。空の sceneUnits になる",
+  "document": {
+    "pageIndex": 2,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-01-01T00:00:00Z"
+  },
+  "expected": {
+    "memoDeltaId": "",
+    "sceneUnits": []
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "description": "v2 (schemaVersion 導入前): sceneUnits を持つが schemaVersion フィールドがない。expand 期の残留旧フィールドも持つ",
+  "document": {
+    "pageIndex": 0,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-01-01T00:00:00Z",
+    "memoDeltaId": "memo-1",
+    "stageDirectionDeltaId": "stage-1",
+    "dialoguesDeltaId": "dialogue-1",
+    "sceneUnits": [
+      {
+        "dialoguesDeltaId": "dialogue-1",
+        "stageDirectionDeltaId": "stage-1"
+      },
+      {
+        "dialoguesDeltaId": "dialogue-2",
+        "stageDirectionDeltaId": "stage-2"
+      }
+    ]
+  },
+  "expected": {
+    "memoDeltaId": "memo-1",
+    "sceneUnits": [
+      {
+        "dialoguesDeltaId": "dialogue-1",
+        "stageDirectionDeltaId": "stage-1"
+      },
+      {
+        "dialoguesDeltaId": "dialogue-2",
+        "stageDirectionDeltaId": "stage-2"
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "description": "v2 (現行): schemaVersion: 2 と sceneUnits を持つページ",
+  "document": {
+    "schemaVersion": 2,
+    "pageIndex": 0,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-01-01T00:00:00Z",
+    "memoDeltaId": "memo-1",
+    "sceneUnits": [
+      {
+        "dialoguesDeltaId": "dialogue-1",
+        "stageDirectionDeltaId": "stage-1"
+      }
+    ]
+  },
+  "expected": {
+    "memoDeltaId": "memo-1",
+    "sceneUnits": [
+      {
+        "dialoguesDeltaId": "dialogue-1",
+        "stageDirectionDeltaId": "stage-1"
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "description": "v1: 旧フィールドが dialoguesDeltaId のみのページ。欠けた側は空文字になる",
+  "document": {
+    "pageIndex": 1,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-01-01T00:00:00Z",
+    "memoDeltaId": "memo-1",
+    "dialoguesDeltaId": "dialogue-1"
+  },
+  "expected": {
+    "memoDeltaId": "memo-1",
+    "sceneUnits": [
+      {
+        "dialoguesDeltaId": "dialogue-1",
+        "stageDirectionDeltaId": ""
+      }
+    ]
+  }
+}

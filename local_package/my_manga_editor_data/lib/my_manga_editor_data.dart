@@ -1,9 +1,11 @@
 // Models
+export 'model/app_config.dart';
 export 'model/manga.dart';
 export 'service/firebase/model/edit_lock.dart';
 
 // Repositories
 export 'repository/ai_repository.dart';
+export 'repository/app_config_repository.dart';
 export 'repository/auth_repository.dart';
 export 'repository/exceptions.dart';
 export 'repository/manga_repository.dart';

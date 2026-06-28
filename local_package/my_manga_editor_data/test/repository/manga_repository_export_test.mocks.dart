@@ -5,19 +5,21 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
 
-import 'package:firebase_auth/firebase_auth.dart' as _i9;
+import 'package:firebase_auth/firebase_auth.dart' as _i10;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i6;
-import 'package:my_manga_editor_data/service/connectivity_service.dart' as _i10;
-import 'package:my_manga_editor_data/service/firebase/auth_service.dart' as _i8;
+import 'package:mockito/src/dummies.dart' as _i7;
+import 'package:my_manga_editor_data/service/connectivity_service.dart' as _i11;
+import 'package:my_manga_editor_data/service/firebase/auth_service.dart' as _i9;
 import 'package:my_manga_editor_data/service/firebase/firebase_service.dart'
     as _i2;
-import 'package:my_manga_editor_data/service/firebase/model/cloud_delta.dart'
-    as _i7;
-import 'package:my_manga_editor_data/service/firebase/model/cloud_manga.dart'
+import 'package:my_manga_editor_data/service/firebase/model/cloud_app_config.dart'
     as _i4;
-import 'package:my_manga_editor_data/service/firebase/model/cloud_manga_page.dart'
+import 'package:my_manga_editor_data/service/firebase/model/cloud_delta.dart'
+    as _i8;
+import 'package:my_manga_editor_data/service/firebase/model/cloud_manga.dart'
     as _i5;
+import 'package:my_manga_editor_data/service/firebase/model/cloud_manga_page.dart'
+    as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -50,7 +52,17 @@ class _FakeFirebaseBatchWrapper_0 extends _i1.SmartFake
 /// See the documentation for Mockito's code generation for more information.
 class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
   @override
-  _i3.Future<void> uploadManga(_i4.CloudManga? manga) => (super.noSuchMethod(
+  _i3.Stream<_i4.CloudAppConfig?> watchAppConfig() => (super.noSuchMethod(
+        Invocation.method(
+          #watchAppConfig,
+          [],
+        ),
+        returnValue: _i3.Stream<_i4.CloudAppConfig?>.empty(),
+        returnValueForMissingStub: _i3.Stream<_i4.CloudAppConfig?>.empty(),
+      ) as _i3.Stream<_i4.CloudAppConfig?>);
+
+  @override
+  _i3.Future<void> uploadManga(_i5.CloudManga? manga) => (super.noSuchMethod(
         Invocation.method(
           #uploadManga,
           [manga],
@@ -60,7 +72,7 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
       ) as _i3.Future<void>);
 
   @override
-  _i3.Future<void> uploadMangaPage(_i5.CloudMangaPage? page) =>
+  _i3.Future<void> uploadMangaPage(_i6.CloudMangaPage? page) =>
       (super.noSuchMethod(
         Invocation.method(
           #uploadMangaPage,
@@ -98,42 +110,42 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
       ) as _i3.Future<void>);
 
   @override
-  _i3.Future<List<_i4.CloudManga>> fetchUserMangas() => (super.noSuchMethod(
+  _i3.Future<List<_i5.CloudManga>> fetchUserMangas() => (super.noSuchMethod(
         Invocation.method(
           #fetchUserMangas,
           [],
         ),
-        returnValue: _i3.Future<List<_i4.CloudManga>>.value(<_i4.CloudManga>[]),
+        returnValue: _i3.Future<List<_i5.CloudManga>>.value(<_i5.CloudManga>[]),
         returnValueForMissingStub:
-            _i3.Future<List<_i4.CloudManga>>.value(<_i4.CloudManga>[]),
-      ) as _i3.Future<List<_i4.CloudManga>>);
+            _i3.Future<List<_i5.CloudManga>>.value(<_i5.CloudManga>[]),
+      ) as _i3.Future<List<_i5.CloudManga>>);
 
   @override
-  _i3.Future<List<_i5.CloudMangaPage>> fetchMangaPages(String? mangaId) =>
+  _i3.Future<List<_i6.CloudMangaPage>> fetchMangaPages(String? mangaId) =>
       (super.noSuchMethod(
         Invocation.method(
           #fetchMangaPages,
           [mangaId],
         ),
         returnValue:
-            _i3.Future<List<_i5.CloudMangaPage>>.value(<_i5.CloudMangaPage>[]),
+            _i3.Future<List<_i6.CloudMangaPage>>.value(<_i6.CloudMangaPage>[]),
         returnValueForMissingStub:
-            _i3.Future<List<_i5.CloudMangaPage>>.value(<_i5.CloudMangaPage>[]),
-      ) as _i3.Future<List<_i5.CloudMangaPage>>);
+            _i3.Future<List<_i6.CloudMangaPage>>.value(<_i6.CloudMangaPage>[]),
+      ) as _i3.Future<List<_i6.CloudMangaPage>>);
 
   @override
-  _i3.Future<_i4.CloudManga?> fetchManga(String? mangaId) =>
+  _i3.Future<_i5.CloudManga?> fetchManga(String? mangaId) =>
       (super.noSuchMethod(
         Invocation.method(
           #fetchManga,
           [mangaId],
         ),
-        returnValue: _i3.Future<_i4.CloudManga?>.value(),
-        returnValueForMissingStub: _i3.Future<_i4.CloudManga?>.value(),
-      ) as _i3.Future<_i4.CloudManga?>);
+        returnValue: _i3.Future<_i5.CloudManga?>.value(),
+        returnValueForMissingStub: _i3.Future<_i5.CloudManga?>.value(),
+      ) as _i3.Future<_i5.CloudManga?>);
 
   @override
-  _i3.Future<_i5.CloudMangaPage?> fetchMangaPage(
+  _i3.Future<_i6.CloudMangaPage?> fetchMangaPage(
     String? mangaId,
     String? pageId,
   ) =>
@@ -145,17 +157,17 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
             pageId,
           ],
         ),
-        returnValue: _i3.Future<_i5.CloudMangaPage?>.value(),
-        returnValueForMissingStub: _i3.Future<_i5.CloudMangaPage?>.value(),
-      ) as _i3.Future<_i5.CloudMangaPage?>);
+        returnValue: _i3.Future<_i6.CloudMangaPage?>.value(),
+        returnValueForMissingStub: _i3.Future<_i6.CloudMangaPage?>.value(),
+      ) as _i3.Future<_i6.CloudMangaPage?>);
 
   @override
-  _i3.Future<String> createManga(_i4.CloudManga? manga) => (super.noSuchMethod(
+  _i3.Future<String> createManga(_i5.CloudManga? manga) => (super.noSuchMethod(
         Invocation.method(
           #createManga,
           [manga],
         ),
-        returnValue: _i3.Future<String>.value(_i6.dummyValue<String>(
+        returnValue: _i3.Future<String>.value(_i7.dummyValue<String>(
           this,
           Invocation.method(
             #createManga,
@@ -163,7 +175,7 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
           ),
         )),
         returnValueForMissingStub:
-            _i3.Future<String>.value(_i6.dummyValue<String>(
+            _i3.Future<String>.value(_i7.dummyValue<String>(
           this,
           Invocation.method(
             #createManga,
@@ -175,7 +187,7 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
   @override
   _i3.Future<String> createMangaPage(
     String? mangaId,
-    _i5.CloudMangaPage? page,
+    _i6.CloudMangaPage? page,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -185,7 +197,7 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
             page,
           ],
         ),
-        returnValue: _i3.Future<String>.value(_i6.dummyValue<String>(
+        returnValue: _i3.Future<String>.value(_i7.dummyValue<String>(
           this,
           Invocation.method(
             #createMangaPage,
@@ -196,7 +208,7 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
           ),
         )),
         returnValueForMissingStub:
-            _i3.Future<String>.value(_i6.dummyValue<String>(
+            _i3.Future<String>.value(_i7.dummyValue<String>(
           this,
           Invocation.method(
             #createMangaPage,
@@ -245,40 +257,40 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
       ) as _i3.Future<void>);
 
   @override
-  _i3.Stream<_i4.CloudManga?> watchManga(String? mangaId) =>
+  _i3.Stream<_i5.CloudManga?> watchManga(String? mangaId) =>
       (super.noSuchMethod(
         Invocation.method(
           #watchManga,
           [mangaId],
         ),
-        returnValue: _i3.Stream<_i4.CloudManga?>.empty(),
-        returnValueForMissingStub: _i3.Stream<_i4.CloudManga?>.empty(),
-      ) as _i3.Stream<_i4.CloudManga?>);
+        returnValue: _i3.Stream<_i5.CloudManga?>.empty(),
+        returnValueForMissingStub: _i3.Stream<_i5.CloudManga?>.empty(),
+      ) as _i3.Stream<_i5.CloudManga?>);
 
   @override
-  _i3.Stream<List<_i4.CloudManga>> watchAllMangas(String? userId) =>
+  _i3.Stream<List<_i5.CloudManga>> watchAllMangas(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #watchAllMangas,
           [userId],
         ),
-        returnValue: _i3.Stream<List<_i4.CloudManga>>.empty(),
-        returnValueForMissingStub: _i3.Stream<List<_i4.CloudManga>>.empty(),
-      ) as _i3.Stream<List<_i4.CloudManga>>);
+        returnValue: _i3.Stream<List<_i5.CloudManga>>.empty(),
+        returnValueForMissingStub: _i3.Stream<List<_i5.CloudManga>>.empty(),
+      ) as _i3.Stream<List<_i5.CloudManga>>);
 
   @override
-  _i3.Stream<_i5.CloudMangaPage?> watchMangaPage(String? pageId) =>
+  _i3.Stream<_i6.CloudMangaPage?> watchMangaPage(String? pageId) =>
       (super.noSuchMethod(
         Invocation.method(
           #watchMangaPage,
           [pageId],
         ),
-        returnValue: _i3.Stream<_i5.CloudMangaPage?>.empty(),
-        returnValueForMissingStub: _i3.Stream<_i5.CloudMangaPage?>.empty(),
-      ) as _i3.Stream<_i5.CloudMangaPage?>);
+        returnValue: _i3.Stream<_i6.CloudMangaPage?>.empty(),
+        returnValueForMissingStub: _i3.Stream<_i6.CloudMangaPage?>.empty(),
+      ) as _i3.Stream<_i6.CloudMangaPage?>);
 
   @override
-  _i3.Stream<_i5.CloudMangaPage?> watchMangaPageWithMangaId(
+  _i3.Stream<_i6.CloudMangaPage?> watchMangaPageWithMangaId(
     String? mangaId,
     String? pageId,
   ) =>
@@ -290,25 +302,25 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
             pageId,
           ],
         ),
-        returnValue: _i3.Stream<_i5.CloudMangaPage?>.empty(),
-        returnValueForMissingStub: _i3.Stream<_i5.CloudMangaPage?>.empty(),
-      ) as _i3.Stream<_i5.CloudMangaPage?>);
+        returnValue: _i3.Stream<_i6.CloudMangaPage?>.empty(),
+        returnValueForMissingStub: _i3.Stream<_i6.CloudMangaPage?>.empty(),
+      ) as _i3.Stream<_i6.CloudMangaPage?>);
 
   @override
-  _i3.Stream<List<_i5.CloudMangaPage>> watchMangaPages(String? mangaId) =>
+  _i3.Stream<List<_i6.CloudMangaPage>> watchMangaPages(String? mangaId) =>
       (super.noSuchMethod(
         Invocation.method(
           #watchMangaPages,
           [mangaId],
         ),
-        returnValue: _i3.Stream<List<_i5.CloudMangaPage>>.empty(),
-        returnValueForMissingStub: _i3.Stream<List<_i5.CloudMangaPage>>.empty(),
-      ) as _i3.Stream<List<_i5.CloudMangaPage>>);
+        returnValue: _i3.Stream<List<_i6.CloudMangaPage>>.empty(),
+        returnValueForMissingStub: _i3.Stream<List<_i6.CloudMangaPage>>.empty(),
+      ) as _i3.Stream<List<_i6.CloudMangaPage>>);
 
   @override
   _i3.Future<String> createDelta(
     String? mangaId,
-    _i7.CloudDelta? delta,
+    _i8.CloudDelta? delta,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -318,7 +330,7 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
             delta,
           ],
         ),
-        returnValue: _i3.Future<String>.value(_i6.dummyValue<String>(
+        returnValue: _i3.Future<String>.value(_i7.dummyValue<String>(
           this,
           Invocation.method(
             #createDelta,
@@ -329,7 +341,7 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
           ),
         )),
         returnValueForMissingStub:
-            _i3.Future<String>.value(_i6.dummyValue<String>(
+            _i3.Future<String>.value(_i7.dummyValue<String>(
           this,
           Invocation.method(
             #createDelta,
@@ -378,19 +390,19 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
       ) as _i3.Future<void>);
 
   @override
-  _i3.Future<List<_i7.CloudDelta>> fetchDeltas(String? mangaId) =>
+  _i3.Future<List<_i8.CloudDelta>> fetchDeltas(String? mangaId) =>
       (super.noSuchMethod(
         Invocation.method(
           #fetchDeltas,
           [mangaId],
         ),
-        returnValue: _i3.Future<List<_i7.CloudDelta>>.value(<_i7.CloudDelta>[]),
+        returnValue: _i3.Future<List<_i8.CloudDelta>>.value(<_i8.CloudDelta>[]),
         returnValueForMissingStub:
-            _i3.Future<List<_i7.CloudDelta>>.value(<_i7.CloudDelta>[]),
-      ) as _i3.Future<List<_i7.CloudDelta>>);
+            _i3.Future<List<_i8.CloudDelta>>.value(<_i8.CloudDelta>[]),
+      ) as _i3.Future<List<_i8.CloudDelta>>);
 
   @override
-  _i3.Future<_i7.CloudDelta?> fetchDelta(
+  _i3.Future<_i8.CloudDelta?> fetchDelta(
     String? mangaId,
     String? deltaId,
   ) =>
@@ -402,12 +414,12 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
             deltaId,
           ],
         ),
-        returnValue: _i3.Future<_i7.CloudDelta?>.value(),
-        returnValueForMissingStub: _i3.Future<_i7.CloudDelta?>.value(),
-      ) as _i3.Future<_i7.CloudDelta?>);
+        returnValue: _i3.Future<_i8.CloudDelta?>.value(),
+        returnValueForMissingStub: _i3.Future<_i8.CloudDelta?>.value(),
+      ) as _i3.Future<_i8.CloudDelta?>);
 
   @override
-  _i3.Stream<_i7.CloudDelta?> watchDelta(
+  _i3.Stream<_i8.CloudDelta?> watchDelta(
     String? mangaId,
     String? deltaId,
   ) =>
@@ -419,20 +431,20 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
             deltaId,
           ],
         ),
-        returnValue: _i3.Stream<_i7.CloudDelta?>.empty(),
-        returnValueForMissingStub: _i3.Stream<_i7.CloudDelta?>.empty(),
-      ) as _i3.Stream<_i7.CloudDelta?>);
+        returnValue: _i3.Stream<_i8.CloudDelta?>.empty(),
+        returnValueForMissingStub: _i3.Stream<_i8.CloudDelta?>.empty(),
+      ) as _i3.Stream<_i8.CloudDelta?>);
 
   @override
-  _i3.Stream<List<_i7.CloudDelta>> watchDeltas(String? mangaId) =>
+  _i3.Stream<List<_i8.CloudDelta>> watchDeltas(String? mangaId) =>
       (super.noSuchMethod(
         Invocation.method(
           #watchDeltas,
           [mangaId],
         ),
-        returnValue: _i3.Stream<List<_i7.CloudDelta>>.empty(),
-        returnValueForMissingStub: _i3.Stream<List<_i7.CloudDelta>>.empty(),
-      ) as _i3.Stream<List<_i7.CloudDelta>>);
+        returnValue: _i3.Stream<List<_i8.CloudDelta>>.empty(),
+        returnValueForMissingStub: _i3.Stream<List<_i8.CloudDelta>>.empty(),
+      ) as _i3.Stream<List<_i8.CloudDelta>>);
 
   @override
   _i2.FirebaseBatchWrapper batch() => (super.noSuchMethod(
@@ -460,13 +472,13 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
 /// A class which mocks [AuthService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAuthService extends _i1.Mock implements _i8.AuthService {
+class MockAuthService extends _i1.Mock implements _i9.AuthService {
   @override
-  _i3.Stream<_i9.User?> get authStateChanges => (super.noSuchMethod(
+  _i3.Stream<_i10.User?> get authStateChanges => (super.noSuchMethod(
         Invocation.getter(#authStateChanges),
-        returnValue: _i3.Stream<_i9.User?>.empty(),
-        returnValueForMissingStub: _i3.Stream<_i9.User?>.empty(),
-      ) as _i3.Stream<_i9.User?>);
+        returnValue: _i3.Stream<_i10.User?>.empty(),
+        returnValueForMissingStub: _i3.Stream<_i10.User?>.empty(),
+      ) as _i3.Stream<_i10.User?>);
 
   @override
   bool get isSignedIn => (super.noSuchMethod(
@@ -486,24 +498,24 @@ class MockAuthService extends _i1.Mock implements _i8.AuthService {
       ) as _i3.Future<void>);
 
   @override
-  _i3.Future<_i9.User?> signInAnonymously() => (super.noSuchMethod(
+  _i3.Future<_i10.User?> signInAnonymously() => (super.noSuchMethod(
         Invocation.method(
           #signInAnonymously,
           [],
         ),
-        returnValue: _i3.Future<_i9.User?>.value(),
-        returnValueForMissingStub: _i3.Future<_i9.User?>.value(),
-      ) as _i3.Future<_i9.User?>);
+        returnValue: _i3.Future<_i10.User?>.value(),
+        returnValueForMissingStub: _i3.Future<_i10.User?>.value(),
+      ) as _i3.Future<_i10.User?>);
 
   @override
-  _i3.Future<_i9.User?> signInWithGoogle() => (super.noSuchMethod(
+  _i3.Future<_i10.User?> signInWithGoogle() => (super.noSuchMethod(
         Invocation.method(
           #signInWithGoogle,
           [],
         ),
-        returnValue: _i3.Future<_i9.User?>.value(),
-        returnValueForMissingStub: _i3.Future<_i9.User?>.value(),
-      ) as _i3.Future<_i9.User?>);
+        returnValue: _i3.Future<_i10.User?>.value(),
+        returnValueForMissingStub: _i3.Future<_i10.User?>.value(),
+      ) as _i3.Future<_i10.User?>);
 
   @override
   _i3.Future<void> signOut() => (super.noSuchMethod(
@@ -520,7 +532,7 @@ class MockAuthService extends _i1.Mock implements _i8.AuthService {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockConnectivityService extends _i1.Mock
-    implements _i10.ConnectivityService {
+    implements _i11.ConnectivityService {
   @override
   _i3.Future<bool> isOnline() => (super.noSuchMethod(
         Invocation.method(

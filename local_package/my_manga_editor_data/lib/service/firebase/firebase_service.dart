@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:my_manga_editor_data/service/firebase/model/cloud_app_config.dart';
 import 'package:my_manga_editor_data/service/firebase/model/cloud_delta.dart';
 import 'package:my_manga_editor_data/service/firebase/model/cloud_manga.dart';
 import 'package:my_manga_editor_data/service/firebase/model/cloud_manga_page.dart';
@@ -32,6 +33,18 @@ class FirebaseService {
   /// Get reference to user's mangas collection
   CollectionReference<Map<String, dynamic>> get _mangasCollection {
     return _firestore.collection('users').doc(_userId).collection('mangas');
+  }
+
+  /// アプリ全体のリモート設定 (`config/app`) を購読する。
+  /// ユーザー認証に依存しないグローバル設定のため、`_userId` は使わない。
+  /// ドキュメントが存在しない場合は null を流す。
+  Stream<CloudAppConfig?> watchAppConfig() {
+    return _firestore
+        .collection('config')
+        .doc('app')
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.exists ? CloudAppConfigExt.fromFirestore(snapshot) : null);
   }
 
   /// Get reference to deltas subcollection of a manga

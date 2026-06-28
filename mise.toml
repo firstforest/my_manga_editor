@@ -2,5 +2,38 @@
 flutter = "3.44.4"
 ruby = "latest"
 
+# 依存解決（ルート / データ層パッケージの両方）
+[tasks.setup]
+run = [
+  "flutter pub get",
+  "cd local_package/my_manga_editor_data && flutter pub get",
+]
+
+# コード生成（ルートパッケージ）
 [tasks.gen]
 run = "dart run build_runner build -d"
+
+# コード生成（データ層パッケージ）
+[tasks.gen-data]
+run = "dart run build_runner build -d"
+dir = "local_package/my_manga_editor_data"
+
+# コード生成（両パッケージ）
+[tasks.gen-all]
+depends = ["gen", "gen-data"]
+
+# 実行（dev: Firebase dev プロジェクト。ENV のデフォルトが dev）
+[tasks.run]
+run = "flutter run"
+
+# 実行（prod: Firebase prod プロジェクト）
+[tasks.run-prod]
+run = "flutter run --dart-define=ENV=prod"
+
+# 静的解析
+[tasks.analyze]
+run = "flutter analyze"
+
+# テスト
+[tasks.test]
+run = "flutter test"

@@ -1,12 +1,15 @@
 [tools]
 flutter = "3.44.4"
 ruby = "latest"
+node = "22"
 
-# 依存解決（ルート / データ層パッケージの両方）
+# 依存解決（Flutter ルート / データ層パッケージ + Node ツール）
+# Node 依存（firebase-tools, google-auth-library）は config/deploy 系タスクで使う
 [tasks.setup]
 run = [
   "flutter pub get",
   "cd local_package/my_manga_editor_data && flutter pub get",
+  "npm ci",
 ]
 
 # コード生成（ルートパッケージ）
@@ -38,6 +41,24 @@ run = "npx firebase deploy --only firestore:rules"
 # Firestore セキュリティルールのデプロイ（prod）
 [tasks.deploy-rules-prod]
 run = "npx firebase deploy --only firestore:rules --project prod"
+
+# Firestore の config/app を読み書きする（scripts/config.mjs）。
+# 認証: ADC（gcloud auth application-default login）。詳細は scripts/config.mjs 参照。
+# set は常に変更前後を表示し updatedAt を記録。確認(y/N)は prod or 未知フィールド時のみ。
+# mise は引数を run の末尾に追記するので set タスクには key value がそのまま渡る。
+[tasks.config-get]
+run = "node scripts/config.mjs dev get"
+
+[tasks.config-get-prod]
+run = "node scripts/config.mjs prod get"
+
+# 例: mise run config-set minSupportedBuildNumber 2
+[tasks.config-set]
+run = "node scripts/config.mjs dev set"
+
+# 例: mise run config-set-prod minSupportedBuildNumber 2
+[tasks.config-set-prod]
+run = "node scripts/config.mjs prod set"
 
 # 静的解析
 [tasks.analyze]

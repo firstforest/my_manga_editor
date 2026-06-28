@@ -8,12 +8,14 @@ Firestore をバックエンドとし、ドメインモデル / クラウドモ�
 ## Firestore スキーマ
 
 ```
+config/app                  → CloudAppConfig (グローバル設定、ユーザー非依存)
 users/{userId}/
   mangas/{mangaId}/
     pages/{pageId}          → CloudMangaPage
     deltas/{deltaId}        → CloudDelta
 ```
 
+- `config/app` — アプリ全体のリモート設定 (CloudAppConfig)。ユーザーに依存しないグローバル設定。全クライアントから読み取り可能にする (書き込みは管理者のみ)
 - `mangas` — 漫画プロジェクト (CloudManga)
 - `pages` — 各ページ (CloudMangaPage)、`mangas` のサブコレクション
 - `deltas` — リッチテキスト内容 (CloudDelta)、`mangas` のサブコレクション
@@ -154,6 +156,47 @@ CloudManga に埋め込まれる同時編集防止用ロック。
 | CloudMangaPage | 1 | 初版 (`stageDirectionDeltaId` / `dialoguesDeltaId` をトップレベルに保持) | — | — |
 | CloudMangaPage | 2 | SceneUnit 導入。セリフ+ト書きのペアを `sceneUnits` 配列に保持 | 読み込み時に旧2フィールドを `sceneUnits` 1要素へ変換 (`_migrateV1ToV2`) | 未定 (v1 クライアント消滅後) |
 | CloudDelta | 1 | 初版 | — | — |
+| CloudAppConfig | 1 | 初版 (`minSupportedBuildNumber`) | — | — |
+
+## 最小バージョンゲート
+
+古いクライアント (特に Web のブラウザキャッシュに残った旧ビルド) が新スキーマのデータを
+壊すのを防ぐため、最小サポートバージョンによるゲートを持つ。
+
+- 配信元: `config/app` ドキュメントの `minSupportedBuildNumber` (int)
+- クライアントは起動時に自分のビルド番号 (`package_info_plus`) と比較し、
+  `自ビルド番号 < minSupportedBuildNumber` なら全画面の更新案内 (`/update-required`) を表示し、それ以外の操作をブロックする
+- リアルタイム購読 (`watchAppConfig`) のため、閾値を引き上げると開きっぱなしの旧クライアントもその場でゲートされる
+- fail-open: 設定ドキュメント未設定・フィールド欠落・読み取り失敗時はゲートしない (設定不備でユーザーを締め出さない)
+- 実装: `AppConfigRepository.watchAppConfig` → `updateRequiredProvider` → `lib/router.dart` の redirect
+
+### 運用手順
+
+破壊的なスキーマ変更を含むリリースで旧クライアントを締め出したいとき:
+
+1. リリースする版の `pubspec.yaml` の `version: x.y.z+N` のビルド番号 `N` をインクリメントする
+   (リリースごとのインクリメントは必須。[.claude/rules/ci.md](../../.claude/rules/ci.md) の「リリース時のバージョン運用」を参照)
+2. **デプロイ完了を確認してから**、Firestore の `config/app` ドキュメントの `minSupportedBuildNumber` を、
+   締め出したい旧ビルド番号より大きい値 (= 新リリースの `N`) に更新する
+   - ⚠️ 順番が重要。デプロイ完了前に上げると、新ビルドが配信される前に既存ユーザー全員がゲートされる
+   - 後方互換なリリースではこの更新は不要 (ビルド番号のインクリメントのみ)
+3. `config/app` は全クライアントから読み取り可能にするセキュリティルールが必要
+   (例: `match /config/{doc} { allow read: if true; allow write: if false; }`)。
+   ルールは Firebase コンソール側で管理している (リポジトリ管理外)
+
+#### `minSupportedBuildNumber` の更新方法
+
+`allow write: if false` のため、クライアントからは更新できない。
+セキュリティルールをバイパスできる **Firebase コンソール** または **Admin SDK** から更新する。
+対象は**本番プロジェクト `my-manga-editor`** (dev は `my-manga-editor-dev`、取り違え注意)。
+
+Firebase コンソールでの手順:
+
+1. [Firebase コンソール](https://console.firebase.google.com/) → プロジェクト `my-manga-editor` を選択
+2. Firestore Database → `config` コレクション → `app` ドキュメント
+   (無ければ `config` / ドキュメント ID `app` を新規作成)
+3. `minSupportedBuildNumber` (型: number) を目的の値に更新して保存
+4. 保存した瞬間、リアルタイム購読しているクライアントに反映される
 
 ## エンティティ関係図
 

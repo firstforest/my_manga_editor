@@ -83,16 +83,26 @@ fixture として保存し、全 fixture が最新モデルに正しく変換さ
   (fake_cloud_firestore で main 形式のドキュメントを書き、develop のコードで読み書きを検証)
 - 「スキーマを変えたら fixture とテストを追加する」を規約化する
 
-### 6. 旧クライアント対策: 最小バージョンゲート (任意)
+### 6. 旧クライアント対策: 最小バージョンゲート (実装済み: 2026-06-28)
 
 Web デプロイ (GitHub Pages) では旧ビルドがブラウザにキャッシュされ残り続ける。
 Firestore 上の設定ドキュメント (または Remote Config) に `minSupportedVersion` を置き、
 旧クライアントに「リロードしてください」を表示する仕組みがあると、
 contract 期に入ってよいかの判断材料になる。
 
+実装方針 (Firestore 設定ドキュメント方式、ハード必須ゲート):
+
+- 配信元は `config/app` ドキュメントの `minSupportedBuildNumber` (Remote Config 依存を増やさない判断)
+- 比較対象はビルド番号 (`pubspec.yaml` の `version: x.y.z+N` の N、`package_info_plus` で実行時取得)
+- `AppConfigRepository.watchAppConfig` でリアルタイム購読 → `updateRequiredProvider` →
+  `lib/router.dart` の redirect で `/update-required` へ。既存の認証ゲートと同じ redirect + refreshListenable パターン
+- fail-open: 設定未取得・読み取り失敗時はゲートしない
+- 運用手順とセキュリティルールは [docs/design/data-model.md](../design/data-model.md) の「最小バージョンゲート」節を参照
+
 ## 本リポジトリへの適用案 (優先度順)
 
 > 2026-06-11: 1〜3 を実装済み。4・5 は未着手 (必要になったら対応)。
+> 2026-06-28: 「6. 最小バージョンゲート」を実装済み (下記参照)。5 (バッチ移行) は未着手。
 
 1. **ルールの明文化** — `.claude/rules/data-layer.md` にスキーマ変更チェックリストを、
    `docs/design/data-model.md` にスキーマ版履歴表 (版、変更内容、移行方法、旧フィールド削除予定) を追加する。

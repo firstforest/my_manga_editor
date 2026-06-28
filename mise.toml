@@ -30,6 +30,15 @@ run = "flutter run"
 [tasks.run-prod]
 run = "flutter run --dart-define=ENV=prod"
 
+# Firestore セキュリティルールのデプロイ（dev: デフォルトプロジェクト）
+# 事前に `npx firebase login` を対話ターミナルで済ませておくこと
+[tasks.deploy-rules]
+run = "npx firebase deploy --only firestore:rules"
+
+# Firestore セキュリティルールのデプロイ（prod）
+[tasks.deploy-rules-prod]
+run = "npx firebase deploy --only firestore:rules --project prod"
+
 # 静的解析
 [tasks.analyze]
 run = "flutter analyze"

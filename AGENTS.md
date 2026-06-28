@@ -15,7 +15,6 @@ mise i
 
 # Run
 flutter run
-flutter run --dart-define=OPENAI_API_KEY=your_key  # with AI comment feature
 flutter run --dart-define=ENV=prod                 # switch Firebase project (default: dev)
 
 # Code generation (REQUIRED after model/provider changes)
@@ -34,7 +33,7 @@ flutter test test/feature/manga/provider/manga_providers_test.dart  # single tes
 UI (lib/feature/) → Riverpod Notifier → Repository → Service → Firestore
 ```
 
-- **Root package** (`lib/`) — UI 層。`feature/{auth,manga,ai_comment,setting}` で機能別に分割
+- **Root package** (`lib/`) — UI 層。`feature/{auth,manga}` で機能別に分割
 - **`my_manga_editor_data`** (`local_package/`) — データ層。`repository/ service/ model/` の3層
 - **`my_manga_editor_common`** (`local_package/`) — 共有ユーティリティ（logger）
 

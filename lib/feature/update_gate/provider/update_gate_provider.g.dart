@@ -146,4 +146,4 @@ final class UpdateRequiredProvider extends $FunctionalProvider<bool, bool, bool>
   }
 }
 
-String _$updateRequiredHash() => r'6ede4c9a6ffd5006e7e0d758a7f30f0f0eaa6e8a';
+String _$updateRequiredHash() => r'c754ceb564028df9e39ac60a380843140076f969';

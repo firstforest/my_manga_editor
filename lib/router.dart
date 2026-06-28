@@ -5,7 +5,6 @@ import 'package:my_manga_editor/feature/auth/page/login_page.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_edit_page.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_grid_page.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_select_page.dart';
-import 'package:my_manga_editor/feature/setting/page/setting_page.dart';
 import 'package:my_manga_editor/feature/update_gate/page/update_required_page.dart';
 import 'package:my_manga_editor/feature/update_gate/provider/update_gate_provider.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
@@ -80,10 +79,6 @@ GoRouter router(Ref ref) {
             ],
           ),
         ],
-      ),
-      GoRoute(
-        path: '/settings',
-        builder: (context, state) => const SettingPage(),
       ),
     ],
   );

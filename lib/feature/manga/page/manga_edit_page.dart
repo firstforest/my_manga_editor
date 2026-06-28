@@ -49,13 +49,6 @@ class MangaEditPage extends HookConsumerWidget {
             padding: EdgeInsets.symmetric(horizontal: 8.0),
             child: OnlineStatusIndicator(),
           ),
-          // Settings button
-          IconButton(
-            onPressed: () {
-              ref.read(routerProvider).go('/settings');
-            },
-            icon: const Icon(Icons.settings),
-          ),
         ],
       ),
       body: MangaEditWidget(mangaId: mangaId, scrollController: scrollController),

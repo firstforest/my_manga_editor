@@ -248,8 +248,6 @@ Firestore
 |---|---|
 | MangaRepository | Manga / MangaPage / Delta の CRUD、リアクティブストリーム、Markdown エクスポート |
 | AuthRepository | 認証 (匿名 / Google サインイン) |
-| SettingRepository | SharedPreferences ベースの設定管理 |
-| AiRepository | OpenAI API 連携 (コメント生成) |
 
 ### 例外階層
 

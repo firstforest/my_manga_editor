@@ -90,8 +90,6 @@ Repository / Provider / UI から直接呼ばず、必ず **Service 層でラッ
 |---|---|
 | `auth` | ログイン画面、Google サインイン |
 | `manga` | 漫画一覧（カンバン）、編集画面、グリッド表示 |
-| `ai_comment` | OpenAI 連携によるプロットへの AI コメント |
-| `setting` | アプリ設定画面 |
 
 ## 技術スタック
 
@@ -104,7 +102,6 @@ Repository / Provider / UI から直接呼ばず、必ず **Service 層でラッ
 | リッチテキスト | flutter_quill (Delta 形式) |
 | 永続化 | Cloud Firestore（オフラインキャッシュ有効） |
 | 認証 | Firebase Auth + google_sign_in |
-| AI | dart_openai |
 | ロギング | logger (`my_manga_editor_common`) |
 
 ## ビルド・コード生成

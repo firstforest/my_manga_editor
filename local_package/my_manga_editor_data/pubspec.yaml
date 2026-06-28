@@ -19,11 +19,9 @@ dependencies:
   firebase_auth: ^6.1.1
   firebase_core: ^4.2.0
   google_sign_in: ^7.2.0
-  shared_preferences: ^2.3.4
   connectivity_plus: ^7.0.0
   flutter_quill: ^11.5.1
   uuid: ^4.5.1
-  dart_openai: ^6.1.1
 
 dev_dependencies:
   flutter_test:

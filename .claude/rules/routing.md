@@ -14,7 +14,6 @@ Defined in `lib/router.dart` as a `@Riverpod(keepAlive: true)` provider.
 /manga                    → MangaSelectPage (kanban board)
 /manga/:mangaId           → MangaEditPage
 /manga/:mangaId/grid      → MangaGridPage
-/settings                 → SettingPage
 ```
 
 ## Auth Guard

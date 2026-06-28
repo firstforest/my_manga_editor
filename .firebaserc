@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "my-manga-editor-dev",
+    "dev": "my-manga-editor-dev",
+    "prod": "my-manga-editor"
+  }
+}

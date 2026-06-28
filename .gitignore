@@ -59,6 +59,10 @@ app.*.map.json
 !firebase/*/GoogleService-Info.plist
 firebase-debug.log
 firestore-debug.log
+# firebase-tools をルートでローカル実行した場合の生成物
+/node_modules/
+/package.json
+/package-lock.json
 pubspec.lock
 
 # Environment variables

@@ -4,6 +4,7 @@
   "private": true,
   "description": "Node tooling for My Manga Editor (firebase-tools for Firestore rules deploy)",
   "devDependencies": {
-    "firebase-tools": "15.22.3"
+    "firebase-tools": "15.22.3",
+    "google-auth-library": "10.9.0"
   }
 }

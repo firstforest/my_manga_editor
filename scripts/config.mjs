@@ -25,7 +25,7 @@ import { GoogleAuth } from 'google-auth-library';
 
 const PROJECTS = {
   dev: 'my-manga-editor-dev',
-  prod: 'my-manga-editor-prod',
+  prod: 'my-manga-editor',
 };
 
 const DOC_PATH = 'config/app';

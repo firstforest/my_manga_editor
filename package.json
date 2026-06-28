@@ -1,0 +1,9 @@
+{
+  "name": "my-manga-editor-tooling",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Node tooling for My Manga Editor (firebase-tools for Firestore rules deploy)",
+  "devDependencies": {
+    "firebase-tools": "15.22.3"
+  }
+}

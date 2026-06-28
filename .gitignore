@@ -59,11 +59,11 @@ app.*.map.json
 !firebase/*/GoogleService-Info.plist
 firebase-debug.log
 firestore-debug.log
-# firebase-tools をルートでローカル実行した場合の生成物
+# firebase-tools をローカル devDependency として固定（package.json / package-lock.json は追跡）
 /node_modules/
-/package.json
-/package-lock.json
-pubspec.lock
+
+# pubspec.lock: アプリ（ルート）は追跡し、path 依存のローカルライブラリ側は追跡しない
+local_package/*/pubspec.lock
 
 # Environment variables
 .env

@@ -6,6 +6,8 @@ paths:
 # CI/CD
 
 GitHub Actions で Flutter Web を GitHub Pages にデプロイする。
+リリースの実施手順・バックアップ・ロールバックは [docs/release.md](../../docs/release.md) を参照
+（リリースは `mise run release` = [scripts/release.sh](../../scripts/release.sh) で行う）。
 
 ## Workflow
 

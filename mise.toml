@@ -26,12 +26,13 @@ dir = "local_package/my_manga_editor_data"
 depends = ["gen", "gen-data"]
 
 # 実行（dev: Firebase dev プロジェクト。ENV のデフォルトが dev）
+# Web 実行時はポートを 50505 に固定（Firebase Auth のログイン状態を origin 単位で維持するため）
 [tasks.run]
-run = "flutter run"
+run = "flutter run --web-port=50505"
 
 # 実行（prod: Firebase prod プロジェクト）
 [tasks.run-prod]
-run = "flutter run --dart-define=ENV=prod"
+run = "flutter run --web-port=50505 --dart-define=ENV=prod"
 
 # Firestore セキュリティルールのデプロイ（dev: デフォルトプロジェクト）
 # 事前に `npx firebase login` を対話ターミナルで済ませておくこと

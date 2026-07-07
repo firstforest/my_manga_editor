@@ -69,3 +69,6 @@ local_package/*/pubspec.lock
 .env
 .env.local
 .env.*.local
+
+# Firestore backups (scripts/firestore_backup.mjs) — ユーザーデータを含むためコミット禁止
+/backups/

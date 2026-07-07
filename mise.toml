@@ -67,3 +67,32 @@ run = "flutter analyze"
 # テスト
 [tasks.test]
 run = "flutter test"
+# --- リリース運用 (詳細: docs/release.md) -----------------------------------
+
+# 本番リリース (scripts/release.sh)。引数: patch(デフォルト)|minor|major, --dry-run 等
+# 例: mise run release / mise run release minor / mise run release --dry-run
+[tasks.release]
+run = "./scripts/release.sh"
+
+# Firestore 全ドキュメントのバックアップ → backups/<env>-<日時>/ (git 管理外)
+# 認証は ADC (gcloud auth application-default login)。config-get と同じ
+[tasks.backup]
+run = "node scripts/firestore_backup.mjs dev"
+
+[tasks.backup-prod]
+run = "node scripts/firestore_backup.mjs prod"
+
+# Firestore バックアップの復元 (上書き復元)。引数にバックアップディレクトリを渡す
+# 例: mise run restore-prod backups/prod-20260706-120000
+# 部分復元: mise run restore-prod backups/... --only users/<uid>/mangas/<id>
+[tasks.restore]
+run = "node scripts/firestore_restore.mjs dev"
+
+[tasks.restore-prod]
+run = "node scripts/firestore_restore.mjs prod"
+
+# Web アプリのロールバック: 過去のリリースタグから GitHub Pages を再デプロイする
+# 例: mise run rollback-web v1.0.1+2
+# 注意: main ブランチは直らないので、恒久対応 (revert / fix-forward) を忘れないこと
+[tasks.rollback-web]
+run = "gh workflow run main.yml --ref"

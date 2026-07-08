@@ -139,23 +139,29 @@ class MangaGridPageView extends HookConsumerWidget {
                 Expanded(
                   child: mangaPage.map(
                     data: (mangaPage) {
-                      if (mangaPage.value.sceneUnits.isEmpty) {
+                      final texts = mangaPage.value.sceneUnits
+                          .map((unit) => ref
+                              .watch(deltaProvider(
+                                mangaPage.value.mangaId,
+                                unit.dialoguesDeltaId,
+                              ))
+                              .value)
+                          .map((delta) => switch (delta) {
+                                Delta d when d.isNotEmpty =>
+                                  Document.fromDelta(d).toPlainText().trim(),
+                                _ => '',
+                              })
+                          .where((text) => text.isNotEmpty)
+                          .toList();
+                      if (texts.isEmpty) {
                         return Text('セリフなし');
                       }
-                      final firstUnit = mangaPage.value.sceneUnits.first;
-                      final delta = ref.watch(deltaProvider(
-                        mangaPage.value.mangaId,
-                        firstUnit.dialoguesDeltaId,
-                      ));
-                      return switch (delta.value) {
-                        Delta d when d.isNotEmpty => SingleChildScrollView(
-                            child: Tategaki(
-                              Document.fromDelta(d).toPlainText(),
-                              style: GoogleFonts.shipporiAntique(height: 1.0),
-                            ),
-                          ),
-                        _ => Text('セリフなし'),
-                      };
+                      return SingleChildScrollView(
+                        child: Tategaki(
+                          texts.join('\n\n'),
+                          style: GoogleFonts.shipporiAntique(height: 1.0),
+                        ),
+                      );
                     },
                     error: (error) => Text('$error'),
                     loading: (loading) =>

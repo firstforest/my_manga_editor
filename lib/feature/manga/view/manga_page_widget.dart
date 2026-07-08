@@ -79,23 +79,30 @@ class _DesktopLayout extends HookConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  for (int i = 0; i < page.sceneUnits.length; i++) ...[
-                    if (i > 0) SizedBox(height: 4.r),
-                    SizedBox(
-                      height: 300.r,
-                      child: _SceneUnitWidget(
-                        mangaId: page.mangaId,
-                        sceneUnit: page.sceneUnits[i],
-                        index: i,
-                        canRemove: page.sceneUnits.length > 1,
-                        onRemove: () {
-                          ref
-                              .read(mangaPageProvider(mangaPageId).notifier)
-                              .removeSceneUnit(i);
-                        },
-                      ),
+                  SizedBox(
+                    height: 300.r,
+                    child: Column(
+                      children: [
+                        for (int i = 0; i < page.sceneUnits.length; i++) ...[
+                          if (i > 0) SizedBox(height: 4.r),
+                          Expanded(
+                            child: _SceneUnitWidget(
+                              mangaId: page.mangaId,
+                              sceneUnit: page.sceneUnits[i],
+                              index: i,
+                              canRemove: page.sceneUnits.length > 1,
+                              onRemove: () {
+                                ref
+                                    .read(mangaPageProvider(mangaPageId)
+                                        .notifier)
+                                    .removeSceneUnit(i);
+                              },
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
+                  ),
                   SizedBox(height: 4.r),
                   Align(
                     alignment: Alignment.centerLeft,

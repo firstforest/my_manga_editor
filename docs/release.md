@@ -61,6 +61,8 @@ gh run watch          # デプロイの進行状況を追う
       タグが 1 つも無い状態では `mise run rollback-web` が使えないため、
       最初のリリース前に現在の `main` にタグを打っておく:
       `git tag v1.0.0+1 origin/main && git push origin v1.0.0+1`
+- [ ] **タグからのデプロイが許可されているか**（下記「ロールバック」の事前設定）。
+      未設定だとロールバックが environment 保護で止まる
 - [ ] `develop` で動作確認済みか (`mise run run` は dev Firebase に接続する)
 - [ ] スキーマ変更を含む場合、[.claude/rules/data-layer.md](../.claude/rules/data-layer.md) の
       expand-contract ルールに従っているか (旧フィールドの削除は次リリース以降)
@@ -115,6 +117,23 @@ gh run watch                           # デプロイ完了を待つ
 
 仕組み: GitHub Actions の `workflow_dispatch` をタグ ref で起動し、そのタグの時点のコードを
 ビルド・デプロイする。
+
+> **事前設定 (1 回だけ必要)**
+>
+> GitHub Pages の `github-pages` environment には deployment branch policy があり、
+> 初期状態では **`main` ブランチからのデプロイしか許可されていない**。
+> このままタグ ref で起動するとデプロイのジョブが environment 保護で止まり、
+> ロールバックが機能しない。タグを許可するポリシーを追加しておくこと:
+>
+> ```bash
+> # 現在の許可対象を確認
+> gh api repos/firstforest/my_manga_editor/environments/github-pages/deployment-branch-policies
+>
+> # v* タグからのデプロイを許可する
+> gh api --method POST \
+>   repos/firstforest/my_manga_editor/environments/github-pages/deployment-branch-policies \
+>   -f name='v*' -f type='tag'
+> ```
 
 注意点:
 

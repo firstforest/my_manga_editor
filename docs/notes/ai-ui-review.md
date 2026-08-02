@@ -106,16 +106,46 @@ flutter run -d web-server --web-port=50505       # http://localhost:50505 で配
   Firebase Auth のログイン状態の維持やドメイン制約に影響するため、
   ポートフォワードでオリジンを保つほうがよい。
 
-## 未確認事項
+## UI 階層の取得: セマンティクスを有効化する (実証済み)
 
-- `widget_inspector` の `get_widget_tree` が Web (dwds) 経由で機能するか。
-  `-d web-server` は VM service デバッグに Dart Debug Chrome 拡張を要求する旨の
-  警告を出すため、拡張なしでは繋がらない可能性がある。
-- `flutter_driver_command` の `screenshot` が Web で使えるか。
-  使えない場合は Chrome 拡張側の screenshot で代替する
-  (CanvasKit 描画でも画面のピクセルは取得できるので視覚レビューには支障ない)。
-- Flutter Web はセマンティクスを有効化すると DOM にアクセシビリティツリーを構築するため、
-  ウィジェット階層の代替として利用できる可能性がある (未検証)。
+**Dart MCP の `widget_inspector` を使わなくても、Flutter Web のセマンティクスを
+有効化すれば UI 階層が DOM のアクセシビリティツリーとして取れる。**
+
+CanvasKit 描画のため初期状態では DOM に中身がないが、Flutter Web は
+`<flt-semantics-placeholder>` という隠しボタンを持っており、これをクリックすると
+セマンティクスが有効になりアクセシビリティツリーが構築される。
+
+```js
+document.querySelector('flt-semantics-placeholder').click()
+```
+
+有効化後にアクセシビリティツリーを読むと、実際に以下が取れた:
+
+```
+heading "漫画を選択"
+button "新規作成"
+group "無名の傑作 ページ数: 3"
+  button                      ← ラベルなし (tooltip / semanticsLabel 未設定)
+```
+
+この方法の利点:
+
+- ロール (`heading` / `button` / `group`) とラベルが取れるので、**構造レビューと
+  アクセシビリティレビューを同時にできる**。ラベルのないボタンがそのまま名前なしで出る。
+- Dart Debug Chrome 拡張も VM service 接続も不要。ブラウザ側だけで完結する。
+- 一度有効化するとページ遷移後も維持される。
+
+## 実地検証で分かった制約
+
+- **ホイールスクロールがアプリに届かない。** Chrome 拡張から合成したスクロールイベントは
+  CanvasKit のリスナに拾われず、スクロール可能な領域を動かせなかった。
+  画面外の要素を確認したいときは、ウィンドウをリサイズするか、
+  アプリ内のナビゲーション (一覧画面など) を経由する。
+- **`flutter_driver_command` の `screenshot` は Web では期待しないほうがよい。**
+  スクリーンショットは Chrome 拡張側で撮れば十分 (CanvasKit 描画でもピクセルは取得できる)。
+- デバッグビルドの **DEBUG バナーが右上を覆う**ため、AppBar の右端にあるアクションが
+  隠れて見えない。ホバーすると tooltip が出るので存在は確認できる。
+  リリースビルドでは問題にならない。
 
 ## 検討した代替案 (非推奨)
 

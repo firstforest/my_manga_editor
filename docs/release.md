@@ -10,6 +10,7 @@
 | Firestore セキュリティルール | `mise run deploy-rules-prod` (手動) | 過去タグの `firestore.rules` を再デプロイ |
 | Firestore データ | アプリが書き込む | バックアップから復元 (`mise run restore-prod`) |
 | `config/app` 設定 | `mise run config-set-prod` | 同コマンドで前の値に戻す |
+| 利用者への告知 | [CHANGELOG.md](../CHANGELOG.md) → GitHub Release (`mise run release` が自動) | Release を編集・削除 |
 
 - 作業ブランチは `develop`、リリースブランチは `main`。`main` に push されると
   [.github/workflows/main.yml](../.github/workflows/main.yml) が `--dart-define=ENV=prod` で
@@ -17,6 +18,30 @@
 - リリースごとに `pubspec.yaml` の `version: x.y.z+N` の **ビルド番号 N を必ず +1** する
   (旧ビルドがブラウザにキャッシュされ続けるため。[.claude/rules/ci.md](../.claude/rules/ci.md) 参照)
 - リリースごとに `v<x.y.z+N>` 形式のタグを打つ。**タグがロールバックの単位**になる
+- リリースごとに [CHANGELOG.md](../CHANGELOG.md) の `## [Unreleased]` に利用者向けの変更点を書く。
+  空のままではリリースできない (下記「リリースノートを書く」参照)
+
+## リリースノートを書く
+
+利用者がいる以上、**何がどう変わったかを伝えるところまでがリリース**。
+
+作業中、利用者から見て何かが変わる変更を入れたら、その場で
+[CHANGELOG.md](../CHANGELOG.md) の `## [Unreleased]` に 1 行足しておく
+(リリース直前にまとめて書こうとすると、必ず何か漏れる)。
+
+- **利用者の言葉で書く。** コミットメッセージの流用は禁止。
+  「SceneUnit を1つのスクロール領域に変更」ではなく「ページ一覧でセリフが全部見えるようになりました」
+- **利用者から見て何も変わらない変更は書かない** (リファクタリング・テスト・CI・ドキュメント)
+- **データが消える・移行される変更は影響を必ず書く。** 一番の信頼喪失は「勝手に消えた」
+
+`mise run release` は `[Unreleased]` の中身を
+
+1. 確認プロンプトの前にプレビュー表示し (`--dry-run` でも確認できる)
+2. 空なら **リリースを中断し**
+3. `## [x.y.z+N] - YYYY-MM-DD` の見出しに確定してコミットし
+4. push 後にその内容で GitHub Release を作成する
+
+緊急のホットフィックスなどで飛ばしたい場合のみ `--skip-changelog` を付ける (非推奨)。
 
 ## 通常リリース手順
 
@@ -31,13 +56,16 @@ mise run release --dry-run    # 何が起こるかの確認だけ
 (push が最後の不可逆ポイント)。
 
 1. **前提チェック** — `develop` ブランチ / クリーンな作業ツリー / `origin/develop` と同期済み /
-   `origin/main` のコミットがすべて `develop` に取り込み済み
-2. **確認** — リリース内容 (`origin/main..develop` のコミット一覧) と新バージョンを表示して y/N
+   `origin/main` のコミットがすべて `develop` に取り込み済み / `gh` が認証済み
+2. **確認** — リリース内容 (`origin/main..develop` のコミット一覧)、リリースノート
+   (CHANGELOG の `[Unreleased]`)、新バージョンを表示して y/N。ノートが空ならここで中断
 3. **品質ゲート** — `flutter analyze` && `flutter test`
 4. **prod バックアップ** — `scripts/firestore_backup.mjs prod` で Firestore 全データを
    `backups/prod-<日時>/` にダンプ (git 管理外)。ロールバック時の保険
-5. **バージョン更新** — `pubspec.yaml` を書き換えて `chore(release): v...` をコミット
+5. **バージョン更新** — `pubspec.yaml` と `CHANGELOG.md` を書き換えて `chore(release): v...` をコミット
 6. **タグ付け・マージ・push** — `v<x.y.z+N>` タグ → `main` へマージ → `develop` / `main` / タグを push
+7. **GitHub Release** — リリースノートを付けて `gh release create`。
+   ここだけは失敗しても中断しない (push 済みのデプロイに影響しないため)。失敗時は手順を表示する
 
 push 後は GitHub Actions のデプロイ完了を待って本番 URL で動作確認する:
 
@@ -48,9 +76,34 @@ gh run watch          # デプロイの進行状況を追う
 ### リリース前チェックリスト
 
 - [ ] `develop` で動作確認済みか (`mise run run` は dev Firebase に接続する)
+- [ ] [CHANGELOG.md](../CHANGELOG.md) の `[Unreleased]` に利用者向けの変更点が書けているか
 - [ ] スキーマ変更を含む場合、[.claude/rules/data-layer.md](../.claude/rules/data-layer.md) の
       expand-contract ルールに従っているか (旧フィールドの削除は次リリース以降)
 - [ ] 移行 fixture テストを追加したか (`test/data_migration/`)
+- [ ] 利用者に影響の大きい変更なら、事前告知を済ませたか (下記「利用者への影響が大きい変更」参照)
+
+### 利用者への影響が大きい変更
+
+以下のいずれかに当てはまるリリースは、**先に告知してから**出す。
+
+- 保存済みのデータが移行される / 表示されなくなる / 消える
+- 使っていた機能がなくなる
+- URL が変わる (ブックマークが切れる)
+- 最小バージョンゲートを引き上げる (旧クライアントを締め出す)
+
+告知の手順:
+
+1. リリースの数日前に [GitHub の Issue](https://github.com/firstforest/my_manga_editor/issues)
+   を立て、「いつ・何が・データはどうなるか」を書く
+2. データに触る変更なら、告知の時点で `mise run backup-prod` を取っておく
+3. リリース後、その Issue に結果を書いて閉じる
+
+**リリースする時間帯**にも注意する。Web 版は `main` に push した瞬間に全員へ配られ、
+利用者が編集している最中でも切り替わる。特に `minSupportedBuildNumber` を上げると、
+**開きっぱなしのタブがその場で「更新が必要です」画面に切り替わる**
+(`appConfig` を Firestore の stream で購読しているため)。
+編集中の内容が失われうるので、締め出しは本当に必要なときだけにし、
+利用者が使っていなさそうな時間帯に行う。
 
 ### リリース後 (破壊的スキーマ変更を含む場合のみ)
 

@@ -5,6 +5,7 @@ import 'package:my_manga_editor/feature/auth/page/login_page.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_edit_page.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_grid_page.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_select_page.dart';
+import 'package:my_manga_editor/feature/splash/page/splash_page.dart';
 import 'package:my_manga_editor/feature/update_gate/page/update_required_page.dart';
 import 'package:my_manga_editor/feature/update_gate/provider/update_gate_provider.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
@@ -39,8 +40,10 @@ GoRouter router(Ref ref) {
       }
       if (isUpdateRoute) return '/';
 
+      // 認証状態が確定するまでは `/` (SplashPage) に留めて待つ。
       final authState = ref.read(authStateStreamProvider);
       if (authState.isLoading) return null;
+
 
       final isLoggedIn = authState.hasValue && authState.value != null;
       final isLoginRoute = state.matchedLocation == '/login';
@@ -50,6 +53,12 @@ GoRouter router(Ref ref) {
       return null;
     },
     routes: [
+      // ルート URL を開いたときの着地点。redirect が行き先を決めるまでの待機画面。
+      // Flutter Web は hash 戦略なので、`https://.../` を開くとここに来る。
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const SplashPage(),
+      ),
       GoRoute(
         path: '/update-required',
         builder: (context, state) => const UpdateRequiredPage(),

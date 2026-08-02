@@ -11,6 +11,14 @@
 | Firestore データ | アプリが書き込む | バックアップから復元 (`mise run restore-prod`) |
 | `config/app` 設定 | `mise run config-set-prod` | 同コマンドで前の値に戻す |
 
+GitHub Actions は 3 つに分かれている ([.claude/rules/ci.md](../.claude/rules/ci.md) 参照)。
+
+| workflow | いつ動くか | 役割 |
+|---|---|---|
+| `ci.yml` | PR / `develop` への push | analyze・test・Web ビルドの確認。**リリース前の品質ゲート** |
+| `main.yml` | `main` への push | 本番ビルド → GitHub Pages デプロイ → 公開ページの疎通確認 |
+| `release.yml` | `v*` タグの push | GitHub Release の作成（リリース後の手動作業チェックリスト付き） |
+
 - 作業ブランチは `develop`、リリースブランチは `main`。`main` に push されると
   [.github/workflows/main.yml](../.github/workflows/main.yml) が `--dart-define=ENV=prod` で
   Flutter Web をビルドし GitHub Pages (https://firstforest.github.io/my_manga_editor/) へデプロイする
@@ -34,6 +42,7 @@ mise run release --dry-run    # 何が起こるかの確認だけ
    `origin/main` のコミットがすべて `develop` に取り込み済み
 2. **確認** — リリース内容 (`origin/main..develop` のコミット一覧) と新バージョンを表示して y/N
 3. **品質ゲート** — `flutter analyze` && `flutter test`
+   (ルートと `local_package/my_manga_editor_data` の両方。`mise run check` と同内容)
 4. **prod バックアップ** — `scripts/firestore_backup.mjs prod` で Firestore 全データを
    `backups/prod-<日時>/` にダンプ (git 管理外)。ロールバック時の保険
 5. **バージョン更新** — `pubspec.yaml` を書き換えて `chore(release): v...` をコミット
@@ -47,6 +56,11 @@ gh run watch          # デプロイの進行状況を追う
 
 ### リリース前チェックリスト
 
+- [ ] `develop` の CI (`ci.yml`) が緑か (`gh run list --branch develop --limit 1`)
+- [ ] **ロールバック先のタグが存在するか** (`git tag -l 'v*'`)。
+      タグが 1 つも無い状態では `mise run rollback-web` が使えないため、
+      最初のリリース前に現在の `main` にタグを打っておく:
+      `git tag v1.0.0+1 origin/main && git push origin v1.0.0+1`
 - [ ] `develop` で動作確認済みか (`mise run run` は dev Firebase に接続する)
 - [ ] スキーマ変更を含む場合、[.claude/rules/data-layer.md](../.claude/rules/data-layer.md) の
       expand-contract ルールに従っているか (旧フィールドの削除は次リリース以降)

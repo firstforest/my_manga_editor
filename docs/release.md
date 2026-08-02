@@ -10,7 +10,7 @@
 | Firestore セキュリティルール | `mise run deploy-rules-prod` (手動) | 過去タグの `firestore.rules` を再デプロイ |
 | Firestore データ | アプリが書き込む | バックアップから復元 (`mise run restore-prod`) |
 | `config/app` 設定 | `mise run config-set-prod` | 同コマンドで前の値に戻す |
-| 変更履歴の公開 | [CHANGELOG.md](../CHANGELOG.md) → GitHub Release (`mise run release` が自動) | Release を編集・削除 |
+| 変更履歴の公開 | [CHANGELOG.md](../CHANGELOG.md) → GitHub Release (タグの push で `release.yml` が自動作成) | Release を編集・削除 |
 | 利用者への事前告知 | `mise run notice-prod "..."` (アプリ内バナー。デプロイ不要で即時) | `mise run notice-clear-prod` |
 
 GitHub Actions は 3 つに分かれている ([.claude/rules/ci.md](../.claude/rules/ci.md) 参照)。
@@ -19,7 +19,7 @@ GitHub Actions は 3 つに分かれている ([.claude/rules/ci.md](../.claude/
 |---|---|---|
 | `ci.yml` | PR / `develop` への push | analyze・test・Web ビルドの確認。**リリース前の品質ゲート** |
 | `main.yml` | `main` への push | 本番ビルド → GitHub Pages デプロイ → 公開ページの疎通確認 |
-| `release.yml` | `v*` タグの push | GitHub Release の作成（リリース後の手動作業チェックリスト付き） |
+| `release.yml` | `v*` タグの push | GitHub Release の作成（CHANGELOG の変更点 + リリース後の手動作業チェックリスト） |
 
 - 作業ブランチは `develop`、リリースブランチは `main`。`main` に push されると
   [.github/workflows/main.yml](../.github/workflows/main.yml) が `--dart-define=ENV=prod` で
@@ -47,10 +47,17 @@ GitHub Actions は 3 つに分かれている ([.claude/rules/ci.md](../.claude/
 
 1. 確認プロンプトの前にプレビュー表示し (`--dry-run` でも確認できる)
 2. 空なら **リリースを中断し**
-3. `## [x.y.z+N] - YYYY-MM-DD` の見出しに確定してコミットし
-4. push 後にその内容で GitHub Release を作成する
+3. `## [x.y.z+N] - YYYY-MM-DD` の見出しに確定してコミットする
 
-緊急のホットフィックスなどで飛ばしたい場合のみ `--skip-changelog` を付ける (非推奨)。
+その後、タグの push を受けた [release.yml](../.github/workflows/release.yml) が
+タグ時点の CHANGELOG からそのバージョンのセクションを読み、GitHub Release のノート先頭に載せる。
+
+> **GitHub Release を作るのは `release.yml` だけ**。`release.sh` 側でも `gh release create` すると
+> 二重作成になり、先に勝ったほうしか残らない (= workflow が付ける「リリース後の手動チェック」が
+> 失われる)。リリース手順を触るときはこの分担を崩さないこと。
+
+緊急のホットフィックスなどで飛ばしたい場合のみ `--skip-changelog` を付ける (非推奨。
+Release のノートが変更点なしになる)。
 
 ## 通常リリース手順
 
@@ -65,7 +72,7 @@ mise run release --dry-run    # 何が起こるかの確認だけ
 (push が最後の不可逆ポイント)。
 
 1. **前提チェック** — `develop` ブランチ / クリーンな作業ツリー / `origin/develop` と同期済み /
-   `origin/main` のコミットがすべて `develop` に取り込み済み / `gh` が認証済み
+   `origin/main` のコミットがすべて `develop` に取り込み済み
 2. **確認** — リリース内容 (`origin/main..develop` のコミット一覧)、リリースノート
    (CHANGELOG の `[Unreleased]`)、新バージョンを表示して y/N。ノートが空ならここで中断
 3. **品質ゲート** — `flutter analyze` && `flutter test`
@@ -74,10 +81,10 @@ mise run release --dry-run    # 何が起こるかの確認だけ
    `backups/prod-<日時>/` にダンプ (git 管理外)。ロールバック時の保険
 5. **バージョン更新** — `pubspec.yaml` と `CHANGELOG.md` を書き換えて `chore(release): v...` をコミット
 6. **タグ付け・マージ・push** — `v<x.y.z+N>` タグ → `main` へマージ → `develop` / `main` / タグを push
-7. **GitHub Release** — リリースノートを付けて `gh release create`。
-   ここだけは失敗しても中断しない (push 済みのデプロイに影響しないため)。失敗時は手順を表示する
 
-push 後は GitHub Actions のデプロイ完了を待って本番 URL で動作確認する:
+push 後は 2 つの workflow が走る。`main` への push で `main.yml` がデプロイし、
+タグの push で `release.yml` が GitHub Release を作る。
+デプロイ完了を待って本番 URL で動作確認する:
 
 ```bash
 gh run watch          # デプロイの進行状況を追う
@@ -98,6 +105,23 @@ gh run watch          # デプロイの進行状況を追う
       expand-contract ルールに従っているか (旧フィールドの削除は次リリース以降)
 - [ ] 移行 fixture テストを追加したか (`test/data_migration/`)
 - [ ] 利用者に影響の大きい変更なら、事前告知を済ませたか (下記「利用者への影響が大きい変更」参照)
+- [ ] `firestore.rules` を変更している場合、**アプリより先に**
+      `mise run deploy-rules-prod` を実行したか (下記「セキュリティルールとアプリの順序」参照)
+
+### セキュリティルールとアプリの順序
+
+`firestore.rules` の変更は Web デプロイと連動しない。`mise run deploy-rules-prod` を
+実行するまで本番には反映されないので、**ルールの緩和はアプリより先にデプロイする**
+(逆順だと、新しいアプリが読めないはずのものを読もうとして失敗する)。
+
+たとえばアプリ内お知らせと更新ゲートは、ログイン前の利用者に届けるために
+`config/app` の未認証読み取りに依存している。ルール未デプロイのままアプリだけ出すと、
+未ログイン時の `watchAppConfig` が permission-denied になり、
+**ログイン前のバナーとゲートが黙って出なくなる**
+(fail-open なので既存ユーザーの操作は壊れないが、告知は届かない)。
+
+ルールの**厳格化**は逆で、アプリを先に出してからルールを締める。
+どちらも「新旧クライアントが同時に存在しても壊れない順序」を選ぶ。
 
 ### 利用者への影響が大きい変更
 
@@ -128,7 +152,8 @@ GitHub や X を見ているとは限らない。届かない場所に書いて�
 
 お知らせの挙動:
 
-- 本文は 300 文字まで。バナーは 4 行までしか表示しない (編集画面を潰さないため)
+- 本文は 150 文字まで。バナーの高さは編集画面を潰さない範囲に抑えてあり、
+  収まらない分はバナー内をスクロールして読む (切り捨てはしない)
 - 利用者が「閉じる」を押すと、そのお知らせは端末に記録され再表示されない
 - `mise run notice-prod` を出し直すと識別子が変わるので、閉じた利用者にも改めて表示される
 - いま何が出ているかは `mise run config-get-prod` の `noticeMessage` で確認できる

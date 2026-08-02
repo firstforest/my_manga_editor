@@ -48,48 +48,7 @@ final class CurrentBuildNumberProvider
 }
 
 String _$currentBuildNumberHash() =>
-    r'93ed4d635c9b465142bd46905fbaad45916a5eaf';
-
-/// リモートのアプリ設定 (`config/app`) を購読する。
-/// 未設定・読み取り失敗時は null を流す。
-
-@ProviderFor(appConfig)
-final appConfigProvider = AppConfigProvider._();
-
-/// リモートのアプリ設定 (`config/app`) を購読する。
-/// 未設定・読み取り失敗時は null を流す。
-
-final class AppConfigProvider extends $FunctionalProvider<
-        AsyncValue<AppConfig?>, AppConfig?, Stream<AppConfig?>>
-    with $FutureModifier<AppConfig?>, $StreamProvider<AppConfig?> {
-  /// リモートのアプリ設定 (`config/app`) を購読する。
-  /// 未設定・読み取り失敗時は null を流す。
-  AppConfigProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'appConfigProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
-
-  @override
-  String debugGetCreateSourceHash() => _$appConfigHash();
-
-  @$internal
-  @override
-  $StreamProviderElement<AppConfig?> $createElement($ProviderPointer pointer) =>
-      $StreamProviderElement(pointer);
-
-  @override
-  Stream<AppConfig?> create(Ref ref) {
-    return appConfig(ref);
-  }
-}
-
-String _$appConfigHash() => r'8d065ca8746c878c95e1d9c02c9d5d0e792c5b1d';
+    r'4afe8599360142cfd1b74e8a3b36db82838cbd38';
 
 /// このクライアントが更新必須かどうか。
 ///

@@ -61,6 +61,22 @@ run = "node scripts/config.mjs dev set"
 [tasks.config-set-prod]
 run = "node scripts/config.mjs prod set"
 
+# アプリ内お知らせ。全利用者の画面上部にバナーで出る（デプロイ不要で即時に反映）。
+# リリース前の事前告知に使う。詳細は docs/release.md の「利用者への影響が大きい変更」。
+# 例: mise run notice-prod "8/10 20時ごろ更新します。作業中の内容は保存してください"
+[tasks.notice]
+run = "node scripts/config.mjs dev notice"
+
+[tasks.notice-prod]
+run = "node scripts/config.mjs prod notice"
+
+# 告知を取り下げる（リリース完了後に必ず実行する）
+[tasks.notice-clear]
+run = "node scripts/config.mjs dev notice-clear"
+
+[tasks.notice-clear-prod]
+run = "node scripts/config.mjs prod notice-clear"
+
 # 静的解析（ルートパッケージのみ）
 [tasks.analyze]
 run = "flutter analyze"

@@ -4,6 +4,15 @@ name: Release
 # タグは scripts/release.sh (`mise run release`) が打ち、main への push で
 # main.yml が本番デプロイを行う。この workflow はデプロイそのものはせず、
 # 「何をリリースしたか」と「リリース後に手で実施すべきこと」を記録するのが役割。
+#
+# **GitHub Release を作るのはここだけ**。release.sh 側でも作ると二重作成になり、
+# 先に勝ったほうしか残らない (= 下のチェックリストが失われる) ので追加しないこと。
+#
+# ノートの構成:
+#   1. タグ時点の CHANGELOG.md から、このバージョンの変更点 (利用者向け。README から
+#      「更新履歴」としてこのページを案内しているので先頭に置く)
+#   2. リリース後の手動チェック (メンテナ向け)
+#   3. GitHub 自動生成のコミット / PR 一覧
 on:
   push:
     tags: [ "v*" ]
@@ -57,6 +66,26 @@ jobs:
         run: |
           set -euo pipefail
 
+          # タグ時点の CHANGELOG.md から、このバージョンのセクション本文を取り出す。
+          # release.sh が push 前に `## [x.y.z+N] - YYYY-MM-DD` へ確定させている。
+          VERSION="${GITHUB_REF_NAME#v}"
+          CHANGELOG_SECTION=$(git show "${GITHUB_REF_NAME}:CHANGELOG.md" 2> /dev/null | awk -v ver="${VERSION}" '
+            index($0, "## [" ver "]") == 1 { inside = 1; next }   # ここから (日付の有無は問わない)
+            inside && /^## \[/ { exit }                           # 次のバージョン見出しで終わり
+            inside && NF {
+              if (started) while (pending-- > 0) print ""         # 段落間の空行は保留してから出す
+              pending = 0
+              started = 1
+              print
+              next
+            }
+            inside { pending++ }                                  # 先頭と末尾の空行は捨てる
+          ' || true)
+
+          if [ -z "${CHANGELOG_SECTION}" ]; then
+            echo "::warning::CHANGELOG.md に ${VERSION} のセクションが見つかりませんでした (--skip-changelog でリリースした場合など)"
+          fi
+
           # GitHub の自動生成リリースノート (コミット / PR 一覧)
           if [ -n "${PREV_TAG}" ]; then
             GENERATED=$(gh api "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
@@ -68,6 +97,14 @@ jobs:
           fi
 
           {
+            if [ -n "${CHANGELOG_SECTION}" ]; then
+              echo "## このリリースの変更点"
+              echo
+              echo "${CHANGELOG_SECTION}"
+              echo
+              echo "---"
+              echo
+            fi
             echo "## リリース後の手動チェック"
             echo
             echo "- [ ] 本番 URL (https://firstforest.github.io/my_manga_editor/) で動作確認"

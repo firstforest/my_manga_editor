@@ -2,19 +2,30 @@
 # 本番リリーススクリプト。手順の詳細は docs/release.md を参照。
 #
 # Usage: ./scripts/release.sh [patch|minor|major] [--dry-run] [--skip-backup] [--skip-checks]
+#                             [--skip-changelog]
 #   (mise タスク: `mise run release`, `mise run release minor` など)
 #
 # やること (この順):
 #   1. 前提チェック: develop ブランチ / クリーンな作業ツリー / origin と同期済み
-#   2. リリース内容 (origin/main..develop) と新バージョンを表示して確認プロンプト
+#   2. リリース内容 (origin/main..develop)・新バージョン・リリースノートを表示して確認プロンプト
 #   3. flutter analyze && flutter test (ルート + local_package/my_manga_editor_data)
 #   4. prod Firestore のバックアップ (scripts/firestore_backup.mjs → backups/)
-#   5. pubspec.yaml のバージョンを更新してコミット (ビルド番号は必ず +1)
+#   5. pubspec.yaml のバージョンと CHANGELOG.md を更新してコミット (ビルド番号は必ず +1)
 #   6. タグ付け → main へマージ → push (main への push で GitHub Pages に自動デプロイ)
 #
-# --dry-run     何も変更せず、実行される内容だけ表示する
-# --skip-backup prod バックアップを飛ばす (ADC 未設定の環境など。非推奨)
-# --skip-checks analyze / test を飛ばす (緊急時のみ。非推奨)
+# リリースノートは CHANGELOG.md の `## [Unreleased]` セクションから取る。
+# 空のままではリリースできない (利用者に何が変わったか伝わらないため)。
+#
+# GitHub Release の作成は .github/workflows/release.yml が行う (v* タグの push で起動し、
+# タグ時点の CHANGELOG.md とリリース後チェックリストを合わせてノートにする)。
+# ここで `gh release create` してはいけない。二重作成になり、
+# workflow 側が付けるチェックリスト (rules の手動デプロイ督促など) が失われる。
+#
+# --dry-run        何も変更せず、実行される内容だけ表示する
+# --skip-backup    prod バックアップを飛ばす (ADC 未設定の環境など。非推奨)
+# --skip-checks    analyze / test を飛ばす (緊急時のみ。非推奨)
+# --skip-changelog CHANGELOG の確認・更新を飛ばす (緊急時のみ。非推奨。
+#                  workflow が作る Release ノートが変更点なしになる)
 #
 # ロールバック手順は docs/release.md の「ロールバック」節を参照。
 
@@ -27,18 +38,37 @@ BUMP="patch"
 DRY_RUN=false
 SKIP_BACKUP=false
 SKIP_CHECKS=false
+SKIP_CHANGELOG=false
 for arg in "$@"; do
   case "$arg" in
     patch|minor|major) BUMP="$arg" ;;
     --dry-run) DRY_RUN=true ;;
     --skip-backup) SKIP_BACKUP=true ;;
     --skip-checks) SKIP_CHECKS=true ;;
+    --skip-changelog) SKIP_CHANGELOG=true ;;
     *) echo "Unknown argument: $arg" >&2; exit 1 ;;
   esac
 done
 
 step() { echo; echo "==> $1"; }
 die() { echo "Error: $1" >&2; exit 1; }
+
+# CHANGELOG.md の `## [Unreleased]` セクション本文を取り出す (前後の空行は落とす)。
+# 出力がそのまま GitHub Release のノートになる。
+changelog_unreleased() {
+  awk '
+    /^## \[Unreleased\]/ { inside = 1; next }   # ここから
+    inside && /^## \[/   { exit }               # 次のバージョン見出しで終わり
+    inside && NF {
+      if (started) while (pending-- > 0) print ""  # 段落間の空行は保留してから出す
+      pending = 0
+      started = 1
+      print
+      next
+    }
+    inside { pending++ }                        # 先頭と末尾の空行は捨てられる
+  ' CHANGELOG.md
+}
 
 # --- 1. 前提チェック --------------------------------------------------------
 
@@ -56,6 +86,10 @@ git fetch origin main develop --tags
 
 git merge-base --is-ancestor origin/main develop \
   || die "origin/main に develop に無いコミットがあります (先に develop へ取り込んでください)"
+
+if ! $SKIP_CHANGELOG; then
+  [ -f CHANGELOG.md ] || die "CHANGELOG.md がありません"
+fi
 
 # --- 2. バージョン計算とリリース内容の確認 ----------------------------------
 
@@ -82,6 +116,17 @@ if [ -z "$(git log --oneline origin/main..develop)" ]; then
   die "origin/main..develop に差分がありません (リリースするものが無い)"
 fi
 git log --oneline origin/main..develop
+
+if $SKIP_CHANGELOG; then
+  echo
+  echo "(--skip-changelog: CHANGELOG は更新しません。Release ノートに変更点が載りません)"
+else
+  RELEASE_NOTES="$(changelog_unreleased)"
+  [ -n "$RELEASE_NOTES" ] || die \
+    "CHANGELOG.md の [Unreleased] が空です。利用者から見て何が変わったかを書いてください"
+  step "リリースノート (CHANGELOG.md の [Unreleased] → release.yml が Release に載せる)"
+  printf '%s\n' "$RELEASE_NOTES"
+fi
 
 echo
 echo "  バージョン: ${CURRENT} -> ${NEW_VERSION}"
@@ -130,6 +175,23 @@ fi
 step "pubspec.yaml を ${NEW_VERSION} へ更新"
 sed -i '' -E "s/^version:[[:space:]]*.*/version: ${NEW_VERSION}/" pubspec.yaml
 git add pubspec.yaml
+
+if ! $SKIP_CHANGELOG; then
+  step "CHANGELOG.md の [Unreleased] を ${NEW_VERSION} として確定"
+  # [Unreleased] の中身をそのまま新バージョンの見出しの下に残し、空の [Unreleased] を上に作る
+  awk -v ver="$NEW_VERSION" -v today="$(date +%Y-%m-%d)" '
+    !bumped && /^## \[Unreleased\]/ {
+      print "## [Unreleased]"
+      print ""
+      print "## [" ver "] - " today
+      bumped = 1
+      next
+    }
+    { print }
+  ' CHANGELOG.md > CHANGELOG.md.tmp && mv CHANGELOG.md.tmp CHANGELOG.md
+  git add CHANGELOG.md
+fi
+
 git commit -m "chore(release): ${TAG}"
 
 # --- 6. タグ付け・main へマージ・push ----------------------------------------
@@ -144,8 +206,12 @@ step "push (main への push で本番デプロイが走ります)"
 git push origin develop main "refs/tags/${TAG}"
 git checkout develop
 
+# GitHub Release はタグの push を受けて .github/workflows/release.yml が作成する。
+# ここで作ると二重作成になるので何もしない (ヘッダのコメント参照)。
+
 step "完了"
 echo "デプロイの進行状況: gh run watch  (または GitHub Actions のページ)"
+echo "GitHub Release は release.yml がタグの push を受けて作成します"
 echo
 echo "次のアクション:"
 echo "  - デプロイ完了後、本番 URL で動作確認する"

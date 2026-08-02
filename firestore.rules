@@ -8,10 +8,17 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // バージョンゲート用のグローバル設定（FirebaseService.watchAppConfig が購読）。
-    // 認証済みユーザーは読み取りのみ。更新はコンソール / 管理者経由で行う。
+    // バージョンゲートとアプリ内お知らせのグローバル設定
+    // （FirebaseService.watchAppConfig が購読）。
+    //
+    // 誰でも読める。ログイン前に読めないと以下が成立しないため:
+    //   - 更新ゲートは認証より先に評価される（lib/router.dart の redirect）。
+    //     旧ビルドがキャッシュされてログイン自体が壊れている場合こそ更新案内を出したい
+    //   - 事前告知はログイン画面の利用者にも届く必要がある
+    // 中身は最小ビルド番号とお知らせ本文だけで、秘匿すべき情報は置かない。
+    // 更新は管理者のみ（scripts/config.mjs が IAM 権限でルールをバイパスして書く）。
     match /config/app {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if false;
     }
   }

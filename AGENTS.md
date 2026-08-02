@@ -46,6 +46,7 @@ UI (lib/feature/) → Riverpod Notifier → Repository → Service → Firestore
 | 作業対象 | 参照ドキュメント |
 |---|---|
 | リリース・バックアップ・ロールバック | [docs/release.md](docs/release.md) |
+| **利用者から見て何かが変わる変更を入れたとき** | [CHANGELOG.md](CHANGELOG.md) の `## [Unreleased]` に利用者の言葉で追記する（[書き方](docs/release.md#リリースノートを書く)）|
 | 機能 spec の作成・更新時 | [docs/spec/README.md](docs/spec/README.md) |
 | 全体アーキテクチャ・レイヤー構造 | [docs/design/architecture.md](docs/design/architecture.md) |
 | ドメインモデル / Firestore スキーマ | [docs/design/data-model.md](docs/design/data-model.md) |

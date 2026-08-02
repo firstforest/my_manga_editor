@@ -3,6 +3,11 @@
 // 使い方:
 //   node scripts/config.mjs <dev|prod> get
 //   node scripts/config.mjs <dev|prod> set <key> <value>
+//   node scripts/config.mjs <dev|prod> notice "<message>"   アプリ内お知らせを出す
+//   node scripts/config.mjs <dev|prod> notice-clear         お知らせを取り下げる
+//
+// notice は noticeMessage と noticeId をまとめて書く。noticeId には実行時刻が入り、
+// 本文を変えるたびに変わるので、前のお知らせを閉じた利用者にも新しい本文が表示される。
 //
 // 仕組み: アクセストークンを取り Firestore REST API を直接叩く (組み込み fetch)。
 //   config は security rules で write:false だが、IAM 権限を持つ OAuth トークンで
@@ -33,6 +38,10 @@ const SCOPES = ['https://www.googleapis.com/auth/datastore'];
 
 // 既知フィールドの検証。typo によるサイレント失敗や、型崩れによるクライアント側
 // CastError (例: minSupportedBuildNumber が string 化して `as num?` で例外) を防ぐ。
+// バナーの表示領域 (lib/feature/app_notice/view/app_notice_banner.dart) に
+// だいたい収まる長さ。超えた分はスクロールしないと読めないので、告知は短く書く。
+const NOTICE_MAX_LENGTH = 150;
+
 const FIELD_VALIDATORS = {
   // バージョンゲートの最小サポートビルド番号。非負整数のみ。
   minSupportedBuildNumber: (raw) => {
@@ -43,6 +52,16 @@ const FIELD_VALIDATORS = {
     }
     return Number(raw);
   },
+  // アプリ内お知らせの本文。空文字は「お知らせなし」。
+  // バナーの高さは抑えてあるので長文は入れない。
+  noticeMessage: (raw) => {
+    if (raw.length > NOTICE_MAX_LENGTH) {
+      fail(`noticeMessage must be <= ${NOTICE_MAX_LENGTH} characters, got: ${raw.length}`);
+    }
+    return raw;
+  },
+  // お知らせの識別子。利用者の「閉じた」状態はこの値で記録される。
+  noticeId: (raw) => raw,
 };
 
 function fail(message) {
@@ -56,6 +75,8 @@ function usage() {
       'Usage:',
       '  node scripts/config.mjs <dev|prod> get',
       '  node scripts/config.mjs <dev|prod> set <key> <value>',
+      '  node scripts/config.mjs <dev|prod> notice "<message>"   # アプリ内お知らせを出す',
+      '  node scripts/config.mjs <dev|prod> notice-clear         # お知らせを取り下げる',
     ].join('\n'),
   );
   process.exit(1);
@@ -114,11 +135,11 @@ function encodeValue(v) {
 }
 
 async function main() {
-  const [env, action, key, value] = process.argv.slice(2);
+  const [env, action, ...rest] = process.argv.slice(2);
 
   const project = PROJECTS[env];
   if (!project) fail(`Unknown env: ${env ?? '(none)'} (use dev or prod)`);
-  if (action !== 'get' && action !== 'set') usage();
+  if (!['get', 'set', 'notice', 'notice-clear'].includes(action)) usage();
 
   const token = await getToken();
   const headers = { Authorization: `Bearer ${token}` };
@@ -141,22 +162,38 @@ async function main() {
     return;
   }
 
-  // action === 'set'
-  if (key == null || value == null) usage();
-
-  const validator = FIELD_VALIDATORS[key];
-  const known = validator != null;
-  const newValue = known ? validator(value) : value; // 未知 key は文字列のまま (検証不能)
+  // 書き込む内容を action ごとに組み立てる。
+  const updates = {}; // { フィールド名: 新しい値 }
+  const unknownKeys = []; // 検証できなかった (= 既知でない) フィールド名
+  if (action === 'set') {
+    const [key, value] = rest;
+    if (key == null || value == null) usage();
+    const validator = FIELD_VALIDATORS[key];
+    if (!validator) unknownKeys.push(key);
+    updates[key] = validator ? validator(value) : value; // 未知 key は文字列のまま
+  } else if (action === 'notice') {
+    const [message] = rest;
+    if (message == null || message.trim() === '') usage();
+    updates.noticeMessage = FIELD_VALIDATORS.noticeMessage(message);
+    // 本文を変えたら ID も変わるようにして、前のお知らせを閉じた人にも見せ直す。
+    updates.noticeId = new Date().toISOString();
+  } else {
+    // notice-clear: 本文と ID を空にして取り下げる
+    updates.noticeMessage = '';
+    updates.noticeId = '';
+  }
 
   const fields = await getDoc();
-  const before = fields && key in fields ? decodeValue(fields[key]) : undefined;
   console.log(`[${env}] ${project} / ${DOC_PATH}`);
-  console.log(`  ${key}: ${JSON.stringify(before)} -> ${JSON.stringify(newValue)}`);
+  for (const [k, v] of Object.entries(updates)) {
+    const before = fields && k in fields ? decodeValue(fields[k]) : undefined;
+    console.log(`  ${k}: ${JSON.stringify(before)} -> ${JSON.stringify(v)}`);
+  }
 
   // prod への書き込み、または未知フィールド (typo の可能性) は確認を挟む。
-  if (env === 'prod' || !known) {
-    if (!known) {
-      console.warn(`Warning: '${key}' is not a known field of ${DOC_PATH} (possible typo).`);
+  if (env === 'prod' || unknownKeys.length > 0) {
+    for (const k of unknownKeys) {
+      console.warn(`Warning: '${k}' is not a known field of ${DOC_PATH} (possible typo).`);
     }
     const ok = await confirm(env === 'prod' ? 'Write this change to PROD?' : 'Write this change?');
     if (!ok) {
@@ -165,12 +202,17 @@ async function main() {
     }
   }
 
-  // updateMask で対象 key だけ merge し、updatedAt は serverTimestamp で記録。
+  // updateMask で対象フィールドだけ merge し、updatedAt は serverTimestamp で記録。
   const body = {
     writes: [
       {
-        update: { name: docName, fields: { [key]: encodeValue(newValue) } },
-        updateMask: { fieldPaths: [key] },
+        update: {
+          name: docName,
+          fields: Object.fromEntries(
+            Object.entries(updates).map(([k, v]) => [k, encodeValue(v)]),
+          ),
+        },
+        updateMask: { fieldPaths: Object.keys(updates) },
         updateTransforms: [{ fieldPath: 'updatedAt', setToServerValue: 'REQUEST_TIME' }],
       },
     ],

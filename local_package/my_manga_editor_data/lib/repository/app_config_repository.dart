@@ -18,7 +18,17 @@ class AppConfigRepository {
     return _firebaseService.watchAppConfig().map(
           (cloud) => cloud == null
               ? null
-              : AppConfig(minSupportedBuildNumber: cloud.minSupportedBuildNumber),
+              : AppConfig(
+                  minSupportedBuildNumber: cloud.minSupportedBuildNumber,
+                  // 本文と識別子が揃っているときだけお知らせとして扱う
+                  // (片方だけ設定された中途半端な状態では表示しない)。
+                  notice: cloud.noticeMessage.isEmpty || cloud.noticeId.isEmpty
+                      ? null
+                      : AppNotice(
+                          id: cloud.noticeId,
+                          message: cloud.noticeMessage,
+                        ),
+                ),
         );
   }
 }

@@ -5,12 +5,47 @@ import 'package:my_manga_editor/feature/auth/page/login_page.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_edit_page.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_grid_page.dart';
 import 'package:my_manga_editor/feature/manga/page/manga_select_page.dart';
+import 'package:my_manga_editor/feature/splash/page/splash_page.dart';
 import 'package:my_manga_editor/feature/update_gate/page/update_required_page.dart';
 import 'package:my_manga_editor/feature/update_gate/provider/update_gate_provider.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor_data/repository/auth_repository.dart';
 
 part 'router.g.dart';
+
+const _rootRoute = '/';
+const _updateRoute = '/update-required';
+const _loginRoute = '/login';
+const _homeRoute = '/manga';
+
+/// redirect の行き先を決める。
+///
+/// GoRouter や Firebase に依存しない純粋関数として切り出してある
+/// (この判定を間違えると画面が出ないので、テストで固定したい)。
+///
+/// 戻り値が null なら現在地に留まる。
+@visibleForTesting
+String? resolveRedirect({
+  required bool needsUpdate,
+  required bool authLoading,
+  required bool isLoggedIn,
+  required String location,
+}) {
+  // バージョンゲートを認証より先に評価する。旧ビルドがキャッシュされて
+  // ログイン自体が動かない状況でも、更新案内までは出せるようにするため。
+  if (needsUpdate) return location == _updateRoute ? null : _updateRoute;
+  if (location == _updateRoute) return _rootRoute;
+
+  // 認証状態が確定するまでは `/` (SplashPage) で待つ。
+  if (authLoading) return null;
+
+  if (!isLoggedIn) return location == _loginRoute ? null : _loginRoute;
+
+  // `/` は行き先が決まるまでの中継地点なので、確定したら必ず送り出す。
+  // ここで留めると SplashPage が永久に表示される。
+  if (location == _loginRoute || location == _rootRoute) return _homeRoute;
+  return null;
+}
 
 @Riverpod(keepAlive: true)
 GoRouter router(Ref ref) {
@@ -28,32 +63,27 @@ GoRouter router(Ref ref) {
   ref.onDispose(updateNotifier.dispose);
 
   return GoRouter(
-    initialLocation: '/manga',
+    // 起動直後は `/` (SplashPage) で待ち、認証状態が確定してから行き先を決める。
+    // ここを `/manga` にすると、認証確定前に MangaSelectPage が組み上がってしまう。
+    initialLocation: '/',
     refreshListenable: Listenable.merge([authNotifier, updateNotifier]),
     redirect: (context, state) {
-      // バージョンゲートを最優先で評価する。
-      final needsUpdate = ref.read(updateRequiredProvider);
-      final isUpdateRoute = state.matchedLocation == '/update-required';
-      if (needsUpdate) {
-        return isUpdateRoute ? null : '/update-required';
-      }
-      if (isUpdateRoute) return '/manga';
-
       final authState = ref.read(authStateStreamProvider);
-      if (authState.isLoading) return null;
-
-      final isLoggedIn = authState.hasValue && authState.value != null;
-      final isLoginRoute = state.matchedLocation == '/login';
-
-      if (!isLoggedIn && !isLoginRoute) return '/login';
-      if (isLoggedIn && isLoginRoute) return '/manga';
-      return null;
+      return resolveRedirect(
+        needsUpdate: ref.read(updateRequiredProvider),
+        authLoading: authState.isLoading,
+        isLoggedIn: authState.hasValue && authState.value != null,
+        location: state.matchedLocation,
+      );
     },
     routes: [
-      // MangaSelectPage は /manga に移動したため、旧 URL とブックマークを転送する。
+      // ルート URL を開いたときの着地点。redirect が行き先を決めるまでの待機画面。
+      // Flutter Web は hash 戦略なので、`https://.../` を開くとここに来る。
+      // MangaSelectPage が /manga に移った後の旧ブックマークもここに着地し、
+      // 認証状態が確定した時点で resolveRedirect が /manga へ送り出す。
       GoRoute(
         path: '/',
-        redirect: (context, state) => '/manga',
+        builder: (context, state) => const SplashPage(),
       ),
       GoRoute(
         path: '/update-required',

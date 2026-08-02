@@ -60,6 +60,10 @@ dependencies:
   file_saver: ^0.4.0
   markdown_quill: ^4.2.0
   http: ^1.2.2
+  # アプリ情報ダイアログから更新履歴・不具合報告ページを開く
+  url_launcher: ^6.3.2
+  # Web でのページ再読み込み (lib/feature/app_info/app_reload_web.dart)
+  web: ^1.1.1
 
   # Firebase packages
   firebase_core: ^4.2.0
@@ -69,6 +73,9 @@ dependencies:
 
   # Connectivity
   connectivity_plus: ^7.0.0
+
+  # 閉じたお知らせの記録 (lib/feature/app_notice/)
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:

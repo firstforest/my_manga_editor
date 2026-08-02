@@ -17,6 +17,13 @@ mixin _$CloudAppConfig {
   /// この値より小さいビルド番号のクライアントは更新必須とみなす。
   int get minSupportedBuildNumber;
 
+  /// アプリ内お知らせの本文。空なら表示しない。
+  String get noticeMessage;
+
+  /// お知らせの識別子。本文を変えたらこの値も変える
+  /// (利用者の「閉じた」状態をリセットして再表示させるため)。
+  String get noticeId;
+
   /// Create a copy of CloudAppConfig
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -35,16 +42,21 @@ mixin _$CloudAppConfig {
             other is CloudAppConfig &&
             (identical(
                     other.minSupportedBuildNumber, minSupportedBuildNumber) ||
-                other.minSupportedBuildNumber == minSupportedBuildNumber));
+                other.minSupportedBuildNumber == minSupportedBuildNumber) &&
+            (identical(other.noticeMessage, noticeMessage) ||
+                other.noticeMessage == noticeMessage) &&
+            (identical(other.noticeId, noticeId) ||
+                other.noticeId == noticeId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, minSupportedBuildNumber);
+  int get hashCode => Object.hash(
+      runtimeType, minSupportedBuildNumber, noticeMessage, noticeId);
 
   @override
   String toString() {
-    return 'CloudAppConfig(minSupportedBuildNumber: $minSupportedBuildNumber)';
+    return 'CloudAppConfig(minSupportedBuildNumber: $minSupportedBuildNumber, noticeMessage: $noticeMessage, noticeId: $noticeId)';
   }
 }
 
@@ -54,7 +66,8 @@ abstract mixin class $CloudAppConfigCopyWith<$Res> {
           CloudAppConfig value, $Res Function(CloudAppConfig) _then) =
       _$CloudAppConfigCopyWithImpl;
   @useResult
-  $Res call({int minSupportedBuildNumber});
+  $Res call(
+      {int minSupportedBuildNumber, String noticeMessage, String noticeId});
 }
 
 /// @nodoc
@@ -71,12 +84,22 @@ class _$CloudAppConfigCopyWithImpl<$Res>
   @override
   $Res call({
     Object? minSupportedBuildNumber = null,
+    Object? noticeMessage = null,
+    Object? noticeId = null,
   }) {
     return _then(_self.copyWith(
       minSupportedBuildNumber: null == minSupportedBuildNumber
           ? _self.minSupportedBuildNumber
           : minSupportedBuildNumber // ignore: cast_nullable_to_non_nullable
               as int,
+      noticeMessage: null == noticeMessage
+          ? _self.noticeMessage
+          : noticeMessage // ignore: cast_nullable_to_non_nullable
+              as String,
+      noticeId: null == noticeId
+          ? _self.noticeId
+          : noticeId // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -174,13 +197,16 @@ extension CloudAppConfigPatterns on CloudAppConfig {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(int minSupportedBuildNumber)? $default, {
+    TResult Function(
+            int minSupportedBuildNumber, String noticeMessage, String noticeId)?
+        $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _CloudAppConfig() when $default != null:
-        return $default(_that.minSupportedBuildNumber);
+        return $default(
+            _that.minSupportedBuildNumber, _that.noticeMessage, _that.noticeId);
       case _:
         return orElse();
     }
@@ -201,12 +227,15 @@ extension CloudAppConfigPatterns on CloudAppConfig {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(int minSupportedBuildNumber) $default,
+    TResult Function(
+            int minSupportedBuildNumber, String noticeMessage, String noticeId)
+        $default,
   ) {
     final _that = this;
     switch (_that) {
       case _CloudAppConfig():
-        return $default(_that.minSupportedBuildNumber);
+        return $default(
+            _that.minSupportedBuildNumber, _that.noticeMessage, _that.noticeId);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -226,12 +255,15 @@ extension CloudAppConfigPatterns on CloudAppConfig {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(int minSupportedBuildNumber)? $default,
+    TResult? Function(
+            int minSupportedBuildNumber, String noticeMessage, String noticeId)?
+        $default,
   ) {
     final _that = this;
     switch (_that) {
       case _CloudAppConfig() when $default != null:
-        return $default(_that.minSupportedBuildNumber);
+        return $default(
+            _that.minSupportedBuildNumber, _that.noticeMessage, _that.noticeId);
       case _:
         return null;
     }
@@ -241,13 +273,27 @@ extension CloudAppConfigPatterns on CloudAppConfig {
 /// @nodoc
 @JsonSerializable()
 class _CloudAppConfig implements CloudAppConfig {
-  const _CloudAppConfig({required this.minSupportedBuildNumber});
+  const _CloudAppConfig(
+      {required this.minSupportedBuildNumber,
+      this.noticeMessage = '',
+      this.noticeId = ''});
   factory _CloudAppConfig.fromJson(Map<String, dynamic> json) =>
       _$CloudAppConfigFromJson(json);
 
   /// この値より小さいビルド番号のクライアントは更新必須とみなす。
   @override
   final int minSupportedBuildNumber;
+
+  /// アプリ内お知らせの本文。空なら表示しない。
+  @override
+  @JsonKey()
+  final String noticeMessage;
+
+  /// お知らせの識別子。本文を変えたらこの値も変える
+  /// (利用者の「閉じた」状態をリセットして再表示させるため)。
+  @override
+  @JsonKey()
+  final String noticeId;
 
   /// Create a copy of CloudAppConfig
   /// with the given fields replaced by the non-null parameter values.
@@ -271,16 +317,21 @@ class _CloudAppConfig implements CloudAppConfig {
             other is _CloudAppConfig &&
             (identical(
                     other.minSupportedBuildNumber, minSupportedBuildNumber) ||
-                other.minSupportedBuildNumber == minSupportedBuildNumber));
+                other.minSupportedBuildNumber == minSupportedBuildNumber) &&
+            (identical(other.noticeMessage, noticeMessage) ||
+                other.noticeMessage == noticeMessage) &&
+            (identical(other.noticeId, noticeId) ||
+                other.noticeId == noticeId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, minSupportedBuildNumber);
+  int get hashCode => Object.hash(
+      runtimeType, minSupportedBuildNumber, noticeMessage, noticeId);
 
   @override
   String toString() {
-    return 'CloudAppConfig(minSupportedBuildNumber: $minSupportedBuildNumber)';
+    return 'CloudAppConfig(minSupportedBuildNumber: $minSupportedBuildNumber, noticeMessage: $noticeMessage, noticeId: $noticeId)';
   }
 }
 
@@ -292,7 +343,8 @@ abstract mixin class _$CloudAppConfigCopyWith<$Res>
       __$CloudAppConfigCopyWithImpl;
   @override
   @useResult
-  $Res call({int minSupportedBuildNumber});
+  $Res call(
+      {int minSupportedBuildNumber, String noticeMessage, String noticeId});
 }
 
 /// @nodoc
@@ -309,12 +361,22 @@ class __$CloudAppConfigCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   $Res call({
     Object? minSupportedBuildNumber = null,
+    Object? noticeMessage = null,
+    Object? noticeId = null,
   }) {
     return _then(_CloudAppConfig(
       minSupportedBuildNumber: null == minSupportedBuildNumber
           ? _self.minSupportedBuildNumber
           : minSupportedBuildNumber // ignore: cast_nullable_to_non_nullable
               as int,
+      noticeMessage: null == noticeMessage
+          ? _self.noticeMessage
+          : noticeMessage // ignore: cast_nullable_to_non_nullable
+              as String,
+      noticeId: null == noticeId
+          ? _self.noticeId
+          : noticeId // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }

@@ -7,7 +7,7 @@
 # やること (この順):
 #   1. 前提チェック: develop ブランチ / クリーンな作業ツリー / origin と同期済み
 #   2. リリース内容 (origin/main..develop) と新バージョンを表示して確認プロンプト
-#   3. flutter analyze && flutter test
+#   3. flutter analyze && flutter test (ルート + local_package/my_manga_editor_data)
 #   4. prod Firestore のバックアップ (scripts/firestore_backup.mjs → backups/)
 #   5. pubspec.yaml のバージョンを更新してコミット (ビルド番号は必ず +1)
 #   6. タグ付け → main へマージ → push (main への push で GitHub Pages に自動デプロイ)
@@ -106,10 +106,14 @@ esac
 if $SKIP_CHECKS; then
   echo "(--skip-checks: analyze / test を飛ばします)"
 else
+  # analyze / test はカレントパッケージのみが対象なので、データ層パッケージも個別に流す
+  # (CI の .github/workflows/ci.yml と同じ内容)
   step "flutter analyze"
   flutter analyze
+  (cd local_package/my_manga_editor_data && flutter analyze)
   step "flutter test"
   flutter test
+  (cd local_package/my_manga_editor_data && flutter test)
 fi
 
 # --- 4. prod Firestore バックアップ ------------------------------------------

@@ -120,8 +120,13 @@ class _QuillEditor extends HookConsumerWidget {
             showQuote: false,
             showIndent: false,
             showLink: false,
+            // flutter_quill 側で experimental 指定の API。非表示にする用途で
+            // 意図的に使っている (警告のままだと flutter analyze が exit 1 になる)
+            // ignore: experimental_member_use
             showClipboardCut: false,
+            // ignore: experimental_member_use
             showClipboardCopy: false,
+            // ignore: experimental_member_use
             showClipboardPaste: false,
             showRedo: false,
             showUndo: false,

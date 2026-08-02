@@ -1,0 +1,81 @@
+name: CI
+
+# リリース (main への push) の前に develop / PR で品質ゲートを通すための workflow。
+# 実施内容は scripts/release.sh の品質ゲートと揃えてある。
+on:
+  pull_request:
+  push:
+    branches: [ "develop" ]
+  workflow_dispatch:
+
+# 同じ ref に新しい push が来たら古い実行は打ち切る
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  analyze_test:
+    name: Analyze & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+        with:
+          # mise.toml には ruby / node も含まれるが解析・テストには不要。
+          # 特に ruby はソースビルドになり CI が大幅に遅くなるため入れない。
+          install_args: flutter
+
+      - name: Install dependencies (root)
+        run: flutter pub get
+
+      - name: Install dependencies (my_manga_editor_data)
+        run: flutter pub get
+        working-directory: local_package/my_manga_editor_data
+
+      - name: Analyze (root)
+        run: flutter analyze
+
+      # flutter analyze はカレントパッケージのみが対象なのでデータ層は個別に流す
+      - name: Analyze (my_manga_editor_data)
+        run: flutter analyze
+        working-directory: local_package/my_manga_editor_data
+
+      - name: Test (root)
+        run: flutter test
+
+      # flutter test も同様。ルートの flutter test には含まれない
+      - name: Test (my_manga_editor_data)
+        run: flutter test
+        working-directory: local_package/my_manga_editor_data
+
+  build_web:
+    name: Build Web (prod)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+        with:
+          install_args: flutter
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Setup base-href
+        id: base-href
+        run: |
+          REPOSITORY=$(echo ${{ github.repository }} | sed -e "s#.*/##")
+          echo "repository=$REPOSITORY" >> $GITHUB_OUTPUT
+
+      # デプロイ (main.yml) と同じ条件でビルドし、main へマージしてから
+      # 初めてビルドが壊れていると分かる事態を防ぐ
+      - name: Build Flutter Web
+        run: flutter build web --release --dart-define=ENV=prod --base-href /${{ steps.base-href.outputs.repository }}/

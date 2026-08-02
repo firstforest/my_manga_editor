@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:my_manga_editor/feature/app_config/provider/app_config_provider.dart';
 import 'package:my_manga_editor/feature/app_info/provider/app_info_provider.dart';
-import 'package:my_manga_editor_data/my_manga_editor_data.dart';
 
 part 'update_gate_provider.g.dart';
 
@@ -10,13 +10,6 @@ part 'update_gate_provider.g.dart';
 Future<int> currentBuildNumber(Ref ref) async {
   final info = await ref.watch(packageInfoProvider.future);
   return int.tryParse(info.buildNumber) ?? 0;
-}
-
-/// リモートのアプリ設定 (`config/app`) を購読する。
-/// 未設定・読み取り失敗時は null を流す。
-@riverpod
-Stream<AppConfig?> appConfig(Ref ref) {
-  return ref.watch(appConfigRepositoryProvider).watchAppConfig();
 }
 
 /// このクライアントが更新必須かどうか。

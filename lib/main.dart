@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/env_config.dart';
+import 'package:my_manga_editor/feature/app_notice/view/app_notice_banner.dart';
 import 'package:my_manga_editor/router.dart';
 import 'package:my_manga_editor_data/my_manga_editor_data.dart';
 
@@ -43,6 +44,9 @@ class MyApp extends ConsumerWidget {
       ),
       localizationsDelegates: FlutterQuillLocalizations.localizationsDelegates,
       routerConfig: router,
+      // お知らせバナーは画面を問わず出したいので、router の外側で重ねる
+      builder: (context, child) =>
+          AppNoticeScope(child: child ?? const SizedBox.shrink()),
     );
   }
 }

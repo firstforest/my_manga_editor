@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:my_manga_editor/feature/app_config/provider/app_config_provider.dart';
 import 'package:my_manga_editor/feature/update_gate/provider/update_gate_provider.dart';
 import 'package:my_manga_editor_data/my_manga_editor_data.dart';
 

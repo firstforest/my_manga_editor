@@ -74,6 +74,9 @@ dependencies:
   # Connectivity
   connectivity_plus: ^7.0.0
 
+  # 閉じたお知らせの記録 (lib/feature/app_notice/)
+  shared_preferences: ^2.5.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

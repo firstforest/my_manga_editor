@@ -78,7 +78,8 @@ jobs:
             echo "- [ ] 破壊的スキーマ変更を含む場合のみ: \`mise run config-set-prod minSupportedBuildNumber ${BUILD_NUMBER}\`"
             echo
             echo "問題が起きた場合のロールバック: \`mise run rollback-web <前のタグ>\`"
-            echo "（手順の詳細は [docs/release.md](../blob/main/docs/release.md)）"
+            # Release ページ (/releases/tag/...) を基準に相対解決されるため絶対 URL で書く
+            echo "（手順の詳細は [docs/release.md](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/main/docs/release.md)）"
             echo
             echo "---"
             echo

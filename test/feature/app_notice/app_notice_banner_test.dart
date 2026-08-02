@@ -8,6 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const _message = '8/10 20時ごろに更新します';
 
+/// 本番と同じ設置場所 (`MaterialApp.builder`) で組む。
+/// Scaffold の中に置いてしまうと、画面を問わず出るという性質も、
+/// バナーが画面を押し下げる挙動も検証したことにならない。
 Future<void> _pump(WidgetTester tester, {AppNotice? notice}) async {
   SharedPreferences.setMockInitialValues({});
   await tester.pumpWidget(
@@ -19,10 +22,10 @@ Future<void> _pump(WidgetTester tester, {AppNotice? notice}) async {
           ),
         ),
       ],
-      child: const MaterialApp(
-        home: Scaffold(
-          body: AppNoticeScope(child: Center(child: Text('本文'))),
-        ),
+      child: MaterialApp(
+        builder: (context, child) =>
+            AppNoticeScope(child: child ?? const SizedBox.shrink()),
+        home: const Scaffold(body: Center(child: Text('本文'))),
       ),
     ),
   );
@@ -52,5 +55,33 @@ void main() {
 
     expect(find.text('閉じる'), findsNothing);
     expect(find.text('本文'), findsOneWidget);
+  });
+
+  testWidgets('バナーは下の画面を押し下げる (重ねて隠さない)', (tester) async {
+    await _pump(
+      tester,
+      notice: const AppNotice(id: 'notice-1', message: _message),
+    );
+
+    final bannerBottom = tester.getBottomLeft(find.byType(AppNoticeBanner)).dy;
+    final contentTop = tester.getTopLeft(find.text('本文')).dy;
+
+    expect(bannerBottom, greaterThan(0));
+    expect(contentTop, greaterThanOrEqualTo(bannerBottom));
+  });
+
+  testWidgets('長い本文でも切り捨てない (収まらない分はスクロールして読む)', (tester) async {
+    // 上限 (scripts/config.mjs の NOTICE_MAX_LENGTH) いっぱいの本文
+    final longMessage = 'あ' * 150;
+    await _pump(
+      tester,
+      notice: AppNotice(id: 'notice-1', message: longMessage),
+    );
+
+    final text = tester.widget<Text>(find.text(longMessage));
+    // maxLines + ellipsis で切ると、告知の一番伝えたい後半が黙って消える
+    expect(text.maxLines, isNull);
+    expect(text.overflow, isNot(TextOverflow.ellipsis));
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
   });
 }

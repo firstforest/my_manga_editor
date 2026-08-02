@@ -22,6 +22,10 @@ class AppNoticeScope extends StatelessWidget {
   }
 }
 
+/// 本文表示領域の高さ上限。これを超える分はバナー内でスクロールして読む。
+/// 4 行程度に相当し、下の編集画面を潰さない範囲に収めている。
+const double _maxMessageHeight = 96;
+
 /// お知らせ 1 件分のバナー。出すものが無ければ何も描画しない。
 class AppNoticeBanner extends ConsumerWidget {
   const AppNoticeBanner({super.key});
@@ -48,14 +52,19 @@ class AppNoticeBanner extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  notice.message,
-                  // 長文で編集画面が埋まらないよう上限を設ける
-                  // (本文の長さは scripts/config.mjs 側でも制限している)
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSecondaryContainer,
+                // 編集画面を潰さないよう高さは抑えるが、切り捨てはしない。
+                // 狭い画面では収まらないことがあり、ellipsis だと告知の後半
+                // (「〜が表示されなくなります」など一番伝えたい部分) が黙って消える。
+                // 本文の長さは scripts/config.mjs 側でも制限している。
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: _maxMessageHeight),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      notice.message,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSecondaryContainer,
+                      ),
+                    ),
                   ),
                 ),
               ),

@@ -38,7 +38,9 @@ const SCOPES = ['https://www.googleapis.com/auth/datastore'];
 
 // 既知フィールドの検証。typo によるサイレント失敗や、型崩れによるクライアント側
 // CastError (例: minSupportedBuildNumber が string 化して `as num?` で例外) を防ぐ。
-const NOTICE_MAX_LENGTH = 300;
+// バナーの表示領域 (lib/feature/app_notice/view/app_notice_banner.dart) に
+// だいたい収まる長さ。超えた分はスクロールしないと読めないので、告知は短く書く。
+const NOTICE_MAX_LENGTH = 150;
 
 const FIELD_VALIDATORS = {
   // バージョンゲートの最小サポートビルド番号。非負整数のみ。
@@ -51,7 +53,7 @@ const FIELD_VALIDATORS = {
     return Number(raw);
   },
   // アプリ内お知らせの本文。空文字は「お知らせなし」。
-  // バナーは 4 行までしか表示しないので長文は入れない。
+  // バナーの高さは抑えてあるので長文は入れない。
   noticeMessage: (raw) => {
     if (raw.length > NOTICE_MAX_LENGTH) {
       fail(`noticeMessage must be <= ${NOTICE_MAX_LENGTH} characters, got: ${raw.length}`);

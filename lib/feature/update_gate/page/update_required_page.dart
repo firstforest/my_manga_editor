@@ -1,5 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:my_manga_editor/feature/app_info/app_links.dart';
+import 'package:my_manga_editor/feature/app_info/app_reload.dart';
+import 'package:my_manga_editor/feature/app_info/view/external_link.dart';
 
 /// クライアントが最小サポートバージョン未満のときに全画面で表示する更新案内。
 /// このページ以外への遷移は router の redirect でブロックされる。
@@ -17,7 +20,7 @@ class UpdateRequiredPage extends StatelessWidget {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(32),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -38,6 +41,28 @@ class UpdateRequiredPage extends StatelessWidget {
                   message,
                   style: theme.textTheme.bodyMedium,
                   textAlign: TextAlign.center,
+                ),
+                if (kIsWeb) ...[
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: reloadApp,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('再読み込み'),
+                  ),
+                ],
+                const SizedBox(height: 24),
+                const Divider(),
+                const ExternalLinkTile(
+                  icon: Icons.history,
+                  label: '更新内容を見る',
+                  description: '今回のリリースで変わった点',
+                  url: AppLinks.releaseNotes,
+                ),
+                const ExternalLinkTile(
+                  icon: Icons.bug_report_outlined,
+                  label: '不具合報告・ご要望',
+                  description: '再読み込みしても直らないときはこちら',
+                  url: AppLinks.issues,
                 ),
               ],
             ),

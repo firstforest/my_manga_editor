@@ -48,7 +48,7 @@ final class CurrentBuildNumberProvider
 }
 
 String _$currentBuildNumberHash() =>
-    r'93ed4d635c9b465142bd46905fbaad45916a5eaf';
+    r'4afe8599360142cfd1b74e8a3b36db82838cbd38';
 
 /// リモートのアプリ設定 (`config/app`) を購読する。
 /// 未設定・読み取り失敗時は null を流す。

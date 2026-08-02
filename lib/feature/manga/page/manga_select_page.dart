@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
+import 'package:my_manga_editor/feature/app_info/view/app_info_dialog.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_page_view_model.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/feature/manga/view/kanban_column.dart';
@@ -39,6 +40,11 @@ class MangaSelectPage extends ConsumerWidget {
                 ref.read(routerProvider).go('/manga/${mangaId.id}');
               }
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            tooltip: 'このアプリについて',
+            onPressed: () => showAppInfoDialog(context),
           ),
         ],
       ),

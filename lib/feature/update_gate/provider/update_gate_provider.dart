@@ -1,5 +1,5 @@
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:my_manga_editor/feature/app_info/provider/app_info_provider.dart';
 import 'package:my_manga_editor_data/my_manga_editor_data.dart';
 
 part 'update_gate_provider.g.dart';
@@ -8,7 +8,7 @@ part 'update_gate_provider.g.dart';
 /// 取得失敗時は 0 を返し、ゲートが誤作動しないようにする。
 @Riverpod(keepAlive: true)
 Future<int> currentBuildNumber(Ref ref) async {
-  final info = await PackageInfo.fromPlatform();
+  final info = await ref.watch(packageInfoProvider.future);
   return int.tryParse(info.buildNumber) ?? 0;
 }
 

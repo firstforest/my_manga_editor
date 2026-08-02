@@ -95,8 +95,10 @@ gh run watch          # デプロイの進行状況を追う
 
 1. リリースの数日前に [GitHub の Issue](https://github.com/firstforest/my_manga_editor/issues)
    を立て、「いつ・何が・データはどうなるか」を書く
-2. データに触る変更なら、告知の時点で `mise run backup-prod` を取っておく
-3. リリース後、その Issue に結果を書いて閉じる
+2. その Issue の URL を [X (@firstforest)](https://x.com/firstforest) でも流す
+   (GitHub を見ていない利用者に届かないため)
+3. データに触る変更なら、告知の時点で `mise run backup-prod` を取っておく
+4. リリース後、その Issue に結果を書いて閉じる
 
 **リリースする時間帯**にも注意する。Web 版は `main` に push した瞬間に全員へ配られ、
 利用者が編集している最中でも切り替わる。特に `minSupportedBuildNumber` を上げると、

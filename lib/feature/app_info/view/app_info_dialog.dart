@@ -49,6 +49,12 @@ class AppInfoDialog extends ConsumerWidget {
               description: 'GitHub の Issue で受け付けています',
               url: AppLinks.issues,
             ),
+            const ExternalLinkTile(
+              icon: Icons.alternate_email,
+              label: 'X (${AppLinks.xAccount})',
+              description: 'GitHub を使わない場合はこちらへ',
+              url: AppLinks.x,
+            ),
           ],
         ),
       ),

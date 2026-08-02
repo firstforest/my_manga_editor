@@ -64,6 +64,12 @@ class UpdateRequiredPage extends StatelessWidget {
                   description: '再読み込みしても直らないときはこちら',
                   url: AppLinks.issues,
                 ),
+                const ExternalLinkTile(
+                  icon: Icons.alternate_email,
+                  label: 'X (${AppLinks.xAccount})',
+                  description: 'GitHub を使わない場合はこちらへ',
+                  url: AppLinks.x,
+                ),
               ],
             ),
           ),

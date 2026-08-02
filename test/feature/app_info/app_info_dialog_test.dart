@@ -33,6 +33,7 @@ void main() {
     expect(find.text('バージョン 1.2.3 (build 7)'), findsOneWidget);
     expect(find.text('更新履歴'), findsOneWidget);
     expect(find.text('不具合報告・ご要望'), findsOneWidget);
+    expect(find.text('X (@firstforest)'), findsOneWidget);
     expect(find.text('閉じる'), findsOneWidget);
   });
 
@@ -42,6 +43,7 @@ void main() {
     expect(find.text('更新が必要です'), findsOneWidget);
     expect(find.text('更新内容を見る'), findsOneWidget);
     expect(find.text('不具合報告・ご要望'), findsOneWidget);
+    expect(find.text('X (@firstforest)'), findsOneWidget);
     // 再読み込みボタンは Web 限定。テストは VM 実行なので出ない
     expect(find.text('再読み込み'), findsNothing);
   });

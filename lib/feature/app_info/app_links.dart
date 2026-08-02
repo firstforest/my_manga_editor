@@ -7,6 +7,12 @@ abstract final class AppLinks {
   /// 不具合報告・要望の受け付け先
   static const issues = 'https://github.com/firstforest/my_manga_editor/issues';
 
+  /// GitHub アカウントを持たない利用者向けの連絡先
+  static const x = 'https://x.com/firstforest';
+
+  /// [x] の表示用アカウント名
+  static const xAccount = '@firstforest';
+
   /// ソースコード
   static const repository = 'https://github.com/firstforest/my_manga_editor';
 }

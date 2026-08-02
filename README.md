@@ -93,9 +93,10 @@ Web 版をブラウザで開くのが一番簡単です。インストールは�
 
 ## 不具合報告・お問い合わせ
 
-不具合の報告や機能のご要望は GitHub の Issue で受け付けています。
+不具合の報告や機能のご要望は、以下のどちらでも受け付けています。
 
-**<https://github.com/firstforest/my_manga_editor/issues>**
+- GitHub の Issue: **<https://github.com/firstforest/my_manga_editor/issues>**
+- X: **[@firstforest](https://x.com/firstforest)** (GitHub アカウントをお持ちでない場合はこちらへ)
 
 報告のときに以下を書いていただけると、原因を特定しやすくなります。
 

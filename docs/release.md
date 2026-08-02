@@ -10,7 +10,8 @@
 | Firestore セキュリティルール | `mise run deploy-rules-prod` (手動) | 過去タグの `firestore.rules` を再デプロイ |
 | Firestore データ | アプリが書き込む | バックアップから復元 (`mise run restore-prod`) |
 | `config/app` 設定 | `mise run config-set-prod` | 同コマンドで前の値に戻す |
-| 利用者への告知 | [CHANGELOG.md](../CHANGELOG.md) → GitHub Release (`mise run release` が自動) | Release を編集・削除 |
+| 変更履歴の公開 | [CHANGELOG.md](../CHANGELOG.md) → GitHub Release (`mise run release` が自動) | Release を編集・削除 |
+| 利用者への事前告知 | `mise run notice-prod "..."` (アプリ内バナー。デプロイ不要で即時) | `mise run notice-clear-prod` |
 
 - 作業ブランチは `develop`、リリースブランチは `main`。`main` に push されると
   [.github/workflows/main.yml](../.github/workflows/main.yml) が `--dart-define=ENV=prod` で
@@ -91,14 +92,33 @@ gh run watch          # デプロイの進行状況を追う
 - URL が変わる (ブックマークが切れる)
 - 最小バージョンゲートを引き上げる (旧クライアントを締め出す)
 
-告知の手順:
+告知は**アプリ内**で行う。利用者はアプリを開いているのであって、
+GitHub や X を見ているとは限らない。届かない場所に書いても告知したことにならない。
 
-1. リリースの数日前に [GitHub の Issue](https://github.com/firstforest/my_manga_editor/issues)
-   を立て、「いつ・何が・データはどうなるか」を書く
-2. その Issue の URL を [X (@firstforest)](https://x.com/firstforest) でも流す
-   (GitHub を見ていない利用者に届かないため)
-3. データに触る変更なら、告知の時点で `mise run backup-prod` を取っておく
-4. リリース後、その Issue に結果を書いて閉じる
+1. リリースの数日前に、お知らせを出す。全利用者の画面上部にバナーが出る:
+
+   ```bash
+   mise run notice-prod "8/10 20時ごろに更新します。ページに挿入した画像は表示されなくなります"
+   ```
+
+   `config/app` を書き換えるだけなので**アプリのデプロイは不要**。
+   Firestore の stream で購読しているため、いま開いている画面にもその場で届く
+2. データに触る変更なら、告知の時点で `mise run backup-prod` を取っておく
+3. リリース後、告知を取り下げる:
+
+   ```bash
+   mise run notice-clear-prod
+   ```
+
+お知らせの挙動:
+
+- 本文は 300 文字まで。バナーは 4 行までしか表示しない (編集画面を潰さないため)
+- 利用者が「閉じる」を押すと、そのお知らせは端末に記録され再表示されない
+- `mise run notice-prod` を出し直すと識別子が変わるので、閉じた利用者にも改めて表示される
+- いま何が出ているかは `mise run config-get-prod` の `noticeMessage` で確認できる
+- 取り下げを忘れると出っぱなしになる。リリース後の手順に必ず含めること
+- ログイン済みの利用者にしか出ない (`config/app` の読み取りに認証が必要なため)。
+  ログインできない障害の告知には使えないので、その場合は別の手段を考えること
 
 **リリースする時間帯**にも注意する。Web 版は `main` に push した瞬間に全員へ配られ、
 利用者が編集している最中でも切り替わる。特に `minSupportedBuildNumber` を上げると、

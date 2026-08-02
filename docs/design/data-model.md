@@ -156,7 +156,25 @@ CloudManga に埋め込まれる同時編集防止用ロック。
 | CloudMangaPage | 1 | 初版 (`stageDirectionDeltaId` / `dialoguesDeltaId` をトップレベルに保持) | — | — |
 | CloudMangaPage | 2 | SceneUnit 導入。セリフ+ト書きのペアを `sceneUnits` 配列に保持 | 読み込み時に旧2フィールドを `sceneUnits` 1要素へ変換 (`_migrateV1ToV2`) | 未定 (v1 クライアント消滅後) |
 | CloudDelta | 1 | 初版 | — | — |
-| CloudAppConfig | 1 | 初版 (`minSupportedBuildNumber`) | — | — |
+| CloudAppConfig | 1 | 初版 (`minSupportedBuildNumber`)。後に `noticeMessage` / `noticeId` を追加したが、欠損時はデフォルト値 (`0` / 空文字) で読めるため版は据え置き | — | — |
+
+## アプリ内お知らせ
+
+リリース前の予告など、アプリのデプロイを待たずに全利用者へ伝えたいことを表示する。
+
+- 配信元: `config/app` ドキュメントの `noticeMessage` (string) と `noticeId` (string)
+- 両方が空でないときだけ、全画面の上部にバナーを表示する
+  (片方だけ設定された中途半端な状態では出さない)
+- `noticeId` は「利用者が閉じたか」を記録するキー。端末ローカル (`shared_preferences`) に保存する。
+  本文を変えるときは `noticeId` も変える (`mise run notice-prod` が自動でそうする)
+- リアルタイム購読 (`watchAppConfig`) のため、設定した瞬間に開いている画面へ届く
+- ⚠️ `config/app` の読み取りは `allow read: if request.auth != null` ([firestore.rules](../../firestore.rules))。
+  **ログイン済みの利用者にしか表示されない** (ログイン画面には出ない)。
+  最小バージョンゲートも同じ制約を持つ
+- 実装: `AppConfigRepository.watchAppConfig` → `visibleNoticeProvider` →
+  `AppNoticeScope` (`lib/main.dart` の `MaterialApp.builder`)
+- 運用: `mise run notice-prod "<本文>"` / `mise run notice-clear-prod`
+  ([docs/release.md](../release.md) の「利用者への影響が大きい変更」参照)
 
 ## 最小バージョンゲート
 

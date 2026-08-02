@@ -28,7 +28,7 @@ GoRouter router(Ref ref) {
   ref.onDispose(updateNotifier.dispose);
 
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/manga',
     refreshListenable: Listenable.merge([authNotifier, updateNotifier]),
     redirect: (context, state) {
       // バージョンゲートを最優先で評価する。
@@ -37,7 +37,7 @@ GoRouter router(Ref ref) {
       if (needsUpdate) {
         return isUpdateRoute ? null : '/update-required';
       }
-      if (isUpdateRoute) return '/';
+      if (isUpdateRoute) return '/manga';
 
       final authState = ref.read(authStateStreamProvider);
       if (authState.isLoading) return null;
@@ -50,6 +50,11 @@ GoRouter router(Ref ref) {
       return null;
     },
     routes: [
+      // MangaSelectPage は /manga に移動したため、旧 URL とブックマークを転送する。
+      GoRoute(
+        path: '/',
+        redirect: (context, state) => '/manga',
+      ),
       GoRoute(
         path: '/update-required',
         builder: (context, state) => const UpdateRequiredPage(),

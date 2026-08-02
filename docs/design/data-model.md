@@ -168,9 +168,7 @@ CloudManga に埋め込まれる同時編集防止用ロック。
 - `noticeId` は「利用者が閉じたか」を記録するキー。端末ローカル (`shared_preferences`) に保存する。
   本文を変えるときは `noticeId` も変える (`mise run notice-prod` が自動でそうする)
 - リアルタイム購読 (`watchAppConfig`) のため、設定した瞬間に開いている画面へ届く
-- ⚠️ `config/app` の読み取りは `allow read: if request.auth != null` ([firestore.rules](../../firestore.rules))。
-  **ログイン済みの利用者にしか表示されない** (ログイン画面には出ない)。
-  最小バージョンゲートも同じ制約を持つ
+- ログイン前の画面にも出る (`config/app` は未認証でも読める。下記「読み取り権限」参照)
 - 実装: `AppConfigRepository.watchAppConfig` → `visibleNoticeProvider` →
   `AppNoticeScope` (`lib/main.dart` の `MaterialApp.builder`)
 - 運用: `mise run notice-prod "<本文>"` / `mise run notice-clear-prod`
@@ -186,7 +184,27 @@ CloudManga に埋め込まれる同時編集防止用ロック。
   `自ビルド番号 < minSupportedBuildNumber` なら全画面の更新案内 (`/update-required`) を表示し、それ以外の操作をブロックする
 - リアルタイム購読 (`watchAppConfig`) のため、閾値を引き上げると開きっぱなしの旧クライアントもその場でゲートされる
 - fail-open: 設定ドキュメント未設定・フィールド欠落・読み取り失敗時はゲートしない (設定不備でユーザーを締め出さない)
+- **認証より先に評価する** (`lib/router.dart` の redirect)。旧ビルドがキャッシュされていて
+  ログイン自体が動かない状況こそ更新案内を出したいので、ログイン前でもゲートする
 - 実装: `AppConfigRepository.watchAppConfig` → `updateRequiredProvider` → `lib/router.dart` の redirect
+
+### 読み取り権限
+
+`config/app` は **未認証でも読み取り可能**にしている ([firestore.rules](../../firestore.rules))。
+
+```
+match /config/app {
+  allow read: if true;
+  allow write: if false;
+}
+```
+
+- ログイン前に読めないと、上記の「認証より先にゲートする」も
+  「ログイン画面の利用者にお知らせを届ける」も成立しない
+- 中身は最小ビルド番号とお知らせ本文だけで、秘匿すべき情報は置かない
+  (置きたくなったら別ドキュメントに分けること)
+- 書き込みは常に拒否。更新は [scripts/config.mjs](../../scripts/config.mjs) が
+  IAM 権限でルールをバイパスして行う
 
 ### 運用手順
 
@@ -198,9 +216,8 @@ CloudManga に埋め込まれる同時編集防止用ロック。
    締め出したい旧ビルド番号より大きい値 (= 新リリースの `N`) に更新する
    - ⚠️ 順番が重要。デプロイ完了前に上げると、新ビルドが配信される前に既存ユーザー全員がゲートされる
    - 後方互換なリリースではこの更新は不要 (ビルド番号のインクリメントのみ)
-3. `config/app` は全クライアントから読み取り可能にするセキュリティルールが必要
-   (例: `match /config/{doc} { allow read: if true; allow write: if false; }`)。
-   ルールは Firebase コンソール側で管理している (リポジトリ管理外)
+3. `config/app` の読み取り権限は [firestore.rules](../../firestore.rules) で管理している
+   (上記「読み取り権限」参照)。ルールを変更したら `mise run deploy-rules-prod` が必要
 
 #### `minSupportedBuildNumber` の更新方法
 

@@ -77,13 +77,24 @@ run = "node scripts/config.mjs dev notice-clear"
 [tasks.notice-clear-prod]
 run = "node scripts/config.mjs prod notice-clear"
 
-# 静的解析
+# 静的解析（ルートパッケージのみ）
 [tasks.analyze]
 run = "flutter analyze"
 
-# テスト
+# テスト（ルートパッケージのみ）
 [tasks.test]
 run = "flutter test"
+
+# CI (.github/workflows/ci.yml) と同じ品質ゲートをローカルで流す。
+# analyze / test はカレントパッケージしか見ないため、データ層は個別に実行する
+[tasks.check]
+run = [
+  "flutter analyze",
+  "cd local_package/my_manga_editor_data && flutter analyze",
+  "flutter test",
+  "cd local_package/my_manga_editor_data && flutter test",
+]
+
 # --- リリース運用 (詳細: docs/release.md) -----------------------------------
 
 # 本番リリース (scripts/release.sh)。引数: patch(デフォルト)|minor|major, --dry-run 等

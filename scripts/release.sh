@@ -6,21 +6,26 @@
 #   (mise タスク: `mise run release`, `mise run release minor` など)
 #
 # やること (この順):
-#   1. 前提チェック: develop ブランチ / クリーンな作業ツリー / origin と同期済み / gh 認証済み
+#   1. 前提チェック: develop ブランチ / クリーンな作業ツリー / origin と同期済み
 #   2. リリース内容 (origin/main..develop)・新バージョン・リリースノートを表示して確認プロンプト
-#   3. flutter analyze && flutter test
+#   3. flutter analyze && flutter test (ルート + local_package/my_manga_editor_data)
 #   4. prod Firestore のバックアップ (scripts/firestore_backup.mjs → backups/)
 #   5. pubspec.yaml のバージョンと CHANGELOG.md を更新してコミット (ビルド番号は必ず +1)
 #   6. タグ付け → main へマージ → push (main への push で GitHub Pages に自動デプロイ)
-#   7. GitHub Release を作成 (ノートは CHANGELOG.md の [Unreleased] の内容)
 #
 # リリースノートは CHANGELOG.md の `## [Unreleased]` セクションから取る。
 # 空のままではリリースできない (利用者に何が変わったか伝わらないため)。
 #
+# GitHub Release の作成は .github/workflows/release.yml が行う (v* タグの push で起動し、
+# タグ時点の CHANGELOG.md とリリース後チェックリストを合わせてノートにする)。
+# ここで `gh release create` してはいけない。二重作成になり、
+# workflow 側が付けるチェックリスト (rules の手動デプロイ督促など) が失われる。
+#
 # --dry-run        何も変更せず、実行される内容だけ表示する
 # --skip-backup    prod バックアップを飛ばす (ADC 未設定の環境など。非推奨)
 # --skip-checks    analyze / test を飛ばす (緊急時のみ。非推奨)
-# --skip-changelog CHANGELOG の確認・更新と GitHub Release の作成を飛ばす (緊急時のみ。非推奨)
+# --skip-changelog CHANGELOG の確認・更新を飛ばす (緊急時のみ。非推奨。
+#                  workflow が作る Release ノートが変更点なしになる)
 #
 # ロールバック手順は docs/release.md の「ロールバック」節を参照。
 
@@ -84,10 +89,6 @@ git merge-base --is-ancestor origin/main develop \
 
 if ! $SKIP_CHANGELOG; then
   [ -f CHANGELOG.md ] || die "CHANGELOG.md がありません"
-  command -v gh > /dev/null \
-    || die "gh コマンドが見つかりません (GitHub Release の作成に必要。--skip-changelog で回避可)"
-  gh auth status > /dev/null 2>&1 \
-    || die "gh が未認証です (gh auth login を実行してください。--skip-changelog で回避可)"
 fi
 
 # --- 2. バージョン計算とリリース内容の確認 ----------------------------------
@@ -117,14 +118,13 @@ fi
 git log --oneline origin/main..develop
 
 if $SKIP_CHANGELOG; then
-  RELEASE_NOTES=""
   echo
-  echo "(--skip-changelog: CHANGELOG の更新と GitHub Release の作成は行いません)"
+  echo "(--skip-changelog: CHANGELOG は更新しません。Release ノートに変更点が載りません)"
 else
   RELEASE_NOTES="$(changelog_unreleased)"
   [ -n "$RELEASE_NOTES" ] || die \
     "CHANGELOG.md の [Unreleased] が空です。利用者から見て何が変わったかを書いてください"
-  step "リリースノート (CHANGELOG.md の [Unreleased] → GitHub Release)"
+  step "リリースノート (CHANGELOG.md の [Unreleased] → release.yml が Release に載せる)"
   printf '%s\n' "$RELEASE_NOTES"
 fi
 
@@ -151,10 +151,14 @@ esac
 if $SKIP_CHECKS; then
   echo "(--skip-checks: analyze / test を飛ばします)"
 else
+  # analyze / test はカレントパッケージのみが対象なので、データ層パッケージも個別に流す
+  # (CI の .github/workflows/ci.yml と同じ内容)
   step "flutter analyze"
   flutter analyze
+  (cd local_package/my_manga_editor_data && flutter analyze)
   step "flutter test"
   flutter test
+  (cd local_package/my_manga_editor_data && flutter test)
 fi
 
 # --- 4. prod Firestore バックアップ ------------------------------------------
@@ -202,26 +206,12 @@ step "push (main への push で本番デプロイが走ります)"
 git push origin develop main "refs/tags/${TAG}"
 git checkout develop
 
-# --- 7. GitHub Release の作成 -------------------------------------------------
-
-# ここから先は失敗しても push 済みのデプロイには影響しないので、中断せず手順を案内する。
-if ! $SKIP_CHANGELOG; then
-  step "GitHub Release の作成"
-  if printf '%s\n' "$RELEASE_NOTES" \
-    | gh release create "$TAG" --title "$TAG" --notes-file -; then
-    :
-  else
-    echo
-    echo "警告: GitHub Release の作成に失敗しました (デプロイ自体は進行中です)。"
-    echo "      手動で作成する場合:"
-    echo "        gh release create ${TAG} --title ${TAG} --notes-file - <<'EOF'"
-    echo "        (CHANGELOG.md の ${NEW_VERSION} セクションの内容)"
-    echo "        EOF"
-  fi
-fi
+# GitHub Release はタグの push を受けて .github/workflows/release.yml が作成する。
+# ここで作ると二重作成になるので何もしない (ヘッダのコメント参照)。
 
 step "完了"
 echo "デプロイの進行状況: gh run watch  (または GitHub Actions のページ)"
+echo "GitHub Release は release.yml がタグの push を受けて作成します"
 echo
 echo "次のアクション:"
 echo "  - デプロイ完了後、本番 URL で動作確認する"

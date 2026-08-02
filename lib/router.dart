@@ -63,6 +63,8 @@ GoRouter router(Ref ref) {
   ref.onDispose(updateNotifier.dispose);
 
   return GoRouter(
+    // 起動直後は `/` (SplashPage) で待ち、認証状態が確定してから行き先を決める。
+    // ここを `/manga` にすると、認証確定前に MangaSelectPage が組み上がってしまう。
     initialLocation: '/',
     refreshListenable: Listenable.merge([authNotifier, updateNotifier]),
     redirect: (context, state) {
@@ -77,6 +79,8 @@ GoRouter router(Ref ref) {
     routes: [
       // ルート URL を開いたときの着地点。redirect が行き先を決めるまでの待機画面。
       // Flutter Web は hash 戦略なので、`https://.../` を開くとここに来る。
+      // MangaSelectPage が /manga に移った後の旧ブックマークもここに着地し、
+      // 認証状態が確定した時点で resolveRedirect が /manga へ送り出す。
       GoRoute(
         path: '/',
         builder: (context, state) => const SplashPage(),

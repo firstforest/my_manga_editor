@@ -1,5 +1,7 @@
 name: Build & Deploy Flutter Web to GitHub Pages
 
+# main への push で本番 (GitHub Pages + prod Firebase) へデプロイする。
+# workflow_dispatch はロールバック用 (`mise run rollback-web <tag>` が過去タグ ref で起動する)。
 on:
   push:
     branches: [ "main" ]
@@ -10,15 +12,29 @@ permissions:
   pages: write
   id-token: write
 
+# Pages へのデプロイは同時に 1 つだけ。実行中のデプロイは中断しない
+# (途中で止めると公開物が中途半端な状態になるため cancel-in-progress: false)
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build_deploy:
     runs-on: ubuntu-latest
 
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup mise
-        uses: jdx/mise-action@v2.0.2
+        uses: jdx/mise-action@v2
+        with:
+          # mise.toml には ruby / node も含まれるが Web ビルドには不要。
+          # 特に ruby はソースビルドになり CI が大幅に遅くなるため入れない。
+          install_args: flutter
       - name: Install dependencies
         run: flutter pub get
       - name: Setup base-href
@@ -36,3 +52,21 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # デプロイ直後は CDN 反映に数十秒かかることがあるためリトライしながら確認する。
+      # 「Actions は緑なのに本番が 404」を検知するのが目的
+      - name: Smoke test (公開ページの疎通確認)
+        run: |
+          URL="${{ steps.deployment.outputs.page_url }}"
+          echo "checking ${URL}"
+          for i in $(seq 1 10); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' "${URL}main.dart.js" || echo 000)
+            if [ "$code" = "200" ]; then
+              echo "OK: main.dart.js を配信できています (attempt ${i})"
+              exit 0
+            fi
+            echo "attempt ${i}: HTTP ${code} — 反映待ち"
+            sleep 15
+          done
+          echo "::error::デプロイ後に ${URL}main.dart.js を取得できませんでした"
+          exit 1

@@ -13,6 +13,14 @@
 | 変更履歴の公開 | [CHANGELOG.md](../CHANGELOG.md) → GitHub Release (`mise run release` が自動) | Release を編集・削除 |
 | 利用者への事前告知 | `mise run notice-prod "..."` (アプリ内バナー。デプロイ不要で即時) | `mise run notice-clear-prod` |
 
+GitHub Actions は 3 つに分かれている ([.claude/rules/ci.md](../.claude/rules/ci.md) 参照)。
+
+| workflow | いつ動くか | 役割 |
+|---|---|---|
+| `ci.yml` | PR / `develop` への push | analyze・test・Web ビルドの確認。**リリース前の品質ゲート** |
+| `main.yml` | `main` への push | 本番ビルド → GitHub Pages デプロイ → 公開ページの疎通確認 |
+| `release.yml` | `v*` タグの push | GitHub Release の作成（リリース後の手動作業チェックリスト付き） |
+
 - 作業ブランチは `develop`、リリースブランチは `main`。`main` に push されると
   [.github/workflows/main.yml](../.github/workflows/main.yml) が `--dart-define=ENV=prod` で
   Flutter Web をビルドし GitHub Pages (https://firstforest.github.io/my_manga_editor/) へデプロイする
@@ -61,6 +69,7 @@ mise run release --dry-run    # 何が起こるかの確認だけ
 2. **確認** — リリース内容 (`origin/main..develop` のコミット一覧)、リリースノート
    (CHANGELOG の `[Unreleased]`)、新バージョンを表示して y/N。ノートが空ならここで中断
 3. **品質ゲート** — `flutter analyze` && `flutter test`
+   (ルートと `local_package/my_manga_editor_data` の両方。`mise run check` と同内容)
 4. **prod バックアップ** — `scripts/firestore_backup.mjs prod` で Firestore 全データを
    `backups/prod-<日時>/` にダンプ (git 管理外)。ロールバック時の保険
 5. **バージョン更新** — `pubspec.yaml` と `CHANGELOG.md` を書き換えて `chore(release): v...` をコミット
@@ -76,6 +85,13 @@ gh run watch          # デプロイの進行状況を追う
 
 ### リリース前チェックリスト
 
+- [ ] `develop` の CI (`ci.yml`) が緑か (`gh run list --branch develop --limit 1`)
+- [ ] **ロールバック先のタグが存在するか** (`git tag -l 'v*'`)。
+      タグが 1 つも無い状態では `mise run rollback-web` が使えないため、
+      最初のリリース前に現在の `main` にタグを打っておく:
+      `git tag v1.0.0+1 origin/main && git push origin v1.0.0+1`
+- [ ] **タグからのデプロイが許可されているか**（下記「ロールバック」の事前設定）。
+      未設定だとロールバックが environment 保護で止まる
 - [ ] `develop` で動作確認済みか (`mise run run` は dev Firebase に接続する)
 - [ ] [CHANGELOG.md](../CHANGELOG.md) の `[Unreleased]` に利用者向けの変更点が書けているか
 - [ ] スキーマ変更を含む場合、[.claude/rules/data-layer.md](../.claude/rules/data-layer.md) の
@@ -176,6 +192,23 @@ gh run watch                           # デプロイ完了を待つ
 
 仕組み: GitHub Actions の `workflow_dispatch` をタグ ref で起動し、そのタグの時点のコードを
 ビルド・デプロイする。
+
+> **事前設定 (1 回だけ必要)**
+>
+> GitHub Pages の `github-pages` environment には deployment branch policy があり、
+> 初期状態では **`main` ブランチからのデプロイしか許可されていない**。
+> このままタグ ref で起動するとデプロイのジョブが environment 保護で止まり、
+> ロールバックが機能しない。タグを許可するポリシーを追加しておくこと:
+>
+> ```bash
+> # 現在の許可対象を確認
+> gh api repos/firstforest/my_manga_editor/environments/github-pages/deployment-branch-policies
+>
+> # v* タグからのデプロイを許可する
+> gh api --method POST \
+>   repos/firstforest/my_manga_editor/environments/github-pages/deployment-branch-policies \
+>   -f name='v*' -f type='tag'
+> ```
 
 注意点:
 

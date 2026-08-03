@@ -378,7 +378,7 @@ final class DeltaNotifierProvider
   }
 }
 
-String _$deltaNotifierHash() => r'c723a79f3ca58ab7f567152207755c3132174a54';
+String _$deltaNotifierHash() => r'2f8d18b9f65f066aa26ddfcf1df435d4d7809531';
 
 final class DeltaNotifierFamily extends $Family
     with

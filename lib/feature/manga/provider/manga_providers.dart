@@ -67,26 +67,40 @@ class MangaNotifier extends _$MangaNotifier {
     ref.read(mangaRepositoryProvider).updateMangaStatus(id, status);
   }
 
+  /// 作品全体を Markdown ファイルとして書き出す。
+  ///
+  /// 失敗したときは logger.e に詳細を残したうえで例外をそのまま投げる
+  /// (呼び出し側の画面で利用者に通知するため)。
   Future<void> download() async {
     final manga = await future;
-    if (manga != null) {
-      logger.d('download $manga}');
+    if (manga == null) {
+      logger.e('書き出し対象の作品が見つかりません: ${id.id}');
+      throw StateError('Manga not found: ${id.id}');
+    }
+    logger.d('download ${manga.name}');
+    try {
       final content =
           await ref.read(mangaRepositoryProvider).toMarkdown(manga.id);
       await FileSaver.instance.saveFile(
-        name: 'komatto_${manga.name}',
-        fileExtension: 'txt',
-        mimeType: MimeType.text,
+        name: 'komatto_${sanitizeFileName(manga.name)}',
+        fileExtension: 'md',
+        mimeType: MimeType.markdown,
         bytes: Uint8List.fromList(utf8.encode(content)),
       );
+    } catch (e, stackTrace) {
+      logger.e('作品の書き出しに失敗しました: ${manga.name}',
+          error: e, stackTrace: stackTrace);
+      rethrow;
     }
   }
-
-  Future<String> toMarkdown() async {
-    // TODO: Implement toMarkdown functionality
-    return 'Markdown export not yet implemented';
-  }
 }
+
+/// 作品名をファイル名に使える形に直す。
+///
+/// OS がファイル名に使えない `/ \ : * ? " < > |` と制御文字を `_` に置き換える。
+/// 日本語や英数字はそのまま残す。
+String sanitizeFileName(String name) =>
+    name.replaceAll(RegExp(r'[/\\:*?"<>|\x00-\x1f\x7f]'), '_');
 
 @riverpod
 class MangaPageNotifier extends _$MangaPageNotifier {

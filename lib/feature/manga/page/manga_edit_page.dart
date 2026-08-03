@@ -30,12 +30,18 @@ class MangaEditPage extends HookConsumerWidget {
         actions: [
           IconButton(
               onPressed: () async {
-                await ref.read(mangaProvider(mangaId).notifier).download();
+                final messenger = ScaffoldMessenger.of(context);
                 final manga = ref.read(mangaProvider(mangaId)).value;
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${manga?.name}をダウンロードしました')));
+                try {
+                  await ref.read(mangaProvider(mangaId).notifier).download();
+                } catch (_) {
+                  // 詳細は download 内で logger.e に残している
+                  messenger.showSnackBar(
+                      const SnackBar(content: Text('保存に失敗しました')));
+                  return;
                 }
+                messenger.showSnackBar(
+                    SnackBar(content: Text('${manga?.name}をダウンロードしました')));
               },
               icon: Icon(Icons.save_alt)),
           IconButton(

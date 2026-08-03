@@ -75,4 +75,22 @@ void main() {
       subscription.close();
     });
   });
+
+  group('sanitizeFileName', () {
+    test('ファイル名に使えない記号がすべて _ に置換される', () {
+      expect(sanitizeFileName(r'a/b\c:d*e?f"g<h>i|j'), 'a_b_c_d_e_f_g_h_i_j');
+    });
+
+    test('制御文字が _ に置換される', () {
+      expect(sanitizeFileName('前\n中\t後'), '前_中_後');
+    });
+
+    test('日本語・英数字・その他の記号はそのまま残る', () {
+      expect(sanitizeFileName('作品名 vol.2 (完成) - 第1話'), '作品名 vol.2 (完成) - 第1話');
+    });
+
+    test('空文字はそのまま空文字を返す', () {
+      expect(sanitizeFileName(''), '');
+    });
+  });
 }

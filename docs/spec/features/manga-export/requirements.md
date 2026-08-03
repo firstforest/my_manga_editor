@@ -1,9 +1,9 @@
 # Requirements: Manga Export
 
 ## メタデータ
-- Status: reviewed（T-004 で NEEDS CLARIFICATION を全て解消済み）
+- Status: implemented（T-001 〜 T-009 完了。全 AC が実装・テスト済み）
 - Owner: TBD
-- Last Updated: 2026-05-17
+- Last Updated: 2026-08-03
 - Related:
   - [design.md](./design.md) / [tasks.md](./tasks.md)
   - [docs/design/data-model.md](../../../design/data-model.md)
@@ -17,7 +17,7 @@
 現在は 2 つの導線がある：
 
 1. **ページ単位のセリフ・コピー** — 編集画面で各ページの「コピー」ボタン押下時にクリップボードへ
-2. **作品全体のファイル書き出し** — 一覧画面から作品全体を Markdown 風テキストファイルに保存
+2. **作品全体のファイル書き出し** — 編集画面のツールバーから作品全体を Markdown ファイルに保存
 
 本 spec はこれらを Source of Truth として整理し、既存挙動の保全と、観察された不整合の解消方針を定める。
 
@@ -39,7 +39,9 @@ so that ClipStudio Paint に縦書きテキストとして貼り付けてネー�
 - AC-1.2: WHEN クリップボードへの書き込みが完了した
   THE SYSTEM SHALL `Page <N> をコピーしました` の SnackBar を表示する
 - AC-1.3: WHILE 当該ページに dialogues が 1 文字も入っていない
-  THE SYSTEM SHALL クリップボードを書き換えない（既存クリップボード内容を保護する）
+  THE SYSTEM SHALL クリップボードを書き換えず（既存クリップボード内容を保護する）、
+  `Page <N> にコピーするセリフがありません` の SnackBar を表示する
+  （押しても何も起きない状態にしない）
 - AC-1.4: IF 実行環境にシステムクリップボードが存在しない (Web のサンドボックス制限等)
   THEN THE SYSTEM SHALL `Page <N> のコピーに失敗しました` の SnackBar を表示し、
   クリップボードを書き換えない
@@ -62,7 +64,7 @@ so that バックアップや他者との共有、他ツールへの一括移送
 
 #### Acceptance Criteria
 
-- AC-2.1: WHEN ユーザーが作品一覧 (`manga_grid_page`) の作品メニューから「ダウンロード」を選択した
+- AC-2.1: WHEN ユーザーが編集画面 (`manga_edit_page`) のツールバーの保存ボタンを押した
   THE SYSTEM SHALL 作品全体を Markdown 形式のテキストとして組み立て、
   ブラウザ / OS のファイル保存ダイアログを介してローカルに保存する
 - AC-2.2: THE SYSTEM SHALL 出力ファイル名を `komatto_<sanitizedName>` とする。

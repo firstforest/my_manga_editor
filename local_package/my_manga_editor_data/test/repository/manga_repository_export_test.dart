@@ -281,6 +281,38 @@ void main() {
           lessThan(markdown.indexOf('## アイデアメモ')));
     });
 
+    // 変換は my_manga_editor_common の deltaToPlainText に集約されている (FR-005)。
+    // Repository の出力にもその整形が効いていることを確認する。
+    test('本文の 3 連続以上の改行が圧縮され、前後の空白が落ちる', () async {
+      when(firebase.fetchManga('mid'))
+          .thenAnswer((_) async => _cloudManga(name: '整形確認'));
+      when(firebase.fetchMangaPages('mid')).thenAnswer((_) async => [
+            _cloudPage(
+              id: 'p1',
+              pageIndex: 0,
+              sceneUnits: [
+                {
+                  'dialoguesDeltaId': 'd-dlg',
+                  'stageDirectionDeltaId': 'd-stg',
+                },
+              ],
+            ),
+          ]);
+      when(firebase.fetchDeltas('mid')).thenAnswer((_) async => [
+            _cloudDelta(
+              id: 'd-dlg',
+              fieldName: 'dialoguesDelta',
+              pageId: 'p1',
+              text: '  \n\n1 つ目のセリフ\n\n\n\n2 つ目のセリフ\n  \n',
+            ),
+          ]);
+
+      final markdown = await repository.toMarkdown(MangaId('mid'));
+
+      expect(markdown, contains('1 つ目のセリフ\n\n2 つ目のセリフ'));
+      expect(markdown, isNot(contains('\n\n\n\n')));
+    });
+
     test('アイデアメモが空 Delta の場合はセクションが出力されない', () async {
       when(firebase.fetchManga('mid')).thenAnswer((_) async =>
           _cloudManga(name: '空アイデア', ideaMemoDeltaId: 'd-idea'));

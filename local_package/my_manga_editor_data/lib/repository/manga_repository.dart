@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_quill/quill_delta.dart';
+import 'package:my_manga_editor_common/delta_text.dart';
 import 'package:my_manga_editor_common/logger.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor_data/repository/exceptions.dart'
@@ -648,24 +649,18 @@ class MangaRepository {
       buffer.writeln('# ${manga.name}');
       buffer.writeln();
 
-      // Add idea memo if exists
-      final ideaMemoDelta =
-          deltas.where((d) => d.id == manga.ideaMemoDeltaId).firstOrNull;
-      if (ideaMemoDelta != null && ideaMemoDelta.ops.isNotEmpty) {
-        final delta = Delta.fromJson(ideaMemoDelta.ops);
-        if (delta.isNotEmpty) {
-          buffer.writeln('## アイデアメモ');
-          buffer.writeln();
-          // Extract plain text from delta
-          for (final op in delta.toList()) {
-            if (op.data is String) {
-              buffer.write(op.data);
-            }
-          }
-          buffer.writeln();
-          buffer.writeln();
+      // 本文が空のセクションは見出しごと出力しない
+      void writeSection(String heading, String body) {
+        if (body.isEmpty) {
+          return;
         }
+        buffer.writeln(heading);
+        buffer.writeln();
+        buffer.writeln(body);
+        buffer.writeln();
       }
+
+      writeSection('## アイデアメモ', _plainTextOf(deltas, manga.ideaMemoDeltaId));
 
       // Add pages
       for (int i = 0; i < pages.length; i++) {
@@ -673,72 +668,29 @@ class MangaRepository {
         buffer.writeln('## ページ ${i + 1}');
         buffer.writeln();
 
-        // Extract plain text from deltas for this page
         final pageDeltas = deltas.where((d) => d.pageId == page.id).toList();
 
-        // Memo
-        final memoDeltaDoc =
-            pageDeltas.where((d) => d.id == page.memoDeltaId).firstOrNull;
-        if (memoDeltaDoc != null && memoDeltaDoc.ops.isNotEmpty) {
-          final memoDelta = Delta.fromJson(memoDeltaDoc.ops);
-          if (memoDelta.isNotEmpty) {
-            buffer.writeln('### メモ');
-            for (final op in memoDelta.toList()) {
-              if (op.data is String) {
-                buffer.write(op.data);
-              }
-            }
-            buffer.writeln();
-            buffer.writeln();
-          }
-        }
+        writeSection('### メモ', _plainTextOf(pageDeltas, page.memoDeltaId));
 
         // SceneUnits
         final domainPage = page.toMangaPage();
+        // カットが複数あるページだけ「### カット N」で束ね、見出しを 1 段下げる
+        final hasMultipleUnits = domainPage.sceneUnits.length > 1;
         for (int j = 0; j < domainPage.sceneUnits.length; j++) {
           final unit = domainPage.sceneUnits[j];
-          if (domainPage.sceneUnits.length > 1) {
+          if (hasMultipleUnits) {
             buffer.writeln('### カット ${j + 1}');
             buffer.writeln();
           }
 
-          // Stage Direction
-          final stageDeltaDoc = pageDeltas
-              .where((d) => d.id == unit.stageDirectionDeltaId.id)
-              .firstOrNull;
-          if (stageDeltaDoc != null && stageDeltaDoc.ops.isNotEmpty) {
-            final stageDelta = Delta.fromJson(stageDeltaDoc.ops);
-            if (stageDelta.isNotEmpty) {
-              buffer.writeln(
-                  domainPage.sceneUnits.length > 1 ? '#### ト書き' : '### ト書き');
-              for (final op in stageDelta.toList()) {
-                if (op.data is String) {
-                  buffer.write(op.data);
-                }
-              }
-              buffer.writeln();
-              buffer.writeln();
-            }
-          }
-
-          // Dialogues
-          final dialoguesDeltaDoc = pageDeltas
-              .where((d) => d.id == unit.dialoguesDeltaId.id)
-              .firstOrNull;
-          if (dialoguesDeltaDoc != null && dialoguesDeltaDoc.ops.isNotEmpty) {
-            final dialoguesDelta = Delta.fromJson(dialoguesDeltaDoc.ops);
-            if (dialoguesDelta.isNotEmpty) {
-              buffer.writeln(
-                  domainPage.sceneUnits.length > 1 ? '#### セリフ' : '### セリフ');
-              for (final op in dialoguesDelta.toList()) {
-                if (op.data is String) {
-                  buffer.write(op.data);
-                }
-              }
-              buffer.writeln();
-              buffer.writeln();
-            }
-          }
+          writeSection(
+            hasMultipleUnits ? '#### ト書き' : '### ト書き',
+            _plainTextOf(pageDeltas, unit.stageDirectionDeltaId.id),
+          );
+          writeSection(
+            hasMultipleUnits ? '#### セリフ' : '### セリフ',
+            _plainTextOf(pageDeltas, unit.dialoguesDeltaId.id),
+          );
         }
       }
 
@@ -747,6 +699,19 @@ class MangaRepository {
       logger.e('Failed to export manga to markdown', error: e);
       rethrow;
     }
+  }
+
+  /// [deltas] から [deltaId] の Delta を探してプレーンテキスト化する。
+  /// 見つからない場合や中身が空の場合は空文字列を返す。
+  String _plainTextOf(List<CloudDelta> deltas, String? deltaId) {
+    if (deltaId == null) {
+      return '';
+    }
+    final doc = deltas.where((d) => d.id == deltaId).firstOrNull;
+    if (doc == null || doc.ops.isEmpty) {
+      return '';
+    }
+    return deltaToPlainText(Delta.fromJson(doc.ops));
   }
 
   // ============================================================================

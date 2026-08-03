@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:file_saver/file_saver.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:markdown_quill/markdown_quill.dart';
+import 'package:my_manga_editor_common/delta_text.dart';
 import 'package:my_manga_editor_common/logger.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor_data/repository/manga_repository.dart';
@@ -138,10 +138,7 @@ class DeltaNotifier extends _$DeltaNotifier {
   Future<String> exportPlainText() async {
     final delta = await future;
     return switch (delta) {
-      Delta d when d.isNotEmpty => Document.fromDelta(delta)
-          .toPlainText()
-          .replaceAll(RegExp(r'\n\s*\n\s*\n\s*'), '\n\n')
-          .trim(),
+      Delta d when d.isNotEmpty => deltaToPlainText(d),
       _ => '',
     };
   }

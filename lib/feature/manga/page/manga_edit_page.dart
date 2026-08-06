@@ -31,9 +31,12 @@ class MangaEditPage extends HookConsumerWidget {
           IconButton(
               onPressed: () async {
                 final messenger = ScaffoldMessenger.of(context);
-                final manga = ref.read(mangaProvider(mangaId)).value;
+                final String name;
                 try {
-                  await ref.read(mangaProvider(mangaId).notifier).download();
+                  // 作品名は download() の戻り値を使う。ここで mangaProvider を
+                  // 読むと、まだ loading のときに名前が取れず null になる
+                  name =
+                      await ref.read(mangaProvider(mangaId).notifier).download();
                 } catch (_) {
                   // 詳細は download 内で logger.e に残している
                   messenger.showSnackBar(
@@ -41,7 +44,7 @@ class MangaEditPage extends HookConsumerWidget {
                   return;
                 }
                 messenger.showSnackBar(
-                    SnackBar(content: Text('${manga?.name}をダウンロードしました')));
+                    SnackBar(content: Text('$nameをダウンロードしました')));
               },
               icon: Icon(Icons.save_alt)),
           IconButton(

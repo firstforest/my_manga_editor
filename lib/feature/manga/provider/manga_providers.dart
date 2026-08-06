@@ -67,11 +67,14 @@ class MangaNotifier extends _$MangaNotifier {
     ref.read(mangaRepositoryProvider).updateMangaStatus(id, status);
   }
 
-  /// 作品全体を Markdown ファイルとして書き出す。
+  /// 作品全体を Markdown ファイルとして書き出し、書き出した作品名を返す。
+  ///
+  /// 戻り値は画面の完了通知に使う。呼び出し側が `mangaProvider` を読み直すと
+  /// まだ loading の場合に作品名が取れないため、ここで確定した名前を渡す。
   ///
   /// 失敗したときは logger.e に詳細を残したうえで例外をそのまま投げる
   /// (呼び出し側の画面で利用者に通知するため)。
-  Future<void> download() async {
+  Future<String> download() async {
     final manga = await future;
     if (manga == null) {
       logger.e('書き出し対象の作品が見つかりません: ${id.id}');
@@ -92,6 +95,7 @@ class MangaNotifier extends _$MangaNotifier {
           error: e, stackTrace: stackTrace);
       rethrow;
     }
+    return manga.name;
   }
 }
 

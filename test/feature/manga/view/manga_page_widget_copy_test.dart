@@ -29,6 +29,13 @@ class _FakeClipboardWriter implements ClipboardWriter {
   }
 }
 
+/// クリップボードは存在するが書き込みが失敗する環境。
+class _ThrowingClipboardWriter implements ClipboardWriter {
+  @override
+  Future<void> write(Iterable<DataWriterItem> items) async =>
+      throw StateError('clipboard write failed');
+}
+
 final _mangaId = MangaId('mid');
 
 MangaPage _page(List<(String, String)> unitDeltaIds) => MangaPage(
@@ -114,6 +121,22 @@ void main() {
           'd-dlg': Delta()..insert('セリフ本文\n'),
         }),
         clipboard: null,
+      ));
+
+      await _tapCopy(tester);
+
+      expect(find.text('Page 1 のコピーに失敗しました'), findsOneWidget);
+      expect(find.text('Page 1 をコピーしました'), findsNothing);
+    });
+
+    testWidgets('クリップボードへの書き込みが失敗しても失敗の SnackBar が出る (AC-1.4)',
+        (tester) async {
+      await tester.pumpWidget(_host(
+        page: _page([('d-dlg', 'd-stg')]),
+        repository: _FakeMangaRepository({
+          'd-dlg': Delta()..insert('セリフ本文\n'),
+        }),
+        clipboard: _ThrowingClipboardWriter(),
       ));
 
       await _tapCopy(tester);

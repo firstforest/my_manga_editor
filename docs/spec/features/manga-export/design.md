@@ -113,7 +113,9 @@ Future<String> toMarkdown(MangaId mangaId);
 
 // MangaNotifier (lib/feature/manga/provider/manga_providers.dart)
 // 失敗時は logger.e に残したうえで rethrow する (画面側で SnackBar を出すため)
-Future<void> download();
+// 戻り値は書き出した作品名。画面側が mangaProvider を読み直すと loading 中に
+// 名前が取れないため、確定した名前をここから返す
+Future<String> download();
 
 // DeltaNotifier (lib/feature/manga/provider/manga_providers.dart)
 Future<String> exportPlainText();
@@ -128,7 +130,9 @@ String sanitizeFileName(String name);
 @riverpod ClipboardWriter? clipboardWriter(Ref ref);
 
 // lib/feature/manga/view/copy_page_dialogues.dart
-enum CopyPageDialoguesResult { copied, empty, unavailable }
+// unavailable = クリップボードが無い環境 / failed = write が例外を投げた
+// どちらも利用者には同じ「コピーに失敗しました」を出す
+enum CopyPageDialoguesResult { copied, empty, unavailable, failed }
 Future<String> buildPageDialoguesText(WidgetRef ref, MangaPage page);
 Future<CopyPageDialoguesResult> copyPageDialogues(WidgetRef ref, MangaPage page);
 Future<void> copyPageDialoguesWithFeedback(

@@ -58,8 +58,10 @@
 ### T-005: クリップボード書き込み失敗時の UI フィードバック [P] ✅ 完了 (2026-08-03)
 - 実装: [lib/feature/manga/view/copy_page_dialogues.dart](../../../../lib/feature/manga/view/copy_page_dialogues.dart)（新規）
 - `manga_page_widget.dart` にあった `_copyAllDialoguesToClipboard` をこのファイルへ移し、
-  結果を `CopyPageDialoguesResult` (copied / empty / unavailable) で返すようにした。
+  結果を `CopyPageDialoguesResult` (copied / empty / unavailable / failed) で返すようにした。
   SnackBar の出し分けは `copyPageDialoguesWithFeedback` に集約（呼び出し 2 箇所の重複も解消）
+- クリップボードが無い環境 (`unavailable`) だけでなく、`write` が例外を投げた場合 (`failed`) も
+  拾って SnackBar を出す。捕まえないと Future が捨てられて利用者に何も表示されないため
 - **spec 追記**: 実装時に AC-1.3（セリフが空）も同じくサイレント no-op だと分かったため、
   `Page <N> にコピーするセリフがありません` を出すようにし requirements.md の AC-1.3 を更新した。
   これまでは空でも「コピーしました」と表示されていた
@@ -75,6 +77,8 @@
 - 拡張子 `.md` / `MimeType.markdown` に統一（AC-2.3）、作品名は `sanitizeFileName` を通す（AC-2.2）
 - `download()` は失敗を `logger.e` に残して rethrow し、画面側で catch して
   `保存に失敗しました` を表示する（AC-2.6 / FR-006）。作品が取得できない場合も同様に失敗として扱う
+- 完了通知に出す作品名は `download()` の戻り値を使う。画面側で `mangaProvider` を読み直すと、
+  まだ loading のときに `null をダウンロードしました` と表示されてしまうため
 - サニタイズのテストは [manga_providers_test.dart](../../../../test/feature/manga/provider/manga_providers_test.dart) に追加
 
 ### T-007: Delta → プレーンテキスト変換ロジックの集約 ✅ 完了 (2026-08-03)

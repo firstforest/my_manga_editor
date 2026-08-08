@@ -27,7 +27,7 @@ Firestore への追加クエリは発生しない。絞り込みは既に購読�
 | UI (`lib/feature/manga/view/tag_filter_bar.dart`) | **新規**。`すべて` / `タグなし` / 各タグ の ChoiceChip 列（横スクロール） |
 | UI (`lib/feature/manga/view/kanban_card.dart`) | カード下部にタグを最大 3 個 + `+N` で表示（AC-2.10） |
 | UI (`lib/feature/manga/view/manga_tags_widget.dart`) | **新規**。編集画面のタグ編集欄（チップ + × / 追加入力 + 候補提示） |
-| UI (`lib/feature/manga/page/manga_edit_page.dart`) | `MangaTitle` に `MangaTagsWidget` を差し込む |
+| UI (`lib/feature/manga/page/manga_edit_page.dart`) | `MangaTitle` の開始ページ選択の右に `MangaTagsWidget` を並べる (行を増やさず `toolbarHeight` に収める) |
 | State (`lib/feature/manga/provider/tag_providers.dart`) | **新規**。`TagFilter` (freezed union) / `tagList` / `TagFilterNotifier` / `filteredMangaList` |
 | State (`lib/feature/manga/provider/manga_providers.dart`) | `MangaNotifier.addTag` / `removeTag` を追加 |
 | State (`lib/feature/manga/provider/manga_page_view_model.dart`) | `createNewManga` に初期タグを渡せるようにする |
@@ -207,6 +207,8 @@ Future<void> removeTag(MangaId id, String tag);
 @riverpod
 List<String> tagList(Ref ref);
 
+// riverpod_generator は Notifier サフィックスを落とすので、
+// 生成される provider 名は tagFilterProvider になる
 @riverpod
 class TagFilterNotifier extends _$TagFilterNotifier {
   @override
@@ -236,6 +238,16 @@ Future<void> removeTag(String value);
 `TagFilterNotifier.build()` の中で `tagList` を `ref.listen` し、
 選択中の `TagFilterTag.name` が一覧から消えたら `TagFilter.all()` に戻す。
 UI 側（`TagFilterBar`）に同じ判定を書かない — 状態の正しさは Notifier 1 箇所に置く。
+
+### 実装で確定した細部
+
+- **利用者向けの文言は UI で作る**。Repository の `ValidationException` は英語のメッセージを持つので、
+  `MangaTagsWidget` が「文字数超過」と「個数超過」を出し分けて日本語にする
+- **入力欄はフォーカスが外れたら破棄する**。入力途中の文字列を勝手にタグにしない
+- **候補から自分に既に付いているタグを除く**。押しても何も起きない候補を並べないため
+- **選択中のチップを再度押しても絞り込みは外れない**。「絞り込み無し」の状態が
+  `すべて` とチップ解除の 2 通りできるのを避ける
+- **カードのタグは `Wrap` で最大 3 個 + `+N`**。カードの高さが作品ごとにばらつかないようにする
 
 ## 状態遷移 / ライフサイクル
 

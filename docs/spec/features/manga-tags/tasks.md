@@ -18,7 +18,7 @@
 
 ## タスク一覧
 
-### T-001: ドメインモデル / クラウドモデルに `tags` を追加 [P]
+### T-001: ドメインモデル / クラウドモデルに `tags` を追加 [P] ✅ 完了 (2026-08-08)
 - 対象:
   - `local_package/my_manga_editor_data/lib/model/manga.dart`
   - `local_package/my_manga_editor_data/lib/service/firebase/model/cloud_manga.dart`
@@ -37,7 +37,7 @@
   - 既存テストが全て green のまま
 - 依存: なし
 
-### T-002: `CloudManga` の後方互換 fixture テストを追加 [P]
+### T-002: `CloudManga` の後方互換 fixture テストを追加 [P] ✅ 完了 (2026-08-08)
 - 対象:
   - `test/data_migration/fixtures/manga/`（新規ディレクトリ）
   - `test/data_migration/schema_version_fixture_test.dart`
@@ -54,7 +54,7 @@
   - `flutter test test/data_migration/` が全件パス
 - 依存: T-001
 
-### T-003: `FirebaseService` に配列差分操作を追加 [P]
+### T-003: `FirebaseService` に配列差分操作を追加 [P] ✅ 完了 (2026-08-08)
 - 対象: `local_package/my_manga_editor_data/lib/service/firebase/firebase_service.dart`
 - 内容:
   - `Future<void> addMangaTag(String mangaId, String tag)` — `FieldValue.arrayUnion([tag])` と
@@ -68,7 +68,7 @@
   - `fake_cloud_firestore` で追加・削除が配列に反映されることを確認するテストがある
 - 依存: なし
 
-### T-004: `MangaRepository` にタグの追加・削除を追加
+### T-004: `MangaRepository` にタグの追加・削除を追加 ✅ 完了 (2026-08-08)
 - 対象: `local_package/my_manga_editor_data/lib/repository/manga_repository.dart`
 - 内容:
   - `Future<void> addTag(MangaId id, String tag)`
@@ -84,7 +84,7 @@
   - T-005 のテストがパス
 - 依存: T-001, T-003
 
-### T-005: `MangaRepository` のタグ操作のユニットテスト [P]
+### T-005: `MangaRepository` のタグ操作のユニットテスト [P] ✅ 完了 (2026-08-08)
 - 対象: `local_package/my_manga_editor_data/test/repository/manga_repository_tags_test.dart`（新規）
 - 内容: 既存 `manga_repository_export_test.dart` と同じ `MockFirebaseService` 方式で以下を検証
   - `addTag` が `addMangaTag(id, 'X')` を呼ぶ / `removeTag` が `removeMangaTag(id, 'X')` を呼ぶ
@@ -97,7 +97,7 @@
   - 上記 AC をカバーし `flutter test` が全件パス
 - 依存: T-004
 
-### T-006: タグ関連のプロバイダを追加
+### T-006: タグ関連のプロバイダを追加 ✅ 完了 (2026-08-08)
 - 対象: `lib/feature/manga/provider/tag_providers.dart`（新規）
 - 内容:
   - `TagFilter` を freezed union (`all` / `untagged` / `tag(String)`) として定義
@@ -111,7 +111,7 @@
   - T-007 のテストがパス
 - 依存: T-001
 
-### T-007: タグ関連プロバイダのユニットテスト [P]
+### T-007: タグ関連プロバイダのユニットテスト [P] ✅ 完了 (2026-08-08)
 - 対象: `test/feature/manga/provider/tag_providers_test.dart`（新規）
 - 内容: `ProviderContainer` + `allMangaListProvider` の override で以下を検証
   - `tagList` が平坦化・重複除去・昇順（AC-2.2）
@@ -123,7 +123,7 @@
   - 上記 AC をカバーし `flutter test` が全件パス
 - 依存: T-006
 
-### T-008: カンバンにタグ絞り込みバーを追加
+### T-008: カンバンにタグ絞り込みバーを追加 ✅ 完了 (2026-08-08)
 - 対象:
   - `lib/feature/manga/view/tag_filter_bar.dart`（新規）
   - `lib/feature/manga/page/manga_select_page.dart`
@@ -139,7 +139,7 @@
   - `flutter analyze` が通る
 - 依存: T-006
 
-### T-009: カンバンのカードにタグを表示 [P]
+### T-009: カンバンのカードにタグを表示 [P] ✅ 完了 (2026-08-08)
 - 対象: `lib/feature/manga/view/kanban_card.dart`
 - 内容:
   - カード下部（ページ数の行の近く）にタグを小さいチップで先頭から最大 3 個表示
@@ -151,7 +151,7 @@
   - `flutter analyze` が通る
 - 依存: T-001
 
-### T-010: 絞り込み中の新規作成を選択中タグに紐づける
+### T-010: 絞り込み中の新規作成を選択中タグに紐づける ✅ 完了 (2026-08-08)
 - 対象:
   - `lib/feature/manga/page/manga_select_page.dart`（新規作成ボタン）
   - `lib/feature/manga/provider/manga_page_view_model.dart`（`createNewManga` にタグを渡す）
@@ -163,7 +163,7 @@
   - `flutter analyze` が通る
 - 依存: T-004, T-006, T-008
 
-### T-011: 編集画面にタグ編集欄を追加
+### T-011: 編集画面にタグ編集欄を追加 ✅ 完了 (2026-08-08)
 - 対象:
   - `lib/feature/manga/view/manga_tags_widget.dart`（新規）
   - `lib/feature/manga/page/manga_edit_page.dart`（`MangaTitle` に差し込む）
@@ -180,7 +180,7 @@
   - `flutter analyze` が通る
 - 依存: T-004, T-006
 
-### T-012: ウィジェットテスト [P]
+### T-012: ウィジェットテスト [P] ✅ 完了 (2026-08-08)
 - 対象:
   - `test/feature/manga/view/tag_filter_bar_test.dart`（新規）
   - `test/feature/manga/view/manga_tags_widget_test.dart`（新規）
@@ -195,7 +195,7 @@
   - `flutter test` が全件パス
 - 依存: T-008, T-009, T-011
 
-### T-013: ドキュメント整合
+### T-013: ドキュメント整合 ✅ 完了 (2026-08-08)
 - 対象:
   - [docs/design/data-model.md](../../../design/data-model.md)
   - [.claude/rules/data-layer.md](../../../../.claude/rules/data-layer.md)
@@ -213,6 +213,16 @@
   - spec とコード・既存ドキュメントの間に乖離がない
   - PR description に `Closes AC-1.1, ...` の対応関係が書かれている
 - 依存: T-001 〜 T-012
+
+## 残っている手動確認
+
+自動テストでは代替できないもの。実機 (または `mise run run`) で確認する。
+
+- [ ] 絞り込み中にカードをドラッグしてステータスを変えてもタグが外れない（AC-2.7）
+- [ ] 絞り込み中の「新規作成」がそのタグ付きの作品を作る（AC-2.6）
+- [ ] 2 端末（またはブラウザ 2 タブ）で同じ作品に別々のタグを足すと両方残る（FR-006）
+- [ ] オフラインでタグを足し、再接続後に同期される（NFR-002）
+- [ ] タグが 20 個以上ある状態で絞り込みバーが横スクロールし、カンバンの高さを圧迫しない
 
 ## レビューで決めたいこと
 

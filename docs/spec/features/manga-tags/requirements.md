@@ -1,9 +1,9 @@
 # Requirements: 作品タグ
 
 ## メタデータ
-- Status: draft
+- Status: implemented
 - Owner: TBD
-- Last Updated: 2026-08-07
+- Last Updated: 2026-08-08
 - Related:
   - [design.md](./design.md) / [tasks.md](./tasks.md)
   - [docs/design/data-model.md](../../../design/data-model.md)

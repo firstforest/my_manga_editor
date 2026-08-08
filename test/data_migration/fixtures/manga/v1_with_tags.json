@@ -1,0 +1,18 @@
+{
+  "description": "v1: tags を持つ作品。追加順がそのまま保たれる",
+  "document": {
+    "schemaVersion": 1,
+    "userId": "uid",
+    "name": "連載第1話",
+    "startPageDirection": "left",
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-01-01T00:00:00Z",
+    "ideaMemoDeltaId": "idea-1",
+    "status": "complete",
+    "tags": ["連載:ヒーロー", "商業"]
+  },
+  "expected": {
+    "name": "連載第1話",
+    "tags": ["連載:ヒーロー", "商業"]
+  }
+}

@@ -280,6 +280,43 @@ class FirebaseService {
     }
   }
 
+  /// Add a tag to a manga document.
+  ///
+  /// 配列全体を read-modify-write すると、2 端末が別のタグを同時に足したときに
+  /// 後勝ちで片方が消える。`FieldValue.arrayUnion` で差分だけを送ることでこれを避ける。
+  /// 既に同じタグがあれば何も起きない (冪等)。
+  Future<void> addMangaTag(String mangaId, String tag) async {
+    try {
+      await _mangasCollection.doc(mangaId).update({
+        'tags': FieldValue.arrayUnion([tag]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to add manga tag: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
+  /// Remove a tag from a manga document.
+  ///
+  /// `addMangaTag` と同じ理由で `FieldValue.arrayRemove` を使う。
+  /// 存在しないタグを指定しても何も起きない (冪等)。
+  Future<void> removeMangaTag(String mangaId, String tag) async {
+    try {
+      await _mangasCollection.doc(mangaId).update({
+        'tags': FieldValue.arrayRemove([tag]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to remove manga tag: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
   /// Update specific fields of a manga page document
   Future<void> updateMangaPage(
       String mangaId, String pageId, Map<String, dynamic> updates) async {

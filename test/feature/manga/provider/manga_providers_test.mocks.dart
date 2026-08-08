@@ -33,15 +33,27 @@ import 'manga_providers_test.dart' as _i5;
 /// See the documentation for Mockito's code generation for more information.
 class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
   @override
-  _i3.Future<_i4.MangaId> createNewManga({String? name = '無名の傑作'}) =>
+  _i3.Future<_i4.MangaId> createNewManga({
+    String? name = '無名の傑作',
+    List<String>? tags = const [],
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #createNewManga,
           [],
-          {#name: name},
+          {
+            #name: name,
+            #tags: tags,
+          },
         ),
-        returnValue: _i5.mockCreateNewManga(name: name),
-        returnValueForMissingStub: _i5.mockCreateNewManga(name: name),
+        returnValue: _i5.mockCreateNewManga(
+          name: name,
+          tags: tags,
+        ),
+        returnValueForMissingStub: _i5.mockCreateNewManga(
+          name: name,
+          tags: tags,
+        ),
       ) as _i3.Future<_i4.MangaId>);
 
   @override
@@ -109,6 +121,40 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
           [
             id,
             value,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> addTag(
+    _i4.MangaId? id,
+    String? tag,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addTag,
+          [
+            id,
+            tag,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> removeTag(
+    _i4.MangaId? id,
+    String? tag,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #removeTag,
+          [
+            id,
+            tag,
           ],
         ),
         returnValue: _i3.Future<void>.value(),

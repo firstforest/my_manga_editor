@@ -33,5 +33,7 @@ dev_dependencies:
   riverpod_generator: ^4.0.4
   riverpod_lint: ^3.1.4
   mockito: ^5.4.5
+  # Firestore の配列差分操作 (arrayUnion / arrayRemove) を実ドキュメントで検証する
+  fake_cloud_firestore: ^4.0.0
 
 flutter:

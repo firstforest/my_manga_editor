@@ -17,6 +17,7 @@ abstract class CloudManga with _$CloudManga {
     String? ideaMemoDeltaId, // CloudDelta document ID for ideaMemo
     @JsonKey(name: 'editLock') EditLock? editLock, // Optional edit lock
     String? status, // Manga status: 'idea', 'inProgress', 'complete'
+    List<String>? tags, // Tags attached to the manga (null/absent = no tags)
   }) = _CloudManga;
 
   factory CloudManga.fromJson(Map<String, dynamic> json) =>
@@ -41,6 +42,8 @@ extension CloudMangaExt on CloudManga {
       if (ideaMemoDeltaId != null) 'ideaMemoDeltaId': ideaMemoDeltaId,
       if (editLock != null) 'editLock': editLock!.toJson(),
       if (status != null) 'status': status,
+      // タグなしは空配列で表す。キーの有無で状態を持たせないため常に書く。
+      'tags': tags ?? const <String>[],
     };
   }
 
@@ -63,6 +66,9 @@ extension CloudMangaExt on CloudManga {
           ? EditLock.fromJson(data['editLock'] as Map<String, dynamic>)
           : null,
       status: data['status'] as String?,
+      // tags フィールドを持たない旧ドキュメントは null のまま読み、
+      // ドメイン変換時に空リストへ倒す (タグなし)。
+      tags: (data['tags'] as List<dynamic>?)?.cast<String>(),
     );
   }
 }

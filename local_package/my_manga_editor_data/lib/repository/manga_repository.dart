@@ -64,7 +64,10 @@ class MangaRepository {
   /// Create a new manga project
   /// Returns the manga ID (Firestore document ID)
   /// Throws: AuthException if user not authenticated
-  Future<MangaId> createNewManga({String name = '無名の傑作'}) async {
+  Future<MangaId> createNewManga({
+    String name = '無名の傑作',
+    List<String> tags = const [],
+  }) async {
     try {
       final userId = _authService.currentUser?.uid;
       if (userId == null) {
@@ -81,6 +84,7 @@ class MangaRepository {
         updatedAt: DateTime.now(),
         editLock: null,
         status: MangaStatus.idea.name,
+        tags: tags,
       );
 
       // Upload manga document to Firestore
@@ -202,6 +206,77 @@ class MangaRepository {
       });
       logger.d('Updated start page: $id -> ${value.name}');
     } on FirebaseException catch (e) {
+      throw _handleFirebaseException(e);
+    }
+  }
+
+  // ============================================================================
+  // Tag Operations
+  // ============================================================================
+
+  /// 1 タグの最大文字数 (trim 後)
+  static const maxTagLength = 30;
+
+  /// 1 作品に付けられるタグの最大数
+  static const maxTagsPerManga = 20;
+
+  /// Add a tag to a manga.
+  ///
+  /// 空文字 / 空白のみは何もせず正常終了する (利用者が空のまま確定したケース)。
+  /// Throws: AuthException, ValidationException
+  Future<void> addTag(MangaId id, String tag) async {
+    try {
+      final userId = _authService.currentUser?.uid;
+      if (userId == null) {
+        throw repo_exceptions.AuthException();
+      }
+
+      final trimmed = tag.trim();
+      if (trimmed.isEmpty) return;
+
+      if (trimmed.length > maxTagLength) {
+        throw repo_exceptions.ValidationException(
+            'Tag must be 1-$maxTagLength characters');
+      }
+
+      // 上限判定は購読済みドキュメントを読んで行う。arrayUnion は件数を知らないため
+      // 厳密な排他にはならないが、上限は UI 保護のための目安として扱う。
+      final current = await _firebaseService.fetchManga(id.id);
+      final currentTags = current?.tags ?? const <String>[];
+      if (!currentTags.contains(trimmed) &&
+          currentTags.length >= maxTagsPerManga) {
+        throw repo_exceptions.ValidationException(
+            'Too many tags (max $maxTagsPerManga)');
+      }
+
+      await _firebaseService.addMangaTag(id.id, trimmed);
+      logger.d('Added tag to manga: $id -> $trimmed');
+    } on repo_exceptions.ValidationException {
+      rethrow;
+    } on FirebaseException catch (e) {
+      logger.e('Failed to add tag: $id', error: e);
+      throw _handleFirebaseException(e);
+    }
+  }
+
+  /// Remove a tag from a manga.
+  ///
+  /// 付いていないタグを指定しても何も起きない。
+  /// Throws: AuthException
+  Future<void> removeTag(MangaId id, String tag) async {
+    try {
+      final userId = _authService.currentUser?.uid;
+      if (userId == null) {
+        throw repo_exceptions.AuthException();
+      }
+
+      final trimmed = tag.trim();
+      if (trimmed.isEmpty) return;
+
+      await _firebaseService.removeMangaTag(id.id, trimmed);
+      logger.d('Removed tag from manga: $id -> $trimmed');
+    } on FirebaseException catch (e) {
+      logger.e('Failed to remove tag: $id', error: e);
       throw _handleFirebaseException(e);
     }
   }
@@ -815,6 +890,7 @@ extension CloudMangaConversion on CloudManga {
       startPage: MangaStartPageExt.fromString(startPageDirection),
       ideaMemoDeltaId: DeltaId(ideaMemoDeltaId ?? ''),
       status: MangaStatusExt.fromString(status),
+      tags: tags ?? const [],
     );
   }
 }
@@ -832,6 +908,7 @@ extension MangaToCloudConversion on Manga {
       ideaMemoDeltaId: ideaMemoDeltaId.id,
       editLock: null,
       status: status.name,
+      tags: tags,
     );
   }
 }

@@ -67,6 +67,17 @@ class MangaNotifier extends _$MangaNotifier {
     ref.read(mangaRepositoryProvider).updateMangaStatus(id, status);
   }
 
+  /// タグを追加する。空文字は何もせず正常終了する。
+  /// 文字数・個数の上限を超えると ValidationException を投げるので、
+  /// 呼び出し側で捕まえて利用者に伝えること。
+  Future<void> addTag(String value) async {
+    await ref.read(mangaRepositoryProvider).addTag(id, value);
+  }
+
+  Future<void> removeTag(String value) async {
+    await ref.read(mangaRepositoryProvider).removeTag(id, value);
+  }
+
   Future<void> download() async {
     final manga = await future;
     if (manga != null) {

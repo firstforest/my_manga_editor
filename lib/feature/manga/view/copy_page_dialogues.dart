@@ -17,23 +17,24 @@ enum CopyPageDialoguesResult {
   /// 実行環境にクリップボードが無く、書き込めなかった
   unavailable,
 
-  /// クリップボードへの書き込み中にエラーが起きた
+  /// セリフの読み込み、またはクリップボードへの書き込み中にエラーが起きた
   failed,
 }
 
 /// ページ内の全カットのセリフをプレーンテキスト化し、
 /// カットの順序を保ったまま空行区切りで連結する。
+///
+/// `ref` を使う処理は await をまたぐ前にまとめて始める。await の後に `ref` を
+/// 触ると、その間に画面が閉じられていた場合に StateError になるため。
 Future<String> buildPageDialoguesText(WidgetRef ref, MangaPage page) async {
-  final parts = <String>[];
-  for (final unit in page.sceneUnits) {
-    final text = await ref
-        .read(deltaProvider(page.mangaId, unit.dialoguesDeltaId).notifier)
-        .exportPlainText();
-    if (text.isNotEmpty) {
-      parts.add(text);
-    }
-  }
-  return parts.join('\n\n');
+  final pending = [
+    for (final unit in page.sceneUnits)
+      ref
+          .read(deltaProvider(page.mangaId, unit.dialoguesDeltaId).notifier)
+          .exportPlainText(),
+  ];
+  final texts = await Future.wait(pending);
+  return texts.where((text) => text.isNotEmpty).join('\n\n');
 }
 
 /// ページのセリフをまとめてクリップボードへ書き込む。
@@ -41,13 +42,23 @@ Future<CopyPageDialoguesResult> copyPageDialogues(
   WidgetRef ref,
   MangaPage page,
 ) async {
-  final combined = await buildPageDialoguesText(ref, page);
+  // クリップボードの取得も await より前に済ませる (buildPageDialoguesText と同じ理由)
+  final clipboard = ref.read(clipboardWriterProvider);
+
+  final String combined;
+  try {
+    combined = await buildPageDialoguesText(ref, page);
+  } catch (e, stackTrace) {
+    // Delta の読み込み失敗。ここで拾わないと Future が捨てられ、
+    // ボタンを押しても何も起きない状態になる
+    logger.e('セリフの読み込みに失敗しました', error: e, stackTrace: stackTrace);
+    return CopyPageDialoguesResult.failed;
+  }
+
   // 空の内容で既存のクリップボードを潰さない
   if (combined.isEmpty) {
     return CopyPageDialoguesResult.empty;
   }
-
-  final clipboard = ref.read(clipboardWriterProvider);
   if (clipboard == null) {
     return CopyPageDialoguesResult.unavailable;
   }

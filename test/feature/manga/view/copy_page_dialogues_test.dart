@@ -29,6 +29,13 @@ class _FakeClipboardWriter implements ClipboardWriter {
   }
 }
 
+/// Delta の読み込み自体が失敗するリポジトリ (権限エラー・オフライン等)。
+class _FailingMangaRepository extends Fake implements MangaRepository {
+  @override
+  Stream<Delta?> getDeltaStream(MangaId mangaId, DeltaId deltaId) =>
+      Stream.error(StateError('permission denied'));
+}
+
 /// クリップボードは存在するが書き込みが失敗する環境。
 class _ThrowingClipboardWriter implements ClipboardWriter {
   @override
@@ -53,6 +60,7 @@ MangaPage _page(List<(String, String)> unitDeltaIds) => MangaPage(
 /// コピーボタンだけを持つ最小の画面。
 /// MangaPageWidget 本体は Quill エディタを含んで重いので、
 /// コピー導線 (ボタン押下 → SnackBar) だけを取り出して検証する。
+/// そのため `manga_page_widget.dart` のボタン配線自体はここでは検証していない。
 Widget _host({
   required MangaPage page,
   required MangaRepository repository,
@@ -143,6 +151,20 @@ void main() {
 
       expect(find.text('Page 1 のコピーに失敗しました'), findsOneWidget);
       expect(find.text('Page 1 をコピーしました'), findsNothing);
+    });
+
+    testWidgets('セリフの読み込みに失敗しても失敗の SnackBar が出る (AC-1.4)', (tester) async {
+      final clipboard = _FakeClipboardWriter();
+      await tester.pumpWidget(_host(
+        page: _page([('d-dlg', 'd-stg')]),
+        repository: _FailingMangaRepository(),
+        clipboard: clipboard,
+      ));
+
+      await _tapCopy(tester);
+
+      expect(find.text('Page 1 のコピーに失敗しました'), findsOneWidget);
+      expect(clipboard.writeCount, 0);
     });
 
     testWidgets('複数カットのセリフは 1 回の書き込みにまとめられる (AC-1.1)', (tester) async {

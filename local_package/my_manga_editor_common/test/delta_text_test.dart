@@ -27,10 +27,23 @@ void main() {
       expect(deltaToPlainText(Delta()), '');
     });
 
-    test('先頭末尾の空白が trim される', () {
+    test('先頭末尾の空行が落ちる', () {
       final delta = Delta()..insert('   \n\nセリフ本文\n\n   \n');
 
       expect(deltaToPlainText(delta), 'セリフ本文');
+    });
+
+    test('行頭の全角スペースによる字下げは残る', () {
+      // 空行を詰めるときに、次の行の字下げまで巻き込まないこと
+      final delta = Delta()..insert('場面転換\n\n\n　夜の教室\n');
+
+      expect(deltaToPlainText(delta), '場面転換\n\n　夜の教室');
+    });
+
+    test('先頭行の字下げは残る', () {
+      final delta = Delta()..insert('　セリフ本文\n');
+
+      expect(deltaToPlainText(delta), '　セリフ本文');
     });
 
     test('文字列以外の挿入 (埋め込み) は無視される', () {
@@ -43,11 +56,15 @@ void main() {
     });
 
     test('複数の insert が順序を保って連結される', () {
-      final delta = Delta()
-        ..insert('1行目\n')
-        ..insert('2行目\n')
-        ..insert('3行目\n');
+      // Delta()..insert() を並べると同じ属性の insert は 1 op にマージされてしまい
+      // 連結ループを通らないので、op を分けたまま持てる fromJson で組み立てる
+      final delta = Delta.fromJson([
+        {'insert': '1行目\n'},
+        {'insert': '2行目\n'},
+        {'insert': '3行目\n'},
+      ]);
 
+      expect(delta.toList(), hasLength(3));
       expect(deltaToPlainText(delta), '1行目\n2行目\n3行目');
     });
   });

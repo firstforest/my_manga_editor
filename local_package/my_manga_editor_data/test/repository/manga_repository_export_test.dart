@@ -313,6 +313,124 @@ void main() {
       expect(markdown, isNot(contains('\n\n\n\n')));
     });
 
+    test('中身が空のカットは ### カット N ごと出力されない', () async {
+      when(firebase.fetchManga('mid'))
+          .thenAnswer((_) async => _cloudManga(name: '空カット混在'));
+      when(firebase.fetchMangaPages('mid')).thenAnswer((_) async => [
+            _cloudPage(
+              id: 'p1',
+              pageIndex: 0,
+              sceneUnits: [
+                {
+                  'dialoguesDeltaId': 'd-dlg1',
+                  'stageDirectionDeltaId': 'd-stg1',
+                },
+                // 2 つ目のカットは追加しただけで中身が無い
+                {
+                  'dialoguesDeltaId': 'd-dlg2',
+                  'stageDirectionDeltaId': 'd-stg2',
+                },
+              ],
+            ),
+          ]);
+      when(firebase.fetchDeltas('mid')).thenAnswer((_) async => [
+            _cloudDelta(
+                id: 'd-dlg1',
+                fieldName: 'dialoguesDelta',
+                pageId: 'p1',
+                text: 'セリフ1'),
+            _cloudDelta(
+                id: 'd-stg1',
+                fieldName: 'stageDirectionDelta',
+                pageId: 'p1',
+                text: ''),
+            _cloudDelta(
+                id: 'd-dlg2',
+                fieldName: 'dialoguesDelta',
+                pageId: 'p1',
+                text: ''),
+            _cloudDelta(
+                id: 'd-stg2',
+                fieldName: 'stageDirectionDelta',
+                pageId: 'p1',
+                text: ''),
+          ]);
+
+      final markdown = await repository.toMarkdown(MangaId('mid'));
+
+      expect(markdown, contains('### カット 1'));
+      expect(markdown, contains('セリフ1'));
+      expect(markdown, isNot(contains('### カット 2')));
+    });
+
+    // 書き出しは .md なので、本文がそのまま Markdown として解釈される。
+    // 改行と行頭記号が書いたとおりに見えることを確認する。
+    test('本文の途中の改行は強制改行 (行末の半角スペース 2 つ) でつながる', () async {
+      when(firebase.fetchManga('mid'))
+          .thenAnswer((_) async => _cloudManga(name: '改行確認'));
+      when(firebase.fetchMangaPages('mid')).thenAnswer((_) async => [
+            _cloudPage(
+              id: 'p1',
+              pageIndex: 0,
+              sceneUnits: [
+                {
+                  'dialoguesDeltaId': 'd-dlg',
+                  'stageDirectionDeltaId': 'd-stg',
+                },
+              ],
+            ),
+          ]);
+      when(firebase.fetchDeltas('mid')).thenAnswer((_) async => [
+            _cloudDelta(
+              id: 'd-dlg',
+              fieldName: 'dialoguesDelta',
+              pageId: 'p1',
+              text: 'A「こんにちは」\nB「やあ」\n\nC「またね」',
+            ),
+          ]);
+
+      final markdown = await repository.toMarkdown(MangaId('mid'));
+
+      expect(markdown, contains('A「こんにちは」  \nB「やあ」'));
+      // 空行は段落の区切りとして効くので強制改行は付けない
+      expect(markdown, contains('B「やあ」\n\nC「またね」'));
+    });
+
+    test('行頭の記号は Markdown の記法にならないようエスケープされる', () async {
+      when(firebase.fetchManga('mid'))
+          .thenAnswer((_) async => _cloudManga(name: 'エスケープ確認'));
+      when(firebase.fetchMangaPages('mid')).thenAnswer((_) async => [
+            _cloudPage(
+              id: 'p1',
+              pageIndex: 0,
+              sceneUnits: [
+                {
+                  'dialoguesDeltaId': 'd-dlg',
+                  'stageDirectionDeltaId': 'd-stg',
+                },
+              ],
+            ),
+          ]);
+      when(firebase.fetchDeltas('mid')).thenAnswer((_) async => [
+            _cloudDelta(
+              id: 'd-stg',
+              fieldName: 'stageDirectionDelta',
+              pageId: 'p1',
+              text: '---\n# 回想\n1. 教室\n> つぶやき',
+            ),
+          ]);
+
+      final markdown = await repository.toMarkdown(MangaId('mid'));
+
+      expect(markdown, contains(r'\---'));
+      expect(markdown, contains(r'\# 回想'));
+      expect(markdown, contains(r'1\. 教室'));
+      expect(markdown, contains(r'\> つぶやき'));
+      // 作品名・ページ・セクションの見出しはエスケープしない
+      expect(markdown, contains('# エスケープ確認'));
+      expect(markdown, contains('### ト書き'));
+    });
+
     test('アイデアメモが空 Delta の場合はセクションが出力されない', () async {
       when(firebase.fetchManga('mid')).thenAnswer((_) async =>
           _cloudManga(name: '空アイデア', ideaMemoDeltaId: 'd-idea'));

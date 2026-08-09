@@ -656,7 +656,7 @@ class MangaRepository {
         }
         buffer.writeln(heading);
         buffer.writeln();
-        buffer.writeln(body);
+        buffer.writeln(_toMarkdownBody(body));
         buffer.writeln();
       }
 
@@ -678,18 +678,24 @@ class MangaRepository {
         final hasMultipleUnits = domainPage.sceneUnits.length > 1;
         for (int j = 0; j < domainPage.sceneUnits.length; j++) {
           final unit = domainPage.sceneUnits[j];
-          if (hasMultipleUnits) {
+          final stageDirection =
+              _plainTextOf(pageDeltas, unit.stageDirectionDeltaId.id);
+          final dialogues = _plainTextOf(pageDeltas, unit.dialoguesDeltaId.id);
+          // 中身が空のカットは見出しごと出力しない。
+          // カット番号はページ内の位置を表すので、飛ばしても振り直さない
+          if (hasMultipleUnits &&
+              (stageDirection.isNotEmpty || dialogues.isNotEmpty)) {
             buffer.writeln('### カット ${j + 1}');
             buffer.writeln();
           }
 
           writeSection(
             hasMultipleUnits ? '#### ト書き' : '### ト書き',
-            _plainTextOf(pageDeltas, unit.stageDirectionDeltaId.id),
+            stageDirection,
           );
           writeSection(
             hasMultipleUnits ? '#### セリフ' : '### セリフ',
-            _plainTextOf(pageDeltas, unit.dialoguesDeltaId.id),
+            dialogues,
           );
         }
       }
@@ -712,6 +718,49 @@ class MangaRepository {
       return '';
     }
     return deltaToPlainText(Delta.fromJson(doc.ops));
+  }
+
+  /// 利用者が書いたプレーンテキストを、Markdown として開いても
+  /// 書いたとおりに見える本文に直す。
+  ///
+  /// - 続く行は行末の半角スペース 2 つ (強制改行) でつなぐ。
+  ///   そのままだと 1 行ずつの改行が無視されて 1 段落に繋がってしまうため
+  /// - 行頭の記号はエスケープする ([_escapeMarkdownLine])
+  ///
+  /// 空行はそのままで段落の区切りとして働くので、強制改行は付けない。
+  String _toMarkdownBody(String body) {
+    final lines = body.split('\n');
+    final buffer = StringBuffer();
+    for (int i = 0; i < lines.length; i++) {
+      buffer.write(_escapeMarkdownLine(lines[i]));
+      if (i == lines.length - 1) {
+        break;
+      }
+      if (lines[i].isNotEmpty && lines[i + 1].isNotEmpty) {
+        buffer.write('  ');
+      }
+      buffer.write('\n');
+    }
+    return buffer.toString();
+  }
+
+  /// 行頭に来ると Markdown のブロック要素 (箇条書き・引用・見出し・罫線など) に
+  /// 化ける記号を `\` でエスケープする。
+  ///
+  /// 行の途中の記号は、そのままでも本文として読めるほうが多いので触らない。
+  /// 例: `- 場面転換` → `\- 場面転換`、`1. 導入` → `1\. 導入`
+  String _escapeMarkdownLine(String line) {
+    final block = RegExp(r'^([^\S\n]*)([-+*>#=_~`])').firstMatch(line);
+    if (block != null) {
+      return '${block.group(1)}\\${block.group(2)}'
+          '${line.substring(block.end)}';
+    }
+    final ordered = RegExp(r'^([^\S\n]*\d+)([.)])').firstMatch(line);
+    if (ordered != null) {
+      return '${ordered.group(1)}\\${ordered.group(2)}'
+          '${line.substring(ordered.end)}';
+    }
+    return line;
   }
 
   // ============================================================================

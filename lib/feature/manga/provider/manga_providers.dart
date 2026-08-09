@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter_quill/quill_delta.dart';
-import 'package:markdown_quill/markdown_quill.dart';
 import 'package:my_manga_editor_common/delta_text.dart';
 import 'package:my_manga_editor_common/logger.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
@@ -73,31 +72,41 @@ class MangaNotifier extends _$MangaNotifier {
   /// まだ loading の場合に作品名が取れないため、ここで確定した名前を渡す。
   ///
   /// 失敗したときは logger.e に詳細を残したうえで例外をそのまま投げる
-  /// (呼び出し側の画面で利用者に通知するため)。
+  /// (呼び出し側の画面で利用者に通知するため)。作品の取得・変換・保存の
+  /// どこで失敗してもログが残るよう、全体を 1 つの try で囲っている (FR-006)。
   Future<String> download() async {
-    final manga = await future;
-    if (manga == null) {
-      logger.e('書き出し対象の作品が見つかりません: ${id.id}');
-      throw StateError('Manga not found: ${id.id}');
-    }
-    logger.d('download ${manga.name}');
     try {
+      final manga = await future;
+      if (manga == null) {
+        throw StateError('Manga not found: ${id.id}');
+      }
+      logger.d('download ${manga.name}');
       final content =
           await ref.read(mangaRepositoryProvider).toMarkdown(manga.id);
-      await FileSaver.instance.saveFile(
+      final saved = await FileSaver.instance.saveFile(
         name: 'komatto_${sanitizeFileName(manga.name)}',
         fileExtension: 'md',
         mimeType: MimeType.markdown,
         bytes: Uint8List.fromList(utf8.encode(content)),
       );
+      if (isFileSaverFailure(saved)) {
+        throw StateError('file_saver did not save the file: $saved');
+      }
+      return manga.name;
     } catch (e, stackTrace) {
-      logger.e('作品の書き出しに失敗しました: ${manga.name}',
-          error: e, stackTrace: stackTrace);
+      logger.e('作品の書き出しに失敗しました: ${id.id}', error: e, stackTrace: stackTrace);
       rethrow;
     }
-    return manga.name;
   }
 }
+
+/// `FileSaver.saveFile` の戻り値が「保存できなかった」を表すかどうか。
+///
+/// `file_saver` は保存に失敗しても例外を投げず、保存先パスの代わりに
+/// 空文字列か `Something went wrong, ...` というメッセージを返すことがある。
+/// これを成功として扱うと、保存できていないのに完了通知が出てしまう。
+bool isFileSaverFailure(String result) =>
+    result.isEmpty || result.startsWith('Something went wrong');
 
 /// 作品名をファイル名に使える形に直す。
 ///
@@ -157,15 +166,6 @@ class DeltaNotifier extends _$DeltaNotifier {
     final delta = await future;
     return switch (delta) {
       Delta d when d.isNotEmpty => deltaToPlainText(d),
-      _ => '',
-    };
-  }
-
-  Future<String> exportMarkdown() async {
-    final delta = await future;
-    final deltaToMd = DeltaToMarkdown();
-    return switch (delta) {
-      Delta d when d.isNotEmpty => deltaToMd.convert(d),
       _ => '',
     };
   }

@@ -35,7 +35,8 @@
 - 既存テスト (`manga_providers_test.dart` の 1 件) もそのまま green を維持
 
 ### T-003: ページコピーのウィジェットテストを追加 [P] ✅ 完了 (2026-08-03)
-- 実装: [test/feature/manga/view/manga_page_widget_copy_test.dart](../../../../test/feature/manga/view/manga_page_widget_copy_test.dart)
+- 実装: [test/feature/manga/view/copy_page_dialogues_test.dart](../../../../test/feature/manga/view/copy_page_dialogues_test.dart)
+  （`MangaPageWidget` ではなくコピー導線そのもののテストなので、後のレビューで名前を実態に合わせた）
 - 採用方針: `SystemClipboard.instance` を新規 [`clipboardWriterProvider`](../../../../lib/feature/manga/provider/clipboard_provider.dart)
   でラップし、テストでは `ClipboardWriter` の Fake / null に差し替える。
   Repository は `getDeltaStream` だけ実装した手書き Fake（T-002 と同じ理由）

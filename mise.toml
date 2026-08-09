@@ -3,7 +3,7 @@ flutter = "3.44.4"
 ruby = "latest"
 node = "22"
 
-# 依存解決（Flutter ルート / データ層パッケージ + Node ツール）
+# 依存解決（Flutter ルート / local_package 配下の各パッケージ + Node ツール）
 # Node 依存（firebase-tools, google-auth-library）は config/deploy 系タスクで使う
 [tasks.setup]
 run = [

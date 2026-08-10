@@ -567,7 +567,9 @@ class MangaRepository {
 
       final existingUnits =
           List<Map<String, dynamic>>.from(currentPage.sceneUnits ?? []);
-      if (index < 0 || index >= existingUnits.length || existingUnits.length <= 1) {
+      if (index < 0 ||
+          index >= existingUnits.length ||
+          existingUnits.length <= 1) {
         return; // Cannot remove if out of bounds or last remaining unit
       }
 
@@ -672,31 +674,27 @@ class MangaRepository {
 
         writeSection('### メモ', _plainTextOf(pageDeltas, page.memoDeltaId));
 
-        // SceneUnits
+        // ページ内の全カットのト書き・セリフを 1 つの箇条書きにまとめる。
+        // カットの順に、カットごとに「ト書き → セリフ」で並べ、
+        // ト書きは行頭に （ト書き） を付けてセリフと見分けられるようにする
         final domainPage = page.toMangaPage();
-        // カットが複数あるページだけ「### カット N」で束ね、見出しを 1 段下げる
-        final hasMultipleUnits = domainPage.sceneUnits.length > 1;
-        for (int j = 0; j < domainPage.sceneUnits.length; j++) {
-          final unit = domainPage.sceneUnits[j];
-          final stageDirection =
-              _plainTextOf(pageDeltas, unit.stageDirectionDeltaId.id);
-          final dialogues = _plainTextOf(pageDeltas, unit.dialoguesDeltaId.id);
-          // 中身が空のカットは見出しごと出力しない。
-          // カット番号はページ内の位置を表すので、飛ばしても振り直さない
-          if (hasMultipleUnits &&
-              (stageDirection.isNotEmpty || dialogues.isNotEmpty)) {
-            buffer.writeln('### カット ${j + 1}');
-            buffer.writeln();
+        final items = <String>[];
+        for (final unit in domainPage.sceneUnits) {
+          items.addAll(_bulletItems(
+            _plainTextOf(pageDeltas, unit.stageDirectionDeltaId.id),
+            label: 'ト書き',
+          ));
+          items.addAll(
+            _bulletItems(_plainTextOf(pageDeltas, unit.dialoguesDeltaId.id)),
+          );
+        }
+        if (items.isNotEmpty) {
+          buffer.writeln('### 本文');
+          buffer.writeln();
+          for (final item in items) {
+            buffer.writeln(item);
           }
-
-          writeSection(
-            hasMultipleUnits ? '#### ト書き' : '### ト書き',
-            stageDirection,
-          );
-          writeSection(
-            hasMultipleUnits ? '#### セリフ' : '### セリフ',
-            dialogues,
-          );
+          buffer.writeln();
         }
       }
 
@@ -718,6 +716,22 @@ class MangaRepository {
       return '';
     }
     return deltaToPlainText(Delta.fromJson(doc.ops));
+  }
+
+  /// 本文を 1 行 1 項目の箇条書きに直す。空行は項目にしない。
+  ///
+  /// [label] を渡すと各項目の先頭に `（<label>）` を付ける。
+  /// ラベルが付く行は行頭が記号にならないので、エスケープは不要。
+  List<String> _bulletItems(String body, {String? label}) {
+    final items = <String>[];
+    for (final line in body.split('\n')) {
+      if (line.trim().isEmpty) {
+        continue;
+      }
+      items.add(
+          label == null ? '- ${_escapeMarkdownLine(line)}' : '- （$label）$line');
+    }
+    return items;
   }
 
   /// 利用者が書いたプレーンテキストを、Markdown として開いても

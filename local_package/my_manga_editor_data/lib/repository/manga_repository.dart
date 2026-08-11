@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_quill/quill_delta.dart';
+import 'package:my_manga_editor_common/delta_text.dart';
 import 'package:my_manga_editor_common/logger.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor_data/repository/exceptions.dart'
@@ -566,7 +567,9 @@ class MangaRepository {
 
       final existingUnits =
           List<Map<String, dynamic>>.from(currentPage.sceneUnits ?? []);
-      if (index < 0 || index >= existingUnits.length || existingUnits.length <= 1) {
+      if (index < 0 ||
+          index >= existingUnits.length ||
+          existingUnits.length <= 1) {
         return; // Cannot remove if out of bounds or last remaining unit
       }
 
@@ -648,24 +651,18 @@ class MangaRepository {
       buffer.writeln('# ${manga.name}');
       buffer.writeln();
 
-      // Add idea memo if exists
-      final ideaMemoDelta =
-          deltas.where((d) => d.id == manga.ideaMemoDeltaId).firstOrNull;
-      if (ideaMemoDelta != null && ideaMemoDelta.ops.isNotEmpty) {
-        final delta = Delta.fromJson(ideaMemoDelta.ops);
-        if (delta.isNotEmpty) {
-          buffer.writeln('## アイデアメモ');
-          buffer.writeln();
-          // Extract plain text from delta
-          for (final op in delta.toList()) {
-            if (op.data is String) {
-              buffer.write(op.data);
-            }
-          }
-          buffer.writeln();
-          buffer.writeln();
+      // 本文が空のセクションは見出しごと出力しない
+      void writeSection(String heading, String body) {
+        if (body.isEmpty) {
+          return;
         }
+        buffer.writeln(heading);
+        buffer.writeln();
+        buffer.writeln(_toMarkdownBody(body));
+        buffer.writeln();
       }
+
+      writeSection('## アイデアメモ', _plainTextOf(deltas, manga.ideaMemoDeltaId));
 
       // Add pages
       for (int i = 0; i < pages.length; i++) {
@@ -673,71 +670,30 @@ class MangaRepository {
         buffer.writeln('## ページ ${i + 1}');
         buffer.writeln();
 
-        // Extract plain text from deltas for this page
         final pageDeltas = deltas.where((d) => d.pageId == page.id).toList();
 
-        // Memo
-        final memoDeltaDoc =
-            pageDeltas.where((d) => d.id == page.memoDeltaId).firstOrNull;
-        if (memoDeltaDoc != null && memoDeltaDoc.ops.isNotEmpty) {
-          final memoDelta = Delta.fromJson(memoDeltaDoc.ops);
-          if (memoDelta.isNotEmpty) {
-            buffer.writeln('### メモ');
-            for (final op in memoDelta.toList()) {
-              if (op.data is String) {
-                buffer.write(op.data);
-              }
-            }
-            buffer.writeln();
-            buffer.writeln();
-          }
-        }
+        writeSection('### メモ', _plainTextOf(pageDeltas, page.memoDeltaId));
 
-        // SceneUnits
+        // ページ内の全カットのト書き・セリフを 1 つのまとまりとして並べる。
+        // カットの順に、カットごとに「ト書き → セリフ」で並べ、1 行ずつ空行で区切る。
+        // ト書きは行頭に （ト書き） を付けてセリフと見分けられるようにする
         final domainPage = page.toMangaPage();
-        for (int j = 0; j < domainPage.sceneUnits.length; j++) {
-          final unit = domainPage.sceneUnits[j];
-          if (domainPage.sceneUnits.length > 1) {
-            buffer.writeln('### カット ${j + 1}');
+        final paragraphs = <String>[];
+        for (final unit in domainPage.sceneUnits) {
+          paragraphs.addAll(_bodyParagraphs(
+            _plainTextOf(pageDeltas, unit.stageDirectionDeltaId.id),
+            label: 'ト書き',
+          ));
+          paragraphs.addAll(
+            _bodyParagraphs(_plainTextOf(pageDeltas, unit.dialoguesDeltaId.id)),
+          );
+        }
+        if (paragraphs.isNotEmpty) {
+          buffer.writeln('### 本文');
+          buffer.writeln();
+          for (final paragraph in paragraphs) {
+            buffer.writeln(paragraph);
             buffer.writeln();
-          }
-
-          // Stage Direction
-          final stageDeltaDoc = pageDeltas
-              .where((d) => d.id == unit.stageDirectionDeltaId.id)
-              .firstOrNull;
-          if (stageDeltaDoc != null && stageDeltaDoc.ops.isNotEmpty) {
-            final stageDelta = Delta.fromJson(stageDeltaDoc.ops);
-            if (stageDelta.isNotEmpty) {
-              buffer.writeln(
-                  domainPage.sceneUnits.length > 1 ? '#### ト書き' : '### ト書き');
-              for (final op in stageDelta.toList()) {
-                if (op.data is String) {
-                  buffer.write(op.data);
-                }
-              }
-              buffer.writeln();
-              buffer.writeln();
-            }
-          }
-
-          // Dialogues
-          final dialoguesDeltaDoc = pageDeltas
-              .where((d) => d.id == unit.dialoguesDeltaId.id)
-              .firstOrNull;
-          if (dialoguesDeltaDoc != null && dialoguesDeltaDoc.ops.isNotEmpty) {
-            final dialoguesDelta = Delta.fromJson(dialoguesDeltaDoc.ops);
-            if (dialoguesDelta.isNotEmpty) {
-              buffer.writeln(
-                  domainPage.sceneUnits.length > 1 ? '#### セリフ' : '### セリフ');
-              for (final op in dialoguesDelta.toList()) {
-                if (op.data is String) {
-                  buffer.write(op.data);
-                }
-              }
-              buffer.writeln();
-              buffer.writeln();
-            }
           }
         }
       }
@@ -747,6 +703,78 @@ class MangaRepository {
       logger.e('Failed to export manga to markdown', error: e);
       rethrow;
     }
+  }
+
+  /// [deltas] から [deltaId] の Delta を探してプレーンテキスト化する。
+  /// 見つからない場合や中身が空の場合は空文字列を返す。
+  String _plainTextOf(List<CloudDelta> deltas, String? deltaId) {
+    if (deltaId == null) {
+      return '';
+    }
+    final doc = deltas.where((d) => d.id == deltaId).firstOrNull;
+    if (doc == null || doc.ops.isEmpty) {
+      return '';
+    }
+    return deltaToPlainText(Delta.fromJson(doc.ops));
+  }
+
+  /// 本文を 1 行 1 段落に分ける。空行は段落にしない。
+  ///
+  /// [label] を渡すと各段落の先頭に `（<label>）` を付ける。
+  /// ラベルが付く行は行頭が記号にならないので、エスケープは不要。
+  List<String> _bodyParagraphs(String body, {String? label}) {
+    final paragraphs = <String>[];
+    for (final line in body.split('\n')) {
+      if (line.trim().isEmpty) {
+        continue;
+      }
+      paragraphs
+          .add(label == null ? _escapeMarkdownLine(line) : '（$label）$line');
+    }
+    return paragraphs;
+  }
+
+  /// 利用者が書いたプレーンテキストを、Markdown として開いても
+  /// 書いたとおりに見える本文に直す。
+  ///
+  /// - 続く行は行末の半角スペース 2 つ (強制改行) でつなぐ。
+  ///   そのままだと 1 行ずつの改行が無視されて 1 段落に繋がってしまうため
+  /// - 行頭の記号はエスケープする ([_escapeMarkdownLine])
+  ///
+  /// 空行はそのままで段落の区切りとして働くので、強制改行は付けない。
+  String _toMarkdownBody(String body) {
+    final lines = body.split('\n');
+    final buffer = StringBuffer();
+    for (int i = 0; i < lines.length; i++) {
+      buffer.write(_escapeMarkdownLine(lines[i]));
+      if (i == lines.length - 1) {
+        break;
+      }
+      if (lines[i].isNotEmpty && lines[i + 1].isNotEmpty) {
+        buffer.write('  ');
+      }
+      buffer.write('\n');
+    }
+    return buffer.toString();
+  }
+
+  /// 行頭に来ると Markdown のブロック要素 (箇条書き・引用・見出し・罫線など) に
+  /// 化ける記号を `\` でエスケープする。
+  ///
+  /// 行の途中の記号は、そのままでも本文として読めるほうが多いので触らない。
+  /// 例: `- 場面転換` → `\- 場面転換`、`1. 導入` → `1\. 導入`
+  String _escapeMarkdownLine(String line) {
+    final block = RegExp(r'^([^\S\n]*)([-+*>#=_~`])').firstMatch(line);
+    if (block != null) {
+      return '${block.group(1)}\\${block.group(2)}'
+          '${line.substring(block.end)}';
+    }
+    final ordered = RegExp(r'^([^\S\n]*\d+)([.)])').firstMatch(line);
+    if (ordered != null) {
+      return '${ordered.group(1)}\\${ordered.group(2)}'
+          '${line.substring(ordered.end)}';
+    }
+    return line;
   }
 
   // ============================================================================

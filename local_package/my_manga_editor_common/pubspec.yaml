@@ -10,6 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
   logger: ^2.5.0
+  # Delta 型だけが必要なので、flutter_quill (UI 一式) ではなく Delta 実装のみを依存にする。
+  # flutter_quill/quill_delta.dart はこのパッケージの再 export なので型は互換。
+  dart_quill_delta: ^10.8.3
 
 dev_dependencies:
   flutter_test:

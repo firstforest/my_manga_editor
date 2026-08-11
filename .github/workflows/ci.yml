@@ -38,13 +38,21 @@ jobs:
         run: flutter pub get
         working-directory: local_package/my_manga_editor_data
 
+      - name: Install dependencies (my_manga_editor_common)
+        run: flutter pub get
+        working-directory: local_package/my_manga_editor_common
+
       - name: Analyze (root)
         run: flutter analyze
 
-      # flutter analyze はカレントパッケージのみが対象なのでデータ層は個別に流す
+      # flutter analyze はカレントパッケージのみが対象なので local_package は個別に流す
       - name: Analyze (my_manga_editor_data)
         run: flutter analyze
         working-directory: local_package/my_manga_editor_data
+
+      - name: Analyze (my_manga_editor_common)
+        run: flutter analyze
+        working-directory: local_package/my_manga_editor_common
 
       - name: Test (root)
         run: flutter test
@@ -53,6 +61,10 @@ jobs:
       - name: Test (my_manga_editor_data)
         run: flutter test
         working-directory: local_package/my_manga_editor_data
+
+      - name: Test (my_manga_editor_common)
+        run: flutter test
+        working-directory: local_package/my_manga_editor_common
 
   build_web:
     name: Build Web (prod)

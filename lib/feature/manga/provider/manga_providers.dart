@@ -2,9 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:file_saver/file_saver.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
-import 'package:markdown_quill/markdown_quill.dart';
+import 'package:my_manga_editor_common/delta_text.dart';
 import 'package:my_manga_editor_common/logger.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor_data/repository/manga_repository.dart';
@@ -67,26 +66,54 @@ class MangaNotifier extends _$MangaNotifier {
     ref.read(mangaRepositoryProvider).updateMangaStatus(id, status);
   }
 
-  Future<void> download() async {
-    final manga = await future;
-    if (manga != null) {
-      logger.d('download $manga}');
+  /// 作品全体を Markdown ファイルとして書き出し、書き出した作品名を返す。
+  ///
+  /// 戻り値は画面の完了通知に使う。呼び出し側が `mangaProvider` を読み直すと
+  /// まだ loading の場合に作品名が取れないため、ここで確定した名前を渡す。
+  ///
+  /// 失敗したときは logger.e に詳細を残したうえで例外をそのまま投げる
+  /// (呼び出し側の画面で利用者に通知するため)。作品の取得・変換・保存の
+  /// どこで失敗してもログが残るよう、全体を 1 つの try で囲っている (FR-006)。
+  Future<String> download() async {
+    try {
+      final manga = await future;
+      if (manga == null) {
+        throw StateError('Manga not found: ${id.id}');
+      }
+      logger.d('download ${manga.name}');
       final content =
           await ref.read(mangaRepositoryProvider).toMarkdown(manga.id);
-      await FileSaver.instance.saveFile(
-        name: 'komatto_${manga.name}',
-        fileExtension: 'txt',
-        mimeType: MimeType.text,
+      final saved = await FileSaver.instance.saveFile(
+        name: 'komatto_${sanitizeFileName(manga.name)}',
+        fileExtension: 'md',
+        mimeType: MimeType.markdown,
         bytes: Uint8List.fromList(utf8.encode(content)),
       );
+      if (isFileSaverFailure(saved)) {
+        throw StateError('file_saver did not save the file: $saved');
+      }
+      return manga.name;
+    } catch (e, stackTrace) {
+      logger.e('作品の書き出しに失敗しました: ${id.id}', error: e, stackTrace: stackTrace);
+      rethrow;
     }
   }
-
-  Future<String> toMarkdown() async {
-    // TODO: Implement toMarkdown functionality
-    return 'Markdown export not yet implemented';
-  }
 }
+
+/// `FileSaver.saveFile` の戻り値が「保存できなかった」を表すかどうか。
+///
+/// `file_saver` は保存に失敗しても例外を投げず、保存先パスの代わりに
+/// 空文字列か `Something went wrong, ...` というメッセージを返すことがある。
+/// これを成功として扱うと、保存できていないのに完了通知が出てしまう。
+bool isFileSaverFailure(String result) =>
+    result.isEmpty || result.startsWith('Something went wrong');
+
+/// 作品名をファイル名に使える形に直す。
+///
+/// OS がファイル名に使えない `/ \ : * ? " < > |` と制御文字を `_` に置き換える。
+/// 日本語や英数字はそのまま残す。
+String sanitizeFileName(String name) =>
+    name.replaceAll(RegExp(r'[/\\:*?"<>|\x00-\x1f\x7f]'), '_');
 
 @riverpod
 class MangaPageNotifier extends _$MangaPageNotifier {
@@ -138,19 +165,7 @@ class DeltaNotifier extends _$DeltaNotifier {
   Future<String> exportPlainText() async {
     final delta = await future;
     return switch (delta) {
-      Delta d when d.isNotEmpty => Document.fromDelta(delta)
-          .toPlainText()
-          .replaceAll(RegExp(r'\n\s*\n\s*\n\s*'), '\n\n')
-          .trim(),
-      _ => '',
-    };
-  }
-
-  Future<String> exportMarkdown() async {
-    final delta = await future;
-    final deltaToMd = DeltaToMarkdown();
-    return switch (delta) {
-      Delta d when d.isNotEmpty => deltaToMd.convert(d),
+      Delta d when d.isNotEmpty => deltaToPlainText(d),
       _ => '',
     };
   }

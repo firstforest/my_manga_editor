@@ -1,16 +1,21 @@
 # Design: Manga Export
 
+## メタデータ
+- Status: implemented
+- Last Updated: 2026-08-03
+
 ## 設計サマリ
 
 Export 機能は 2 つの導線を持つ：
 
-1. **ページ単位コピー** — UI (`manga_page_widget`) が `DeltaProvider.exportPlainText` を SceneUnit 順に呼び出し、
-   `super_clipboard` の `SystemClipboard` へ書き込む。Repository を経由しない、UI 完結フロー。
+1. **ページ単位コピー** — UI (`manga_page_widget`) が `copy_page_dialogues.dart` の
+   `copyPageDialoguesWithFeedback` を呼び、SceneUnit 順に `DeltaProvider.exportPlainText` を
+   集めて `super_clipboard` へ書き込む。Repository を経由しない、UI 完結フロー。
 2. **作品単位ファイル書き出し** — `MangaNotifier.download` が `MangaRepository.toMarkdown` を呼び、
    `file_saver` パッケージで保存ダイアログを開く。Repository 内部で Firestore から全 Delta を fetch。
 
-両者とも **Delta → 文字列変換** が中核で、ここのロジック重複が現状の主な技術的負債。
-本 spec は現状の挙動を保ったまま、変換ロジックを集約する方向で整理する。
+両者とも **Delta → 文字列変換** が中核で、ここのロジック重複が当初の主な技術的負債だった。
+現在は `my_manga_editor_common` の `deltaToPlainText` に集約済み（FR-005）。
 
 ## アーキテクチャ上の位置づけ
 
@@ -18,11 +23,13 @@ Export 機能は 2 つの導線を持つ：
 
 | レイヤー | 担当 |
 |---|---|
-| UI (`lib/feature/manga/view/manga_page_widget.dart`) | コピーボタン、SnackBar 表示、`SystemClipboard` 呼び出し |
-| UI (`lib/feature/manga/page/manga_grid_page.dart`) | 「ダウンロード」メニューから `MangaNotifier.download` を起動 |
-| State (`lib/feature/manga/provider/manga_providers.dart`) | `MangaNotifier.download` / `DeltaNotifier.exportPlainText` / `DeltaNotifier.exportMarkdown` |
+| UI (`lib/feature/manga/view/manga_page_widget.dart`) | コピーボタン |
+| UI (`lib/feature/manga/view/copy_page_dialogues.dart`) | セリフの連結・クリップボード書き込み・結果の SnackBar 表示 |
+| UI (`lib/feature/manga/page/manga_edit_page.dart`) | ツールバーの保存ボタンから `MangaNotifier.download` を起動し、失敗を SnackBar で通知 |
+| State (`lib/feature/manga/provider/manga_providers.dart`) | `MangaNotifier.download` / `sanitizeFileName` / `isFileSaverFailure` / `DeltaNotifier.exportPlainText` |
+| State (`lib/feature/manga/provider/clipboard_provider.dart`) | `SystemClipboard.instance` を provider 化（テストから差し替え可能にする） |
 | Repository (`local_package/my_manga_editor_data/lib/repository/manga_repository.dart`) | `toMarkdown(MangaId)` で作品全体を文字列化 |
-| Common (`local_package/my_manga_editor_common/lib/`) | Delta → プレーンテキスト変換ユーティリティ（FR-005 で新規追加） |
+| Common (`local_package/my_manga_editor_common/lib/delta_text.dart`) | `deltaToPlainText`（FR-005 の集約先） |
 | Service | 変更なし（既存の `fetchManga` / `fetchMangaPages` / `fetchDeltas` を使用） |
 | Backend | 変更なし（読み取りのみ） |
 
@@ -45,23 +52,27 @@ Export 機能は 2 つの導線を持つ：
 sequenceDiagram
   participant U as User
   participant V as MangaPageWidget
+  participant C as copyPageDialogues
   participant DN as DeltaNotifier
   participant R as MangaRepository
-  participant CB as SystemClipboard
+  participant CB as ClipboardWriter
 
   U->>V: コピーボタン押下
+  V->>C: copyPageDialoguesWithFeedback()
   loop 各 SceneUnit
-    V->>DN: exportPlainText()
+    C->>DN: exportPlainText()
     DN->>R: getDeltaStream().first
     R-->>DN: Delta (キャッシュ可)
-    DN-->>V: plain text
+    DN-->>C: plain text
   end
-  V->>V: join("\n\n")
-  alt clipboard != null && text != ""
-    V->>CB: write(text)
-    V->>U: SnackBar "Page N をコピーしました"
+  C->>C: join("\n\n")
+  alt text == ""
+    C-->>U: SnackBar "Page N にコピーするセリフがありません"
+  else clipboard == null
+    C-->>U: SnackBar "Page N のコピーに失敗しました"
   else
-    V-->>U: (現状) 何も通知しない / (改善後) 失敗 SnackBar
+    C->>CB: write(text)
+    C-->>U: SnackBar "Page N をコピーしました"
   end
 ```
 
@@ -70,13 +81,13 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
   participant U as User
-  participant V as MangaGridPage
+  participant V as MangaEditPage
   participant MN as MangaNotifier
   participant R as MangaRepository
   participant FS as FirebaseService
   participant FSV as FileSaver
 
-  U->>V: 「ダウンロード」選択
+  U->>V: ツールバーの保存ボタン押下
   V->>MN: download()
   MN->>MN: future で Manga を取得
   MN->>R: toMarkdown(mangaId)
@@ -84,8 +95,14 @@ sequenceDiagram
   FS-->>R: Cloud モデル一式
   R->>R: Markdown 組み立て (StringBuffer)
   R-->>MN: markdown string
-  MN->>FSV: saveFile(name, bytes)
-  FSV-->>U: 保存ダイアログ
+  MN->>FSV: saveFile(komatto_<sanitized>.md, bytes)
+  alt 成功
+    FSV-->>U: 保存ダイアログ
+    V-->>U: SnackBar "<作品名>をダウンロードしました"
+  else 例外
+    MN->>MN: logger.e に詳細を残して rethrow
+    V-->>U: SnackBar "保存に失敗しました"
+  end
 ```
 
 ## 主要 API / インターフェース
@@ -95,33 +112,52 @@ sequenceDiagram
 Future<String> toMarkdown(MangaId mangaId);
 
 // MangaNotifier (lib/feature/manga/provider/manga_providers.dart)
-Future<void> download();
+// 失敗時は logger.e に残したうえで rethrow する (画面側で SnackBar を出すため)
+// 戻り値は書き出した作品名。画面側が mangaProvider を読み直すと loading 中に
+// 名前が取れないため、確定した名前をここから返す
+Future<String> download();
 
 // DeltaNotifier (lib/feature/manga/provider/manga_providers.dart)
 Future<String> exportPlainText();
-Future<String> exportMarkdown();
-```
 
-### 改善実装で追加するもの（T-004 で確定）
+// lib/feature/manga/provider/manga_providers.dart (トップレベル関数)
+// ファイル名に使えない文字と制御文字を _ に置換する
+String sanitizeFileName(String name);
+// file_saver は保存に失敗しても例外を投げず、空文字列や
+// 'Something went wrong, ...' を返すことがある。それを失敗と判定する
+bool isFileSaverFailure(String result);
 
-```dart
-// local_package/my_manga_editor_common/lib/delta_text.dart（新規）
+// lib/feature/manga/provider/clipboard_provider.dart
+// SystemClipboard.instance を provider 化したもの。使えない環境では null
+@riverpod ClipboardWriter? clipboardWriter(Ref ref);
+
+// lib/feature/manga/view/copy_page_dialogues.dart
+// unavailable = クリップボードが無い環境
+// failed = Delta の読み込み、または write が例外を投げた
+// どちらも利用者には同じ「コピーに失敗しました」を出す
+enum CopyPageDialoguesResult { copied, empty, unavailable, failed }
+Future<String> buildPageDialoguesText(WidgetRef ref, MangaPage page);
+Future<CopyPageDialoguesResult> copyPageDialogues(WidgetRef ref, MangaPage page);
+Future<void> copyPageDialoguesWithFeedback(
+    BuildContext context, WidgetRef ref, MangaPage page, int pageIndex);
+
+// local_package/my_manga_editor_common/lib/delta_text.dart
 //
-// flutter_quill の Delta からプレーンテキストを取り出す。
+// Quill の Delta からプレーンテキストを取り出す (FR-005 の集約先)。
 // - op.data が String のものだけを連結
-// - 3 連続以上の改行を 2 連続に圧縮
-// - 先頭末尾を trim
+// - 2 行以上続く空行を空行 1 行に圧縮
+// - 先頭・末尾の空行を落とす (行頭の字下げは残す)
 String deltaToPlainText(Delta delta);
-
-// 既存呼び出しの差し替え:
-//   DeltaNotifier.exportPlainText   → 内部で deltaToPlainText を呼ぶ
-//   MangaRepository.toMarkdown      → 旧ループ展開を deltaToPlainText に置換
 ```
 
-`my_manga_editor_common` に置く理由は UI 層・データ層の両方から呼ぶため。
+`deltaToPlainText` を `my_manga_editor_common` に置く理由は UI 層・データ層の両方から呼ぶため。
 片側に寄せると依存方向の制約に反する。
+なお common には `flutter_quill`（UI 一式）ではなく Delta 実装のみの `dart_quill_delta` を
+依存に追加した（`flutter_quill/quill_delta.dart` はこのパッケージの再 export なので型は互換）。
 
 ## 出力フォーマット（Markdown）
+
+見出しと本文の間、本文の後には必ず空行を 1 行入れる。
 
 ```markdown
 # <作品名>
@@ -131,25 +167,39 @@ String deltaToPlainText(Delta delta);
 <アイデアメモ本文>
 
 ## ページ 1
+
 ### メモ                          ← 本文が空なら出力しない
 
 <メモ本文>
 
-### カット 1                      ← SceneUnit が複数あるときのみ
-#### ト書き
+### 本文                          ← ト書き・セリフが両方空なら出力しない
 
-<ト書き本文>
+（ト書き）<ト書きの 1 行目>
 
-#### セリフ
+（ト書き）<ト書きの 2 行目>
 
-<セリフ本文>
+<セリフの 1 行目>
+
+<セリフの 2 行目>
 
 ## ページ 2
 ...
 ```
 
-SceneUnit が 1 つだけのページでは `### カット 1` を省き、`### ト書き` / `### セリフ` を直接出す
-（[manga_repository.dart の現行実装](../../../../local_package/my_manga_editor_data/lib/repository/manga_repository.dart) の通り）。
+ト書きとセリフは読む順序がそのまま意味を持つので、カットごとに見出しで分けず、
+ページ全体を 1 つのまとまりとして並べる（[manga_repository.dart の実装](../../../../local_package/my_manga_editor_data/lib/repository/manga_repository.dart)）。
+本文の 1 行が 1 段落になり、行と行の間には空行を 1 行入れる（元の空行は段落にしない）。
+ト書きは行頭の `（ト書き）` で見分ける。
+ページ内にト書きもセリフも無ければ `### 本文` ごと出力しない。
+
+本文は `deltaToPlainText` を通すため、前後の空行と連続する空行は整形済みの状態になる。
+そのうえで、`.md` として開いたときに書いたとおりに見えるよう Repository 側で次の 2 つを施す：
+
+- 段落に分けない散文（アイデアメモ・メモ）は、本文が続く行の行末に半角スペース 2 つ
+  （Markdown の強制改行）を付ける。付けないと 1 行ずつの改行が無視されて 1 段落に繋がる
+- 行頭の記号 (`-` `+` `*` `>` `#` `=` `_` `~` バッククォート) と `1.` / `1)` は
+  `\` でエスケープする。箇条書き・引用・見出し・罫線として解釈されるのを防ぐ
+  （行の途中の記号は触らない。`（ト書き）` が付く行は行頭が記号にならないので対象外）
 
 ## 状態遷移 / ライフサイクル
 
@@ -158,43 +208,59 @@ SceneUnit が 1 つだけのページでは `### カット 1` を省き、`### �
 
 ## エラー / 例外設計
 
-| ケース | 検出箇所 | 現状の振る舞い | 改善方針（T-004 で確定） |
-|---|---|---|---|
-| `SystemClipboard.instance == null` (Web 制約等) | UI | サイレント no-op | `Page <N> のコピーに失敗しました` SnackBar（AC-1.4） |
-| `Manga` が Firestore に存在しない | Repository | `NotFoundException` を throw | UI で catch → `保存に失敗しました` SnackBar（AC-2.6） |
-| Delta 取得に失敗 | Repository | 例外伝播 | logger.e 後 UI で SnackBar |
-| ファイル保存ダイアログがキャンセル | `file_saver` | 例外なし | 通知不要 |
-| 作品名にファイル名禁止文字 | UI | 未対策（OS 任せ） | `MangaNotifier.download` 内で `/ \ : * ? " < > \|` + 制御文字を `_` に置換（AC-2.2） |
+| ケース | 検出箇所 | 振る舞い |
+|---|---|---|
+| クリップボードが使えない (`clipboardWriterProvider` が null) | UI | `Page <N> のコピーに失敗しました` SnackBar（AC-1.4） |
+| コピーするセリフが空 | UI | クリップボードを書き換えず `Page <N> にコピーするセリフがありません` SnackBar（AC-1.3） |
+| `Manga` が Firestore に存在しない | Repository / Notifier | `NotFoundException` / `StateError` を throw → `manga_edit_page` で catch し `保存に失敗しました` SnackBar（AC-2.6） |
+| Delta 取得・ファイル保存に失敗 | Repository / Notifier | `logger.e` に詳細を残して rethrow → UI で `保存に失敗しました` SnackBar |
+| `file_saver` が例外を投げずに保存失敗を返す | Notifier | `isFileSaverFailure` で検出し `StateError` を throw（成功通知を出さない） |
+| セリフの Delta 取得に失敗 | UI | `CopyPageDialoguesResult.failed` → `Page <N> のコピーに失敗しました` SnackBar（AC-1.4） |
+| 作品が読み込み中 | UI | 保存ボタンを disabled にする（読み込み中の失敗通知を出さない） |
+| ファイル保存ダイアログがキャンセル | `file_saver` | 例外なし。通知不要 |
+| 作品名にファイル名禁止文字 | Notifier | `sanitizeFileName` が `/ \ : * ? " < > \|` + 制御文字を `_` に置換（AC-2.2） |
 
 ## テスト戦略
 
-- **ユニット (`MangaRepository.toMarkdown`)**:
-  - `fake_cloud_firestore` で manga / pages / deltas を事前投入し、期待 Markdown 文字列と一致するか
-  - SceneUnit 0 / 1 / 複数のページ構成
-  - 空 Delta ・空 manga のケース
-- **ユニット (`my_manga_editor_common.deltaToPlainText`)**:
-  - 3 連続改行が 2 連続改行に圧縮されるか
-  - 装飾付き Delta から装飾が落ちるか
-  - 空 Delta で空文字列を返すか
-  - 先頭末尾の空白が trim されるか
-- **ユニット (作品名サニタイズ)**:
-  - `/ \ : * ? " < > |` がそれぞれ `_` に置換されるか
-  - 制御文字 (`\n` 等) が `_` に置換されるか
-  - 通常の日本語 / 英数字はそのまま残るか
-- **ウィジェット**:
-  - コピーボタン押下で `SnackBar` が出るか（`MockClipboard` 注入）
+実装済みのテストは以下の通り。
+
+- **ユニット (`MangaRepository.toMarkdown`)** —
+  [manga_repository_export_test.dart](../../../../local_package/my_manga_editor_data/test/repository/manga_repository_export_test.dart):
+  `FirebaseService` を mockito でモックし、SceneUnit 0 / 1 / 複数、空カット、
+  ト書きとセリフの並び順・空行区切り・ラベル、空 Delta 混在、アイデアメモあり / なし、
+  本文の整形・メモの強制改行・エスケープを検証
+- **ユニット (`deltaToPlainText`)** —
+  [delta_text_test.dart](../../../../local_package/my_manga_editor_common/test/delta_text_test.dart):
+  改行圧縮 / 装飾落ち / 空 Delta / 前後の空行落とし / 字下げの保持 / 埋め込みの無視 / 連結順序
+- **ユニット (`DeltaNotifier.exportPlainText`)** —
+  [delta_notifier_export_test.dart](../../../../test/feature/manga/provider/delta_notifier_export_test.dart)
+- **ユニット (作品名サニタイズ)** —
+  [manga_providers_test.dart](../../../../test/feature/manga/provider/manga_providers_test.dart):
+  禁止文字 / 制御文字の置換、日本語・英数字がそのまま残ること
+- **ウィジェット (コピー導線)** —
+  [copy_page_dialogues_test.dart](../../../../test/feature/manga/view/copy_page_dialogues_test.dart):
+  `clipboardWriterProvider` を差し替え、成功 / 空 / クリップボード無し / 書き込み例外 /
+  Delta 読み込み失敗の SnackBar 出し分けと、クリップボードを書き換えないことを検証。
+  `MangaPageWidget` 本体のボタン配線は重いので対象外（手動確認）
 - **手動**:
   - 実機 / 実 ClipStudio Paint への貼り付けで縦書きが正しく流れるか（SC-001）
   - Web / macOS / Windows それぞれでファイル保存ダイアログが開くか
 
+`MangaNotifier.download` 自体は `FileSaver.instance` (静的 singleton) を直接呼ぶため
+自動テストの対象外。保存の成否に関わる分岐はサニタイズ関数と画面側の catch に寄せてある。
+
 ## 既存仕様への影響
 
-本 spec は **既存実装の文書化** が主目的のため、現状コードに対する破壊的変更は無い。
-ただし以下の改善タスクは挙動を変える：
+本 spec は **既存実装の文書化** が出発点だったが、改善タスクで以下の挙動が変わった：
 
-- ファイル拡張子変更 (`.txt` → `.md`)：既存ユーザーが拡張子を期待しているなら影響あり
-- 失敗時 SnackBar 追加：UX が変わる
-- Delta 変換ロジックの集約：内部リファクタのみ（外部 API 互換）
+- ファイル拡張子変更 (`.txt` → `.md`)：保存されるファイル名が変わる
+- 失敗時 / 空のときの SnackBar 追加：コピー・保存の結果表示が変わる
+- Delta 変換ロジックの集約：作品全体の書き出しでも本文の trim と改行圧縮が効くようになった
+- 出力 Markdown で見出しの後に必ず空行が入るようになった
+- 出力 Markdown の本文に強制改行と行頭記号のエスケープが入るようになった
+  (`.md` で開いたときに書いたとおりに見えるようにするため)
+- ト書き・セリフをページ単位で 1 つにまとめ、カットの見出しを廃止した
+  (`### カット N` / `#### ト書き` / `#### セリフ` → `### 本文` に空行区切りで並べる)
 
 ## 代替案 (Alternatives Considered)
 

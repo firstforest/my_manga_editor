@@ -7,8 +7,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/feature/manga/view/copy_page_dialogues.dart';
 import 'package:my_manga_editor/hooks/quill_controller_hook.dart';
-import 'package:super_clipboard/super_clipboard.dart';
 
 class MangaPageWidget extends HookConsumerWidget {
   const MangaPageWidget({
@@ -142,13 +142,8 @@ class _DesktopLayout extends HookConsumerWidget {
         _buildPageIndicator(),
         SizedBox(width: 4.r),
         IconButton(
-          onPressed: () async {
-            await _copyAllDialoguesToClipboard(ref, page);
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Page $pageIndex をコピーしました')));
-            }
-          },
+          onPressed: () =>
+              copyPageDialoguesWithFeedback(context, ref, page, pageIndex),
           icon: const Icon(Icons.copy),
         ),
         Spacer(),
@@ -274,13 +269,8 @@ class _MobileLayout extends HookConsumerWidget {
         ),
         SizedBox(width: 4.r),
         IconButton(
-          onPressed: () async {
-            await _copyAllDialoguesToClipboard(ref, page);
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Page $pageIndex をコピーしました')));
-            }
-          },
+          onPressed: () =>
+              copyPageDialoguesWithFeedback(context, ref, page, pageIndex),
           icon: const Icon(Icons.copy),
         ),
         Spacer(),
@@ -513,27 +503,6 @@ String _startPageToString(MangaStartPage startPage) {
     MangaStartPage.left => 'L',
     MangaStartPage.right => 'R',
   };
-}
-
-Future<void> _copyAllDialoguesToClipboard(
-    WidgetRef ref, MangaPage page) async {
-  final parts = <String>[];
-  for (final unit in page.sceneUnits) {
-    final text = await ref
-        .read(deltaProvider(page.mangaId, unit.dialoguesDeltaId).notifier)
-        .exportPlainText();
-    if (text.isNotEmpty) {
-      parts.add(text);
-    }
-  }
-  final combined = parts.join('\n\n');
-  final clipboard = SystemClipboard.instance;
-  if (clipboard == null || combined.isEmpty) {
-    return;
-  }
-  final item = DataWriterItem();
-  item.add(Formats.plainText(combined));
-  await clipboard.write([item]);
 }
 
 class _QuillTextAreaWidget extends HookConsumerWidget {

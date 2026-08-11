@@ -39,11 +39,8 @@ class FirebaseService {
   /// ユーザー認証に依存しないグローバル設定のため、`_userId` は使わない。
   /// ドキュメントが存在しない場合は null を流す。
   Stream<CloudAppConfig?> watchAppConfig() {
-    return _firestore
-        .collection('config')
-        .doc('app')
-        .snapshots()
-        .map((snapshot) =>
+    return _firestore.collection('config').doc('app').snapshots().map(
+        (snapshot) =>
             snapshot.exists ? CloudAppConfigExt.fromFirestore(snapshot) : null);
   }
 
@@ -71,10 +68,8 @@ class FirebaseService {
   /// Creates or updates a page in the manga's pages subcollection
   Future<void> uploadMangaPage(CloudMangaPage page) async {
     try {
-      final pageRef = _mangasCollection
-          .doc(page.mangaId)
-          .collection('pages')
-          .doc(page.id);
+      final pageRef =
+          _mangasCollection.doc(page.mangaId).collection('pages').doc(page.id);
       await pageRef.set(page.toFirestore(), SetOptions(merge: true));
     } on FirebaseException catch (e) {
       throw FirebaseServiceException(
@@ -186,8 +181,7 @@ class FirebaseService {
 
   /// Fetch a specific manga page by ID
   /// Returns null if page doesn't exist
-  Future<CloudMangaPage?> fetchMangaPage(
-      String mangaId, String pageId) async {
+  Future<CloudMangaPage?> fetchMangaPage(String mangaId, String pageId) async {
     try {
       final snapshot = await _mangasCollection
           .doc(mangaId)
@@ -238,10 +232,7 @@ class FirebaseService {
   /// Returns the generated document ID
   Future<String> createMangaPage(String mangaId, CloudMangaPage page) async {
     try {
-      final docRef = _mangasCollection
-          .doc(mangaId)
-          .collection('pages')
-          .doc();
+      final docRef = _mangasCollection.doc(mangaId).collection('pages').doc();
       final pageWithId = CloudMangaPage(
         id: docRef.id,
         mangaId: page.mangaId,
@@ -421,7 +412,9 @@ class FirebaseService {
         ...updates,
         'updatedAt': FieldValue.serverTimestamp(),
       };
-      await _deltasCollection(mangaId).doc(deltaId).update(updatesWithTimestamp);
+      await _deltasCollection(mangaId)
+          .doc(deltaId)
+          .update(updatesWithTimestamp);
     } on FirebaseException catch (e) {
       throw FirebaseServiceException(
         'Failed to update delta: ${e.message}',
@@ -476,7 +469,10 @@ class FirebaseService {
   /// Watch a specific delta document (reactive)
   Stream<CloudDelta?> watchDelta(String mangaId, String deltaId) {
     try {
-      return _deltasCollection(mangaId).doc(deltaId).snapshots().map((snapshot) {
+      return _deltasCollection(mangaId)
+          .doc(deltaId)
+          .snapshots()
+          .map((snapshot) {
         if (!snapshot.exists) return null;
         return CloudDeltaExt.fromFirestore(snapshot, mangaId);
       });

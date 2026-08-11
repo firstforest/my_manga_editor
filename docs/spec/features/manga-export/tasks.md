@@ -1,5 +1,7 @@
 # Tasks: Manga Export
 
+**状態: 全タスク完了 (2026-08-03)。** requirements.md / design.md は `Status: implemented`。
+
 ## 前提
 - Requirements: [requirements.md](./requirements.md)
 - Design: [design.md](./design.md)
@@ -32,17 +34,17 @@
 - AC-1.5 をカバー
 - 既存テスト (`manga_providers_test.dart` の 1 件) もそのまま green を維持
 
-### T-003: ページコピーのウィジェットテストを追加 [P] ⏸ 保留（T-005 の後に着手）
-- 理由: 現在の `_copyAllDialoguesToClipboard` は `SystemClipboard.instance`（静的 singleton）を
-  直接参照しており、テストから差し替えるには DI 化が必須。
-  T-005 で失敗時 SnackBar を追加する際にここを clipboard の引数渡しか provider 化するので、
-  その変更とセットで書く方が手戻りが少ない（spec の備考通り）
-- 対象（着手時）: `test/feature/manga/view/manga_page_widget_copy_test.dart`（新規）
-- 内容（着手時）:
-  - コピーボタン押下後に SnackBar `Page <N> をコピーしました` が表示（AC-1.2）
-  - dialogues が全 SceneUnit で空のとき、クリップボードに書き込まない（AC-1.3）
-  - clipboard が null のとき、失敗 SnackBar が表示される（AC-1.4 / T-005 のテスト）
-- 依存: T-005
+### T-003: ページコピーのウィジェットテストを追加 [P] ✅ 完了 (2026-08-03)
+- 実装: [test/feature/manga/view/copy_page_dialogues_test.dart](../../../../test/feature/manga/view/copy_page_dialogues_test.dart)
+  （`MangaPageWidget` ではなくコピー導線そのもののテストなので、後のレビューで名前を実態に合わせた）
+- 採用方針: `SystemClipboard.instance` を新規 [`clipboardWriterProvider`](../../../../lib/feature/manga/provider/clipboard_provider.dart)
+  でラップし、テストでは `ClipboardWriter` の Fake / null に差し替える。
+  Repository は `getDeltaStream` だけ実装した手書き Fake（T-002 と同じ理由）
+- `MangaPageWidget` 本体は Quill エディタを含んで重いため、コピー導線
+  (`copyPageDialoguesWithFeedback`) をボタン 1 つの最小画面に載せて検証する
+- 5 シナリオ全てパス: 成功 SnackBar (AC-1.2) / 空のとき書き込まない (AC-1.3) /
+  クリップボード無しで失敗 SnackBar (AC-1.4) / 複数カットが 1 回の書き込みにまとまる /
+  カット順を保った空行区切りの連結 (AC-1.1)
 
 ### T-004: `[NEEDS CLARIFICATION]` 解消 ✅ 完了 (2026-05-17)
 確定事項：
@@ -54,68 +56,55 @@
      `String deltaToPlainText(Delta delta)` として集約。UI / Data 両層から呼ぶ
 - 反映: requirements.md / design.md 更新済み、Status を `reviewed` に変更
 
-### T-005: クリップボード書き込み失敗時の UI フィードバック [P]
-- 対象: `lib/feature/manga/view/manga_page_widget.dart` (`_copyAllDialoguesToClipboard`)
-- 内容:
-  - `SystemClipboard.instance == null` の場合、`SnackBar` で失敗を通知
-  - 既存の成功時 SnackBar との出し分けを `ScaffoldMessenger` で行う
-- 完了条件:
-  - AC-1.4 を満たす
-  - T-003 のウィジェットテストに失敗ケースの assertion を追加し、パス
-- 依存: T-003, T-004
+### T-005: クリップボード書き込み失敗時の UI フィードバック [P] ✅ 完了 (2026-08-03)
+- 実装: [lib/feature/manga/view/copy_page_dialogues.dart](../../../../lib/feature/manga/view/copy_page_dialogues.dart)（新規）
+- `manga_page_widget.dart` にあった `_copyAllDialoguesToClipboard` をこのファイルへ移し、
+  結果を `CopyPageDialoguesResult` (copied / empty / unavailable / failed) で返すようにした。
+  SnackBar の出し分けは `copyPageDialoguesWithFeedback` に集約（呼び出し 2 箇所の重複も解消）
+- クリップボードが無い環境 (`unavailable`) だけでなく、`write` が例外を投げた場合 (`failed`) も
+  拾って SnackBar を出す。捕まえないと Future が捨てられて利用者に何も表示されないため
+- **spec 追記**: 実装時に AC-1.3（セリフが空）も同じくサイレント no-op だと分かったため、
+  `Page <N> にコピーするセリフがありません` を出すようにし requirements.md の AC-1.3 を更新した。
+  これまでは空でも「コピーしました」と表示されていた
+- AC-1.2 / AC-1.3 / AC-1.4 を満たす。検証は T-003 のウィジェットテスト
 
-### T-006: ダウンロード処理の拡張子 / エラー UI 整備
-- 対象:
-  - `lib/feature/manga/provider/manga_providers.dart` (`MangaNotifier.download`)
-  - `lib/feature/manga/page/manga_grid_page.dart`（呼び出し側）
-- 内容:
-  - T-004 で確定した拡張子 (`.txt` or `.md`) と `MimeType` に統一
-  - `download()` 中の例外を catch し、UI 側で SnackBar / Dialog を表示
-  - 作品名のサニタイズ（決定された方針に従う）
-- 完了条件:
-  - AC-2.2, AC-2.3, AC-2.6 を満たす
-  - 既存 `MangaNotifier.download` を呼ぶ箇所すべてが新しい挙動で動く
-- 依存: T-004
+### T-006: ダウンロード処理の拡張子 / エラー UI 整備 ✅ 完了 (2026-08-03)
+- 実装:
+  - [lib/feature/manga/provider/manga_providers.dart](../../../../lib/feature/manga/provider/manga_providers.dart)
+    (`MangaNotifier.download` / `sanitizeFileName`)
+  - [lib/feature/manga/page/manga_edit_page.dart](../../../../lib/feature/manga/page/manga_edit_page.dart)（呼び出し側）
+- **spec 訂正**: 呼び出し側は `manga_grid_page` ではなく編集画面 `manga_edit_page` の
+  ツールバーだった。requirements.md (AC-2.1) と design.md を実装に合わせて訂正した
+- 拡張子 `.md` / `MimeType.markdown` に統一（AC-2.3）、作品名は `sanitizeFileName` を通す（AC-2.2）
+- `download()` は失敗を `logger.e` に残して rethrow し、画面側で catch して
+  `保存に失敗しました` を表示する（AC-2.6 / FR-006）。作品が取得できない場合も同様に失敗として扱う
+- 完了通知に出す作品名は `download()` の戻り値を使う。画面側で `mangaProvider` を読み直すと、
+  まだ loading のときに `null をダウンロードしました` と表示されてしまうため
+- サニタイズのテストは [manga_providers_test.dart](../../../../test/feature/manga/provider/manga_providers_test.dart) に追加
 
-### T-007: Delta → プレーンテキスト変換ロジックの集約
-- 対象:
-  - `local_package/my_manga_editor_common/lib/delta_text.dart`（新規）
-  - `local_package/my_manga_editor_common/lib/my_manga_editor_common.dart`（export 追加）
-  - `lib/feature/manga/provider/manga_providers.dart` (`DeltaNotifier.exportPlainText` を差し替え)
-  - `local_package/my_manga_editor_data/lib/repository/manga_repository.dart` (`toMarkdown` 内の op ループを差し替え)
-- 内容:
-  - `String deltaToPlainText(Delta delta)` を新規実装
-    - `op.data is String` のものを順に連結
-    - 3 連続以上の改行を 2 連続に圧縮（既存 `RegExp(r'\n\s*\n\s*\n\s*')` と同等）
-    - 先頭末尾 trim
-  - `my_manga_editor_common` の `pubspec.yaml` に `flutter_quill` 依存が必要なら追加
-  - 既存 2 箇所をこの関数呼び出しに置換
-- 完了条件:
-  - FR-005 を満たす
-  - T-001, T-002 が引き続きパス
-  - `flutter analyze` がパス
-- 依存: T-004, T-001, T-002
+### T-007: Delta → プレーンテキスト変換ロジックの集約 ✅ 完了 (2026-08-03)
+- 実装: [local_package/my_manga_editor_common/lib/delta_text.dart](../../../../local_package/my_manga_editor_common/lib/delta_text.dart)（新規）
+  と [delta_text_test.dart](../../../../local_package/my_manga_editor_common/test/delta_text_test.dart)（新規、6 ケース）
+- 依存追加: `flutter_quill`（UI 一式）ではなく Delta 実装のみの `dart_quill_delta` を common に追加。
+  `flutter_quill/quill_delta.dart` はこのパッケージの再 export なので型は互換
+- 差し替え済み: `DeltaNotifier.exportPlainText` と `MangaRepository.toMarkdown`。
+  Repository 側は見出しの出力判定も「変換後テキストが空か」に統一した（AC-2.5）
+- **副作用**: 作品全体の書き出しでも本文の trim・改行圧縮が効くようになった。
+  出力フォーマットも見出しの後に必ず空行が入る形に揃えた（design.md を更新済み）
+- **CI 追加**: common にテストを置いたため、`ci.yml` / `mise run check` / `release.sh` の
+  品質ゲートに common の `flutter analyze` / `flutter test` を追加した
+  （どちらもカレントパッケージしか見ないため）
+- FR-005 を満たす。T-001 / T-002 は引き続きパス、`flutter analyze` もパス
 
-### T-008: 不要メソッド削除 (`MangaNotifier.toMarkdown`)
-- 対象: `lib/feature/manga/provider/manga_providers.dart`
-- 内容:
-  - `MangaNotifier.toMarkdown()` は `'Markdown export not yet implemented'` を返すだけの未実装メソッド。
-    実体の Markdown 化は `MangaRepository.toMarkdown` 側で行われており、UI からこの未実装メソッドへの参照は無い
-  - 呼び出し元を全リポジトリ検索（`grep -rn 'toMarkdown' lib/`）で確認後、未参照なら削除
-- 完了条件:
-  - `flutter analyze` がパス
-  - 既存テストがパス
-- 依存: T-001（toMarkdown の責務が Repository 側にあることを確定してから）
+### T-008: 不要メソッド削除 (`MangaNotifier.toMarkdown`) ✅ 完了 (2026-08-03)
+- `lib/` / `test/` を検索して未参照であることを確認したうえで削除した
+  （実体の Markdown 化は `MangaRepository.toMarkdown` 側にある）
+- `flutter analyze` / 既存テストともにパス
 
-### T-009: 関連ドキュメントの整合
-- 対象:
-  - [docs/spec/features/manga-export/requirements.md](./requirements.md)
-  - [docs/spec/features/manga-export/design.md](./design.md)
-- 内容:
-  - T-005 〜 T-008 の結果を反映し、`Status: implemented` に更新
-  - 実装後に変わった API シグネチャ・出力フォーマットを反映
-  - `Last Updated` を作業日に更新
-- 完了条件:
-  - spec とコードの間に乖離がない
-  - PR description に `Closes AC-x.y` の対応関係が書かれている
-- 依存: T-005, T-006, T-007, T-008
+### T-009: 関連ドキュメントの整合 ✅ 完了 (2026-08-03)
+- requirements.md / design.md を `Status: implemented` に更新し、`Last Updated` を作業日に変更
+- 実装で判明した記載の誤りを訂正:
+  - ダウンロードの導線は `manga_grid_page` ではなく `manga_edit_page` のツールバー
+  - AC-1.3 にセリフが空のときの通知を追記（T-005 参照）
+- API 一覧・シーケンス図・出力フォーマット・エラー設計・テスト戦略を実装後の状態に更新
+- 利用者から見える変更は [CHANGELOG.md](../../../../CHANGELOG.md) の `## [Unreleased]` に追記済み

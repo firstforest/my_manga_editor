@@ -76,7 +76,7 @@ mise run release --dry-run    # 何が起こるかの確認だけ
 2. **確認** — リリース内容 (`origin/main..develop` のコミット一覧)、リリースノート
    (CHANGELOG の `[Unreleased]`)、新バージョンを表示して y/N。ノートが空ならここで中断
 3. **品質ゲート** — `flutter analyze` && `flutter test`
-   (ルートと `local_package/my_manga_editor_data` の両方。`mise run check` と同内容)
+   (ルートと `local_package/` 配下の各パッケージ。`mise run check` と同内容)
 4. **prod バックアップ** — `scripts/firestore_backup.mjs prod` で Firestore 全データを
    `backups/prod-<日時>/` にダンプ (git 管理外)。ロールバック時の保険
 5. **バージョン更新** — `pubspec.yaml` と `CHANGELOG.md` を書き換えて `chore(release): v...` をコミット

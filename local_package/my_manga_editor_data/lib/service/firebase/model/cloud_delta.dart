@@ -12,8 +12,10 @@ abstract class CloudDelta with _$CloudDelta {
     required String id, // Firestore document ID
     required String mangaId, // Parent manga ID
     required List<dynamic> ops, // Quill Delta operations
-    required String fieldName, // 'ideaMemo', 'memoDelta', 'stageDirectionDelta', 'dialoguesDelta'
-    String? pageId, // Page ID if this delta belongs to a page (null for ideaMemo)
+    required String
+        fieldName, // 'ideaMemo', 'memoDelta', 'stageDirectionDelta', 'dialoguesDelta'
+    String?
+        pageId, // Page ID if this delta belongs to a page (null for ideaMemo)
     required DateTime createdAt, // Creation timestamp
     required DateTime updatedAt, // Last modification timestamp
   }) = _CloudDelta;

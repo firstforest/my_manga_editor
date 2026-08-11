@@ -18,6 +18,11 @@ class MangaEditPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scrollController = useScrollController();
+    // 作品がまだ読み込めていない間は保存ボタンを押せなくする。
+    // 読み込み中に押すと download() が「作品が無い」で失敗し、
+    // 実際には存在する作品なのに「保存に失敗しました」が出てしまうため
+    final canDownload = ref
+        .watch(mangaProvider(mangaId).select((manga) => manga.value != null));
 
     return Scaffold(
       appBar: AppBar(
@@ -29,14 +34,33 @@ class MangaEditPage extends HookConsumerWidget {
         ),
         actions: [
           IconButton(
-              onPressed: () async {
-                await ref.read(mangaProvider(mangaId).notifier).download();
-                final manga = ref.read(mangaProvider(mangaId)).value;
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${manga?.name}をダウンロードしました')));
-                }
-              },
+              onPressed: canDownload
+                  ? () async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      final String name;
+                      try {
+                        // 作品名は download() の戻り値を使う。ここで mangaProvider を
+                        // 読むと、まだ loading のときに名前が取れず null になる
+                        name = await ref
+                            .read(mangaProvider(mangaId).notifier)
+                            .download();
+                      } catch (_) {
+                        // 詳細は download 内で logger.e に残している
+                        if (!context.mounted) {
+                          return;
+                        }
+                        messenger.showSnackBar(
+                            const SnackBar(content: Text('保存に失敗しました')));
+                        return;
+                      }
+                      // 書き出し中に画面を離れていたら通知しない
+                      if (!context.mounted) {
+                        return;
+                      }
+                      messenger.showSnackBar(
+                          SnackBar(content: Text('$nameをダウンロードしました')));
+                    }
+                  : null,
               icon: Icon(Icons.save_alt)),
           IconButton(
             onPressed: () {

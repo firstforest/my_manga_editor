@@ -13,7 +13,8 @@ abstract class CloudMangaPage with _$CloudMangaPage {
     required DateTime createdAt, // Creation timestamp
     required DateTime updatedAt, // Last modification timestamp
     String? memoDeltaId, // CloudDelta document ID for memoDelta
-    List<Map<String, dynamic>>? sceneUnits, // List of {dialoguesDeltaId, stageDirectionDeltaId}
+    List<Map<String, dynamic>>?
+        sceneUnits, // List of {dialoguesDeltaId, stageDirectionDeltaId}
     // Legacy fields (read-only, for migration)
     @JsonKey(includeToJson: false) String? stageDirectionDeltaId,
     @JsonKey(includeToJson: false) String? dialoguesDeltaId,

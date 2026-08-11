@@ -108,7 +108,7 @@ void main() {
       expect(markdown, isNot(contains('### 本文')));
     });
 
-    test('ト書きとセリフは ### 本文 の 1 つの箇条書きにまとまる', () async {
+    test('ト書きとセリフは ### 本文 に空行区切りで並ぶ', () async {
       when(firebase.fetchManga('mid'))
           .thenAnswer((_) async => _cloudManga(name: '単カット作品'));
       when(firebase.fetchMangaPages('mid')).thenAnswer((_) async => [
@@ -147,13 +147,13 @@ void main() {
       expect(markdown, contains('### メモ'));
       expect(markdown, contains('メモ本文'));
       // ト書きが先、セリフが後。ト書きは （ト書き） で見分けられる
-      expect(markdown, contains('### 本文\n\n- （ト書き）夜の教室。窓際に二人\n- A「こんにちは」\n'));
+      expect(markdown, contains('### 本文\n\n（ト書き）夜の教室。窓際に二人\n\nA「こんにちは」\n'));
       // ト書き / セリフ の個別見出しは出さない
       expect(markdown, isNot(contains('### ト書き')));
       expect(markdown, isNot(contains('### セリフ')));
     });
 
-    test('カットが複数でも見出しを挟まず、カット順に 1 つの箇条書きへ並ぶ', () async {
+    test('カットが複数でも見出しを挟まず、カット順に空行区切りで並ぶ', () async {
       when(firebase.fetchManga('mid'))
           .thenAnswer((_) async => _cloudManga(name: 'マルチカット'));
       when(firebase.fetchMangaPages('mid')).thenAnswer((_) async => [
@@ -200,14 +200,14 @@ void main() {
       expect(
           markdown,
           contains('### 本文\n\n'
-              '- （ト書き）ト書き1\n'
-              '- セリフ1\n'
-              '- （ト書き）ト書き2\n'
-              '- セリフ2\n'));
+              '（ト書き）ト書き1\n\n'
+              'セリフ1\n\n'
+              '（ト書き）ト書き2\n\n'
+              'セリフ2\n'));
       expect(markdown, isNot(contains('### カット')));
     });
 
-    test('中身が空のカットは項目を作らない', () async {
+    test('中身が空のカットは何も出力しない', () async {
       when(firebase.fetchManga('mid'))
           .thenAnswer((_) async => _cloudManga(name: '空カット混在'));
       when(firebase.fetchMangaPages('mid')).thenAnswer((_) async => [
@@ -252,11 +252,11 @@ void main() {
 
       final markdown = await repository.toMarkdown(MangaId('mid'));
 
-      expect(markdown, contains('### 本文\n\n- セリフ1\n'));
+      expect(markdown, contains('### 本文\n\nセリフ1\n'));
       expect(markdown, isNot(contains('（ト書き）')));
     });
 
-    test('本文が複数行なら 1 行ずつ項目になり、空行は項目にしない', () async {
+    test('本文が複数行なら 1 行ずつ空行で区切られ、余分な空行は増えない', () async {
       when(firebase.fetchManga('mid'))
           .thenAnswer((_) async => _cloudManga(name: '改行確認'));
       when(firebase.fetchMangaPages('mid')).thenAnswer((_) async => [
@@ -282,7 +282,8 @@ void main() {
 
       final markdown = await repository.toMarkdown(MangaId('mid'));
 
-      expect(markdown, contains('- A「こんにちは」\n- B「やあ」\n- C「またね」\n'));
+      expect(markdown, contains('A「こんにちは」\n\nB「やあ」\n\nC「またね」\n'));
+      expect(markdown, isNot(contains('\n\n\n')));
     });
 
     test('セリフの行頭の記号は Markdown の記法にならないようエスケープされる', () async {
@@ -311,10 +312,10 @@ void main() {
 
       final markdown = await repository.toMarkdown(MangaId('mid'));
 
-      expect(markdown, contains(r'- \---'));
-      expect(markdown, contains(r'- \# 回想'));
-      expect(markdown, contains(r'- 1\. 教室'));
-      expect(markdown, contains(r'- \> つぶやき'));
+      expect(markdown, contains('\\---\n'));
+      expect(markdown, contains('\\# 回想\n'));
+      expect(markdown, contains('1\\. 教室\n'));
+      expect(markdown, contains('\\> つぶやき\n'));
       // 作品名・ページ・セクションの見出しはエスケープしない
       expect(markdown, contains('# エスケープ確認'));
       expect(markdown, contains('### 本文'));
@@ -346,10 +347,10 @@ void main() {
 
       final markdown = await repository.toMarkdown(MangaId('mid'));
 
-      expect(markdown, contains('- （ト書き）---\n- （ト書き）夜の教室\n'));
+      expect(markdown, contains('（ト書き）---\n\n（ト書き）夜の教室\n'));
     });
 
-    test('メモは箇条書きにせず、続く行を強制改行でつなぐ', () async {
+    test('メモは 1 段落にまとめ、続く行を強制改行でつなぐ', () async {
       when(firebase.fetchManga('mid'))
           .thenAnswer((_) async => _cloudManga(name: 'メモ確認'));
       when(firebase.fetchMangaPages('mid')).thenAnswer((_) async => [

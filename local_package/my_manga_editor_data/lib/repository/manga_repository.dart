@@ -674,27 +674,27 @@ class MangaRepository {
 
         writeSection('### メモ', _plainTextOf(pageDeltas, page.memoDeltaId));
 
-        // ページ内の全カットのト書き・セリフを 1 つの箇条書きにまとめる。
-        // カットの順に、カットごとに「ト書き → セリフ」で並べ、
+        // ページ内の全カットのト書き・セリフを 1 つのまとまりとして並べる。
+        // カットの順に、カットごとに「ト書き → セリフ」で並べ、1 行ずつ空行で区切る。
         // ト書きは行頭に （ト書き） を付けてセリフと見分けられるようにする
         final domainPage = page.toMangaPage();
-        final items = <String>[];
+        final paragraphs = <String>[];
         for (final unit in domainPage.sceneUnits) {
-          items.addAll(_bulletItems(
+          paragraphs.addAll(_bodyParagraphs(
             _plainTextOf(pageDeltas, unit.stageDirectionDeltaId.id),
             label: 'ト書き',
           ));
-          items.addAll(
-            _bulletItems(_plainTextOf(pageDeltas, unit.dialoguesDeltaId.id)),
+          paragraphs.addAll(
+            _bodyParagraphs(_plainTextOf(pageDeltas, unit.dialoguesDeltaId.id)),
           );
         }
-        if (items.isNotEmpty) {
+        if (paragraphs.isNotEmpty) {
           buffer.writeln('### 本文');
           buffer.writeln();
-          for (final item in items) {
-            buffer.writeln(item);
+          for (final paragraph in paragraphs) {
+            buffer.writeln(paragraph);
+            buffer.writeln();
           }
-          buffer.writeln();
         }
       }
 
@@ -718,20 +718,20 @@ class MangaRepository {
     return deltaToPlainText(Delta.fromJson(doc.ops));
   }
 
-  /// 本文を 1 行 1 項目の箇条書きに直す。空行は項目にしない。
+  /// 本文を 1 行 1 段落に分ける。空行は段落にしない。
   ///
-  /// [label] を渡すと各項目の先頭に `（<label>）` を付ける。
+  /// [label] を渡すと各段落の先頭に `（<label>）` を付ける。
   /// ラベルが付く行は行頭が記号にならないので、エスケープは不要。
-  List<String> _bulletItems(String body, {String? label}) {
-    final items = <String>[];
+  List<String> _bodyParagraphs(String body, {String? label}) {
+    final paragraphs = <String>[];
     for (final line in body.split('\n')) {
       if (line.trim().isEmpty) {
         continue;
       }
-      items.add(
-          label == null ? '- ${_escapeMarkdownLine(line)}' : '- （$label）$line');
+      paragraphs
+          .add(label == null ? _escapeMarkdownLine(line) : '（$label）$line');
     }
-    return items;
+    return paragraphs;
   }
 
   /// 利用者が書いたプレーンテキストを、Markdown として開いても

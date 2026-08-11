@@ -174,24 +174,28 @@ String deltaToPlainText(Delta delta);
 
 ### 本文                          ← ト書き・セリフが両方空なら出力しない
 
-- （ト書き）<ト書きの 1 行目>
-- （ト書き）<ト書きの 2 行目>
-- <セリフの 1 行目>
-- <セリフの 2 行目>
+（ト書き）<ト書きの 1 行目>
+
+（ト書き）<ト書きの 2 行目>
+
+<セリフの 1 行目>
+
+<セリフの 2 行目>
 
 ## ページ 2
 ...
 ```
 
 ト書きとセリフは読む順序がそのまま意味を持つので、カットごとに見出しで分けず、
-ページ全体で 1 つの箇条書きにまとめる（[manga_repository.dart の実装](../../../../local_package/my_manga_editor_data/lib/repository/manga_repository.dart)）。
-本文の 1 行が 1 項目になり、空行は項目にしない。ト書きは行頭の `（ト書き）` で見分ける。
+ページ全体を 1 つのまとまりとして並べる（[manga_repository.dart の実装](../../../../local_package/my_manga_editor_data/lib/repository/manga_repository.dart)）。
+本文の 1 行が 1 段落になり、行と行の間には空行を 1 行入れる（元の空行は段落にしない）。
+ト書きは行頭の `（ト書き）` で見分ける。
 ページ内にト書きもセリフも無ければ `### 本文` ごと出力しない。
 
 本文は `deltaToPlainText` を通すため、前後の空行と連続する空行は整形済みの状態になる。
 そのうえで、`.md` として開いたときに書いたとおりに見えるよう Repository 側で次の 2 つを施す：
 
-- 箇条書きにしない散文（アイデアメモ・メモ）は、本文が続く行の行末に半角スペース 2 つ
+- 段落に分けない散文（アイデアメモ・メモ）は、本文が続く行の行末に半角スペース 2 つ
   （Markdown の強制改行）を付ける。付けないと 1 行ずつの改行が無視されて 1 段落に繋がる
 - 行頭の記号 (`-` `+` `*` `>` `#` `=` `_` `~` バッククォート) と `1.` / `1)` は
   `\` でエスケープする。箇条書き・引用・見出し・罫線として解釈されるのを防ぐ
@@ -223,7 +227,7 @@ String deltaToPlainText(Delta delta);
 - **ユニット (`MangaRepository.toMarkdown`)** —
   [manga_repository_export_test.dart](../../../../local_package/my_manga_editor_data/test/repository/manga_repository_export_test.dart):
   `FirebaseService` を mockito でモックし、SceneUnit 0 / 1 / 複数、空カット、
-  ト書きとセリフの並び順とラベル、空 Delta 混在、アイデアメモあり / なし、
+  ト書きとセリフの並び順・空行区切り・ラベル、空 Delta 混在、アイデアメモあり / なし、
   本文の整形・メモの強制改行・エスケープを検証
 - **ユニット (`deltaToPlainText`)** —
   [delta_text_test.dart](../../../../local_package/my_manga_editor_common/test/delta_text_test.dart):
@@ -255,8 +259,8 @@ String deltaToPlainText(Delta delta);
 - 出力 Markdown で見出しの後に必ず空行が入るようになった
 - 出力 Markdown の本文に強制改行と行頭記号のエスケープが入るようになった
   (`.md` で開いたときに書いたとおりに見えるようにするため)
-- ト書き・セリフをページ単位の 1 つの箇条書きにまとめ、カットの見出しを廃止した
-  (`### カット N` / `#### ト書き` / `#### セリフ` → `### 本文` の箇条書き)
+- ト書き・セリフをページ単位で 1 つにまとめ、カットの見出しを廃止した
+  (`### カット N` / `#### ト書き` / `#### セリフ` → `### 本文` に空行区切りで並べる)
 
 ## 代替案 (Alternatives Considered)
 

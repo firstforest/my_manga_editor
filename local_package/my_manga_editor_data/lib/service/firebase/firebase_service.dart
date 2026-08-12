@@ -215,15 +215,9 @@ class FirebaseService {
   Future<String> createManga(CloudManga manga) async {
     try {
       final docRef = _mangasCollection.doc();
-      final mangaWithId = CloudManga(
-        id: docRef.id,
-        userId: manga.userId,
-        name: manga.name,
-        startPageDirection: manga.startPageDirection,
-        createdAt: manga.createdAt,
-        updatedAt: manga.updatedAt,
-        editLock: manga.editLock,
-      );
+      // 差し替えるのは採番された ID だけ。フィールドを手で写すと
+      // モデルに項目が増えたときに書き漏らすため copyWith を使う。
+      final mangaWithId = manga.copyWith(id: docRef.id);
       await docRef.set(mangaWithId.toFirestore());
       return docRef.id;
     } on FirebaseException catch (e) {

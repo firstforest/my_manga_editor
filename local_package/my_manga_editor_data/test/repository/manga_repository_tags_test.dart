@@ -97,26 +97,69 @@ void main() {
       verify(firebase.addMangaTag('mid', tag)).called(1);
     });
 
-    test('31 文字は ValidationException を投げ、Service を呼ばない', () async {
+    test('31 文字は TagLengthException を投げ、Service を呼ばない', () async {
       final tag = 'あ' * 31;
 
-      expect(
+      await expectLater(
         () => repository.addTag(MangaId('mid'), tag),
-        throwsA(isA<repo_exceptions.ValidationException>()),
+        throwsA(isA<repo_exceptions.TagLengthException>()),
       );
       verifyNever(firebase.addMangaTag(any, any));
     });
 
-    test('既にタグが 20 個あると ValidationException を投げる', () async {
+    test('絵文字 30 個ちょうどは追加できる (書記素クラスタで数える)', () async {
+      final tag = '🎉' * 30;
+
+      await repository.addTag(MangaId('mid'), tag);
+
+      verify(firebase.addMangaTag('mid', tag)).called(1);
+    });
+
+    test('絵文字 31 個は TagLengthException を投げる', () async {
+      final tag = '🎉' * 31;
+
+      await expectLater(
+        () => repository.addTag(MangaId('mid'), tag),
+        throwsA(isA<repo_exceptions.TagLengthException>()),
+      );
+      verifyNever(firebase.addMangaTag(any, any));
+    });
+
+    test('既にタグが 20 個あると TagLimitException を投げる', () async {
       when(firebase.fetchManga('mid')).thenAnswer(
         (_) async => _cloudManga(
           tags: List.generate(20, (i) => 'tag$i'),
         ),
       );
 
-      expect(
+      await expectLater(
         () => repository.addTag(MangaId('mid'), '21個目'),
-        throwsA(isA<repo_exceptions.ValidationException>()),
+        throwsA(isA<repo_exceptions.TagLimitException>()),
+      );
+      verifyNever(firebase.addMangaTag(any, any));
+    });
+
+    test('Service が失敗したら StorageException に変換する', () async {
+      when(firebase.addMangaTag(any, any)).thenThrow(
+        FirebaseServiceException('Failed to add manga tag', code: 'unavailable'),
+      );
+
+      await expectLater(
+        () => repository.addTag(MangaId('mid'), '商業'),
+        throwsA(
+          isA<repo_exceptions.StorageException>()
+              .having((e) => e.code, 'code', 'unavailable'),
+        ),
+      );
+    });
+
+    test('fetchManga が失敗しても StorageException に変換する', () async {
+      when(firebase.fetchManga('mid'))
+          .thenThrow(FirebaseServiceException('Failed to fetch manga'));
+
+      await expectLater(
+        () => repository.addTag(MangaId('mid'), '商業'),
+        throwsA(isA<repo_exceptions.StorageException>()),
       );
       verifyNever(firebase.addMangaTag(any, any));
     });
@@ -134,7 +177,7 @@ void main() {
     test('未認証なら AuthException を投げる', () async {
       when(auth.currentUser).thenReturn(null);
 
-      expect(
+      await expectLater(
         () => repository.addTag(MangaId('mid'), '商業'),
         throwsA(isA<repo_exceptions.AuthException>()),
       );
@@ -165,11 +208,26 @@ void main() {
     test('未認証なら AuthException を投げる', () async {
       when(auth.currentUser).thenReturn(null);
 
-      expect(
+      await expectLater(
         () => repository.removeTag(MangaId('mid'), '商業'),
         throwsA(isA<repo_exceptions.AuthException>()),
       );
       verifyNever(firebase.removeMangaTag(any, any));
+    });
+
+    test('Service が失敗したら StorageException に変換する', () async {
+      when(firebase.removeMangaTag(any, any)).thenThrow(
+        FirebaseServiceException('Failed to remove manga tag',
+            code: 'unavailable'),
+      );
+
+      await expectLater(
+        () => repository.removeTag(MangaId('mid'), '商業'),
+        throwsA(
+          isA<repo_exceptions.StorageException>()
+              .having((e) => e.code, 'code', 'unavailable'),
+        ),
+      );
     });
   });
 
@@ -195,6 +253,55 @@ void main() {
       final created =
           verify(firebase.createManga(captureAny)).captured.single as CloudManga;
       expect(created.tags, isEmpty);
+    });
+
+    test('前後の空白を落として保存する (removeTag で外せなくなるため)', () async {
+      when(firebase.createManga(any)).thenAnswer((_) async => 'new-mid');
+      when(firebase.createDelta(any, any)).thenAnswer((_) async => 'delta-id');
+
+      await repository.createNewManga(tags: ['  商業  ']);
+
+      final created =
+          verify(firebase.createManga(captureAny)).captured.single as CloudManga;
+      expect(created.tags, ['商業']);
+    });
+
+    test('空文字・空白のみのタグは落とす', () async {
+      when(firebase.createManga(any)).thenAnswer((_) async => 'new-mid');
+      when(firebase.createDelta(any, any)).thenAnswer((_) async => 'delta-id');
+
+      await repository.createNewManga(tags: ['', '   ', '商業']);
+
+      final created =
+          verify(firebase.createManga(captureAny)).captured.single as CloudManga;
+      expect(created.tags, ['商業']);
+    });
+
+    test('重複するタグは 1 つにまとめる', () async {
+      when(firebase.createManga(any)).thenAnswer((_) async => 'new-mid');
+      when(firebase.createDelta(any, any)).thenAnswer((_) async => 'delta-id');
+
+      await repository.createNewManga(tags: ['商業', ' 商業 ', '連載:ヒーロー']);
+
+      final created =
+          verify(firebase.createManga(captureAny)).captured.single as CloudManga;
+      expect(created.tags, ['商業', '連載:ヒーロー']);
+    });
+
+    test('31 文字のタグは TagLengthException を投げ、作品を作らない', () async {
+      await expectLater(
+        () => repository.createNewManga(tags: ['あ' * 31]),
+        throwsA(isA<repo_exceptions.TagLengthException>()),
+      );
+      verifyNever(firebase.createManga(any));
+    });
+
+    test('21 個のタグは TagLimitException を投げ、作品を作らない', () async {
+      await expectLater(
+        () => repository.createNewManga(tags: List.generate(21, (i) => 'tag$i')),
+        throwsA(isA<repo_exceptions.TagLimitException>()),
+      );
+      verifyNever(firebase.createManga(any));
     });
   });
 }

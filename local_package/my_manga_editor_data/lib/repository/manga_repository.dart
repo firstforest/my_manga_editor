@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:characters/characters.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:my_manga_editor_common/logger.dart';
@@ -63,7 +64,7 @@ class MangaRepository {
 
   /// Create a new manga project
   /// Returns the manga ID (Firestore document ID)
-  /// Throws: AuthException if user not authenticated
+  /// Throws: AuthException if user not authenticated, ValidationException if tags are invalid
   Future<MangaId> createNewManga({
     String name = '無名の傑作',
     List<String> tags = const [],
@@ -73,6 +74,8 @@ class MangaRepository {
       if (userId == null) {
         throw repo_exceptions.AuthException();
       }
+
+      final normalizedTags = _normalizeTags(tags);
 
       // Create CloudManga first
       final cloudManga = CloudManga(
@@ -84,7 +87,7 @@ class MangaRepository {
         updatedAt: DateTime.now(),
         editLock: null,
         status: MangaStatus.idea.name,
-        tags: tags,
+        tags: normalizedTags,
       );
 
       // Upload manga document to Firestore
@@ -220,10 +223,44 @@ class MangaRepository {
   /// 1 作品に付けられるタグの最大数
   static const maxTagsPerManga = 20;
 
+  /// 1 タグの長さを検証する。
+  ///
+  /// `String.length` は UTF-16 コードユニット数なので、絵文字のようなサロゲートペアを
+  /// 含むタグが見た目の 2 倍に数えられる。利用者が数えるのは書記素クラスタなので
+  /// `characters.length` で判定する。
+  /// Throws: TagLengthException
+  void _validateTagLength(String trimmedTag) {
+    if (trimmedTag.characters.length > maxTagLength) {
+      throw repo_exceptions.TagLengthException(maxTagLength);
+    }
+  }
+
+  /// タグ配列を正規化する (trim / 空文字除去 / 重複除去) と同時に検証する。
+  ///
+  /// 検証を通さずに保存すると、前後に空白の付いたタグが Firestore に残り、
+  /// `removeTag` は trim してから `arrayRemove` するため二度と外せなくなる。
+  /// Throws: TagLengthException, TagLimitException
+  List<String> _normalizeTags(List<String> tags) {
+    final normalized = <String>[];
+    for (final tag in tags) {
+      final trimmed = tag.trim();
+      if (trimmed.isEmpty) continue;
+      _validateTagLength(trimmed);
+      if (normalized.contains(trimmed)) continue;
+      normalized.add(trimmed);
+    }
+
+    if (normalized.length > maxTagsPerManga) {
+      throw repo_exceptions.TagLimitException(maxTagsPerManga);
+    }
+
+    return normalized;
+  }
+
   /// Add a tag to a manga.
   ///
   /// 空文字 / 空白のみは何もせず正常終了する (利用者が空のまま確定したケース)。
-  /// Throws: AuthException, ValidationException
+  /// Throws: AuthException, ValidationException, StorageException
   Future<void> addTag(MangaId id, String tag) async {
     try {
       final userId = _authService.currentUser?.uid;
@@ -234,19 +271,16 @@ class MangaRepository {
       final trimmed = tag.trim();
       if (trimmed.isEmpty) return;
 
-      if (trimmed.length > maxTagLength) {
-        throw repo_exceptions.ValidationException(
-            'Tag must be 1-$maxTagLength characters');
-      }
+      _validateTagLength(trimmed);
 
-      // 上限判定は購読済みドキュメントを読んで行う。arrayUnion は件数を知らないため
-      // 厳密な排他にはならないが、上限は UI 保護のための目安として扱う。
+      // arrayUnion は現在の件数を知らないため、タグ追加のたびにドキュメントを 1 回読んで
+      // 上限を判定する。読みと書きの間は排他されないので、2 端末が同時に足せば
+      // 21 個目が入りうる。上限は UI 保護のための目安として扱う。
       final current = await _firebaseService.fetchManga(id.id);
       final currentTags = current?.tags ?? const <String>[];
       if (!currentTags.contains(trimmed) &&
           currentTags.length >= maxTagsPerManga) {
-        throw repo_exceptions.ValidationException(
-            'Too many tags (max $maxTagsPerManga)');
+        throw repo_exceptions.TagLimitException(maxTagsPerManga);
       }
 
       await _firebaseService.addMangaTag(id.id, trimmed);
@@ -256,13 +290,16 @@ class MangaRepository {
     } on FirebaseException catch (e) {
       logger.e('Failed to add tag: $id', error: e);
       throw _handleFirebaseException(e);
+    } on FirebaseServiceException catch (e) {
+      logger.e('Failed to add tag: $id', error: e);
+      throw _handleFirebaseServiceException(e);
     }
   }
 
   /// Remove a tag from a manga.
   ///
   /// 付いていないタグを指定しても何も起きない。
-  /// Throws: AuthException
+  /// Throws: AuthException, StorageException
   Future<void> removeTag(MangaId id, String tag) async {
     try {
       final userId = _authService.currentUser?.uid;
@@ -278,6 +315,9 @@ class MangaRepository {
     } on FirebaseException catch (e) {
       logger.e('Failed to remove tag: $id', error: e);
       throw _handleFirebaseException(e);
+    } on FirebaseServiceException catch (e) {
+      logger.e('Failed to remove tag: $id', error: e);
+      throw _handleFirebaseServiceException(e);
     }
   }
 
@@ -839,6 +879,12 @@ class MangaRepository {
       return repo_exceptions.StorageException(e.message ?? 'Storage error',
           code: e.code);
     }
+  }
+
+  /// `FirebaseServiceException` は `FirebaseException` のサブタイプではないため、
+  /// Service 由来の失敗は別経路で Repository の例外へ変換する。
+  Exception _handleFirebaseServiceException(FirebaseServiceException e) {
+    return repo_exceptions.StorageException(e.message, code: e.code);
   }
 
   // ============================================================================

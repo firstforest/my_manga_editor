@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   my_manga_editor_common:
     path: ../my_manga_editor_common
+  # タグ長を利用者から見た文字数 (書記素クラスタ) で数えるために使う
+  characters: ^1.4.0
   freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
   riverpod_annotation: ^4.0.3

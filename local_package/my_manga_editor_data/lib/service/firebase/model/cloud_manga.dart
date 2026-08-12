@@ -52,6 +52,12 @@ extension CloudMangaExt on CloudManga {
     DocumentSnapshot<Map<String, dynamic>> snapshot,
   ) {
     final data = snapshot.data()!;
+    final rawTags = data['tags'] as List<dynamic>?;
+    // serverTimestamp は解決されるまでローカルスナップショット上では null で読める
+    // (ServerTimestampBehavior.none)。書き込み直後の読み直しで落ちないよう、
+    // 未解決のあいだは読み取り時刻を仮置きする。次のスナップショットで確定値に入れ替わる。
+    final now = DateTime.now();
+
     // schemaVersion は現在 v1 のみ (なし = v1)。
     // バージョン追加時はここに単方向アップグレードチェーンを追記する。
     return CloudManga(
@@ -59,8 +65,8 @@ extension CloudMangaExt on CloudManga {
       userId: data['userId'] as String,
       name: data['name'] as String,
       startPageDirection: data['startPageDirection'] as String,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? now,
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? now,
       ideaMemoDeltaId: data['ideaMemoDeltaId'] as String?,
       editLock: data['editLock'] != null
           ? EditLock.fromJson(data['editLock'] as Map<String, dynamic>)
@@ -68,7 +74,9 @@ extension CloudMangaExt on CloudManga {
       status: data['status'] as String?,
       // tags フィールドを持たない旧ドキュメントは null のまま読み、
       // ドメイン変換時に空リストへ倒す (タグなし)。
-      tags: (data['tags'] as List<dynamic>?)?.cast<String>(),
+      // 遅延ビュー (cast) にすると型不正な要素が後の反復で初めて落ち、
+      // 一覧画面全体を巻き込む。ここで即座に変換して失敗をこの 1 件に閉じ込める。
+      tags: rawTags == null ? null : List<String>.from(rawTags),
     );
   }
 }

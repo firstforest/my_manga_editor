@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
@@ -22,13 +23,29 @@ sealed class TagFilter with _$TagFilter {
 ///
 /// タグは独立したエンティティを持たないので、「存在するタグ」はここで導出する。
 @riverpod
-List<String> tagList(Ref ref) {
-  final mangaList = ref.watch(allMangaListProvider).value ?? const <Manga>[];
-  final names = <String>{
-    for (final manga in mangaList) ...manga.tags,
-  }.toList()
-    ..sort();
-  return names;
+class TagList extends _$TagList {
+  /// 直前に返したタグ一覧。
+  ///
+  /// 作品名の変更やカードの列移動でも作品一覧は emit される。List は同一性で
+  /// 比較されるので、再計算のたびに新しいインスタンスを返すとタグの顔ぶれが
+  /// 同じでも下流 (絞り込みバー / TagFilterNotifier) が動いてしまう。
+  /// 中身が等しい間は同じインスタンスを返して下流を no-op にする。
+  List<String>? _lastNames;
+
+  @override
+  List<String> build() {
+    final mangaList = ref.watch(allMangaListProvider).value ?? const <Manga>[];
+    final names = <String>{
+      for (final manga in mangaList) ...manga.tags,
+    }.toList()
+      ..sort();
+
+    final last = _lastNames;
+    if (last != null && const ListEquality<String>().equals(last, names)) {
+      return last;
+    }
+    return _lastNames = names;
+  }
 }
 
 /// 作品一覧の絞り込み状態。アプリ起動中のみ保持し、永続化しない。

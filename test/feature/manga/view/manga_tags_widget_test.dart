@@ -107,7 +107,7 @@ void main() {
     expect(repository.added, ['没ネタ']);
   });
 
-  testWidgets('空文字で確定しても何も追加しない', (tester) async {
+  testWidgets('空文字で確定しても何も追加せず、入力欄を閉じる', (tester) async {
     final repository = await _pumpWidget(tester, _manga('1'));
 
     await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
@@ -118,6 +118,114 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.added, isEmpty);
+    expect(find.byType(TextField), findsNothing);
+    expect(find.widgetWithText(ActionChip, 'タグ'), findsOneWidget);
+  });
+
+  testWidgets('追加できたら入力欄を閉じる', (tester) async {
+    await _pumpWidget(tester, _manga('1'));
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '没ネタ');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TextField), findsNothing);
+    expect(find.widgetWithText(ActionChip, 'タグ'), findsOneWidget);
+  });
+
+  testWidgets('候補が出ている状態で確定すると、入力途中の文字列ではなく候補が追加される', (tester) async {
+    final repository = await _pumpWidget(
+      tester,
+      _manga('1'),
+      allManga: [
+        _manga('1'),
+        _manga('2', tags: ['連載:ヒーロー']),
+      ],
+    );
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '連載');
+    await tester.pumpAndSettle();
+    expect(find.text('連載:ヒーロー'), findsOneWidget);
+
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(repository.added, ['連載:ヒーロー']);
+  });
+
+  testWidgets('候補をタップするとそのタグが追加される', (tester) async {
+    final repository = await _pumpWidget(
+      tester,
+      _manga('1'),
+      allManga: [
+        _manga('1'),
+        _manga('2', tags: ['連載:ヒーロー']),
+      ],
+    );
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '連載');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('連載:ヒーロー'));
+    await tester.pumpAndSettle();
+
+    expect(repository.added, ['連載:ヒーロー']);
+  });
+
+  testWidgets('候補に無い文字列を確定すると、その文字列がそのまま追加される', (tester) async {
+    final repository = await _pumpWidget(
+      tester,
+      _manga('1'),
+      allManga: [
+        _manga('1'),
+        _manga('2', tags: ['連載:ヒーロー']),
+      ],
+    );
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '没ネタ');
+    await tester.pumpAndSettle();
+    // 候補に一致しないので候補は出ていない
+    expect(find.text('連載:ヒーロー'), findsNothing);
+
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(repository.added, ['没ネタ']);
+  });
+
+  testWidgets('大文字小文字が違っても候補に出て、保存済みの表記が追加される', (tester) async {
+    final repository = await _pumpWidget(
+      tester,
+      _manga('1'),
+      allManga: [
+        _manga('1'),
+        _manga('2', tags: ['Web連載']),
+      ],
+    );
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'web');
+    await tester.pumpAndSettle();
+    expect(find.text('Web連載'), findsOneWidget);
+
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(repository.added, ['Web連載']);
   });
 
   testWidgets('入力途中で既存のタグが候補に出る', (tester) async {
@@ -168,7 +276,7 @@ void main() {
 
   testWidgets('文字数超過は SnackBar で知らせ、タグは増えない', (tester) async {
     final repository = await _pumpWidget(tester, _manga('1'));
-    repository.throwOnAdd = ValidationException('Tag must be 1-30 characters');
+    repository.throwOnAdd = TagLengthException(30);
 
     await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
     await tester.pumpAndSettle();
@@ -182,7 +290,7 @@ void main() {
 
   testWidgets('個数超過は専用の SnackBar で知らせる', (tester) async {
     final repository = await _pumpWidget(tester, _manga('1'));
-    repository.throwOnAdd = ValidationException('Too many tags (max 20)');
+    repository.throwOnAdd = TagLimitException(20);
 
     await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
     await tester.pumpAndSettle();
@@ -191,6 +299,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('タグは1作品につき20個までです'), findsOneWidget);
+  });
+
+  testWidgets('文言は例外の型で選ぶ (Repository のメッセージ本文に依存しない)', (tester) async {
+    final repository = await _pumpWidget(tester, _manga('1'));
+    // メッセージ本文だけを見ていると、種類の分からない検証エラーにも
+    // 「30文字以内で」のような無関係な案内を出してしまう
+    repository.throwOnAdd = ValidationException('Too many tags (max 20)');
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '商業');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(find.text('このタグは追加できません'), findsOneWidget);
+    expect(find.text('タグは1作品につき20個までです'), findsNothing);
+    expect(repository.added, isEmpty);
   });
 
   testWidgets('保存に失敗したら SnackBar で知らせる', (tester) async {
@@ -204,5 +329,69 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('タグの保存に失敗しました'), findsOneWidget);
+  });
+
+  testWidgets('文字数超過で弾かれても入力欄と入力内容が残る', (tester) async {
+    final repository = await _pumpWidget(tester, _manga('1'));
+    repository.throwOnAdd = TagLengthException(30);
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'あ' * 31);
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TextField), findsOneWidget);
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller?.text, 'あ' * 31);
+  });
+
+  testWidgets('個数超過で弾かれても入力欄と入力内容が残る', (tester) async {
+    final repository = await _pumpWidget(tester, _manga('1'));
+    repository.throwOnAdd = TagLimitException(20);
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '21個目');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TextField), findsOneWidget);
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller?.text, '21個目');
+  });
+
+  testWidgets('保存に失敗しても入力欄と入力内容が残る', (tester) async {
+    final repository = await _pumpWidget(tester, _manga('1'));
+    repository.throwOnAdd = StorageException('boom');
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '商業');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TextField), findsOneWidget);
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller?.text, '商業');
+  });
+
+  testWidgets('弾かれた後に打ち直して確定できる', (tester) async {
+    final repository = await _pumpWidget(tester, _manga('1'));
+    repository.throwOnAdd = TagLengthException(30);
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'あ' * 31);
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    repository.throwOnAdd = null;
+    await tester.enterText(find.byType(TextField), '商業');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(repository.added, ['商業']);
+    expect(find.byType(TextField), findsNothing);
   });
 }

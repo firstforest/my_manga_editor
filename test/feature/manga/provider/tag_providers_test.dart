@@ -66,6 +66,46 @@ void main() {
 
       expect(env.container.read(tagListProvider), isEmpty);
     });
+
+    test('タグと無関係な変更で作品一覧が流れても下流に通知しない', () async {
+      final env = _containerWith([
+        _manga('1', tags: ['商業']),
+        _manga('2'),
+      ]);
+      await _settle(env.container);
+
+      var notified = 0;
+      env.container.listen(tagListProvider, (_, __) => notified++);
+      final before = env.container.read(tagListProvider);
+
+      // 作品名の変更やカードの列移動でも作品一覧は emit される
+      env.controller.add([
+        _manga('1', tags: ['商業']).copyWith(name: '改題した作品'),
+        _manga('2').copyWith(status: MangaStatus.inProgress),
+      ]);
+      await _pump();
+
+      expect(notified, 0);
+      expect(identical(env.container.read(tagListProvider), before), isTrue);
+    });
+
+    test('タグの顔ぶれが変わったら下流に通知する', () async {
+      final env = _containerWith([
+        _manga('1', tags: ['商業']),
+      ]);
+      await _settle(env.container);
+
+      var notified = 0;
+      env.container.listen(tagListProvider, (_, __) => notified++);
+
+      env.controller.add([
+        _manga('1', tags: ['商業', '連載:ヒーロー']),
+      ]);
+      await _pump();
+
+      expect(notified, 1);
+      expect(env.container.read(tagListProvider), ['商業', '連載:ヒーロー']);
+    });
   });
 
   group('filteredMangaList', () {

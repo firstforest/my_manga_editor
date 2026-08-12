@@ -12,16 +12,13 @@ part of 'tag_providers.dart';
 ///
 /// タグは独立したエンティティを持たないので、「存在するタグ」はここで導出する。
 
-@ProviderFor(tagList)
+@ProviderFor(TagList)
 final tagListProvider = TagListProvider._();
 
 /// 全作品に付いているタグを平坦化し、重複を除いて昇順に並べたもの。
 ///
 /// タグは独立したエンティティを持たないので、「存在するタグ」はここで導出する。
-
-final class TagListProvider
-    extends $FunctionalProvider<List<String>, List<String>, List<String>>
-    with $Provider<List<String>> {
+final class TagListProvider extends $NotifierProvider<TagList, List<String>> {
   /// 全作品に付いているタグを平坦化し、重複を除いて昇順に並べたもの。
   ///
   /// タグは独立したエンティティを持たないので、「存在するタグ」はここで導出する。
@@ -41,13 +38,7 @@ final class TagListProvider
 
   @$internal
   @override
-  $ProviderElement<List<String>> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  List<String> create(Ref ref) {
-    return tagList(ref);
-  }
+  TagList create() => TagList();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(List<String> value) {
@@ -58,7 +49,26 @@ final class TagListProvider
   }
 }
 
-String _$tagListHash() => r'61b72859d3412c92a1835df55995b5e870dd2192';
+String _$tagListHash() => r'ba0cde597d4628b2bf964e11ba659091ff35b46d';
+
+/// 全作品に付いているタグを平坦化し、重複を除いて昇順に並べたもの。
+///
+/// タグは独立したエンティティを持たないので、「存在するタグ」はここで導出する。
+
+abstract class _$TagList extends $Notifier<List<String>> {
+  List<String> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<List<String>, List<String>>;
+    final element = ref.element as $ClassProviderElement<
+        AnyNotifier<List<String>, List<String>>,
+        List<String>,
+        Object?,
+        Object?>;
+    return element.handleCreate(ref, build);
+  }
+}
 
 /// 作品一覧の絞り込み状態。アプリ起動中のみ保持し、永続化しない。
 

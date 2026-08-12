@@ -154,8 +154,7 @@ CloudManga に埋め込まれる同時編集防止用ロック。
 
 | モデル | 版 | 変更内容 | 移行方法 | 旧フィールド削除 (contract) |
 |---|---|---|---|---|
-| CloudManga | 1 | 初版 | — | — |
-| CloudManga | 1 | `tags` 追加。欠損時は空配列 (タグなし) として読めるため版は据え置き | — | — |
+| CloudManga | 1 | 初版。後に `status` / `tags` を追加したが、欠損時はデフォルト値 (`idea` / 空配列 = タグなし) で読めるため版は据え置き | — | — |
 | CloudMangaPage | 1 | 初版 (`stageDirectionDeltaId` / `dialoguesDeltaId` をトップレベルに保持) | — | — |
 | CloudMangaPage | 2 | SceneUnit 導入。セリフ+ト書きのペアを `sceneUnits` 配列に保持 | 読み込み時に旧2フィールドを `sceneUnits` 1要素へ変換 (`_migrateV1ToV2`) | 未定 (v1 クライアント消滅後) |
 | CloudDelta | 1 | 初版 | — | — |
@@ -176,9 +175,10 @@ CloudManga に埋め込まれる同時編集防止用ロック。
 - 追加・削除は **`FieldValue.arrayUnion` / `arrayRemove` による差分操作**
   (`FirebaseService.addMangaTag` / `removeMangaTag`)。
   配列全体を read-modify-write すると 2 端末の同時追加で片方が消えるため
-- 個数上限は購読済みドキュメントを読んで判定する。厳密な排他ではないので
-  同時追加で 21 個目が入りうるが、上限は UI 保護のための目安として扱う
-  (読み込み側は個数で失敗しない)
+- 個数上限は `MangaRepository.addTag` が判定する。判定のために作品ドキュメントを
+  タグ追加 1 回につき 1 回読む (`FirebaseService.fetchManga`)。
+  読み取りと `arrayUnion` の間に排他はないので 2 端末の同時追加で 21 個目が入りうるが、
+  上限は UI 保護のための目安として扱う (読み込み側は個数で失敗しない)
 - 一覧の絞り込みは Firestore へクエリを投げず、購読済みの一覧をクライアント側で filter する
 - 実装: `MangaRepository.addTag` / `removeTag` → `tagFilterProvider` /
   `filteredMangaListProvider` → `TagFilterBar` (一覧) / `MangaTagsWidget` (編集画面)

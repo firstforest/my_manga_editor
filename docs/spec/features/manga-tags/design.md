@@ -203,9 +203,15 @@ Future<void> addTag(MangaId id, String tag);
 Future<void> removeTag(MangaId id, String tag);
 
 // lib/feature/manga/provider/tag_providers.dart（新規）
-/// 全作品の tags を平坦化し、重複除去して昇順に並べたもの
+// 全作品の tags を平坦化し、重複除去して昇順に並べたもの。
+// 中身が前回と等しい間は同じ List インスタンスを返し、タグと無関係な
+// 作品の変更で下流が再描画されないようにするため Notifier で持つ
+// (生成される provider 名は tagListProvider)。
 @riverpod
-List<String> tagList(Ref ref);
+class TagList extends _$TagList {
+  @override
+  List<String> build();
+}
 
 // riverpod_generator は Notifier サフィックスを落とすので、
 // 生成される provider 名は tagFilterProvider になる
@@ -228,10 +234,14 @@ Future<void> removeTag(String value);
 
 ### タグ数の上限チェックについて (AC-1.7)
 
-`arrayUnion` は「現在何個あるか」を知らないため、上限は Repository が
-購読済みの `Manga` を読んで判定する。厳密な排他ではなく、
-2 端末の同時追加で 21 個目が入りうるが、上限は UI 保護のための目安なので許容する
-（読み込み側は個数で失敗しない）。
+`arrayUnion` は「現在何個あるか」を知らないため、上限は Repository が判定する。
+判定のために `FirebaseService.fetchManga` で作品ドキュメントを読むので、
+**タグ追加 1 回につき読み取りが 1 回増える**。
+
+読み取りと `arrayUnion` の間に排他はなく、2 端末の同時追加で 21 個目が入りうるが、
+上限は UI 保護のための目安なので許容する（読み込み側は個数で失敗しない）。
+購読中の `Manga` を UI から渡して読み取りを省く形にはしない
+— 検証を Repository 1 箇所に閉じ、呼び出し側が渡した値の正しさに依存させないため。
 
 ### 絞り込みが宙に浮いたときの復帰 (AC-2.8)
 

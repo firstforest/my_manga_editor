@@ -7,6 +7,7 @@ import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/router.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_edit_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_name_widget.dart';
+import 'package:my_manga_editor/feature/manga/view/manga_tags_widget.dart';
 import 'package:my_manga_editor/feature/manga/view/start_page_selector.dart';
 import 'package:my_manga_editor/feature/manga/view/sync_status_indicator.dart';
 
@@ -91,7 +92,15 @@ class MangaTitle extends HookConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: MangaNameWidget(manga: manga)),
-        StartPageSelector(mangaId: manga.id),
+        // タグは開始ページ選択の右に並べる。AppBar の高さ (toolbarHeight)
+        // を増やさずに収めるため、行を増やさず横に伸ばす。
+        Row(
+          children: [
+            StartPageSelector(mangaId: manga.id),
+            const SizedBox(width: 16),
+            Expanded(child: MangaTagsWidget(manga: manga)),
+          ],
+        ),
       ],
     );
   }

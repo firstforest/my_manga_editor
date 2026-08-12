@@ -49,6 +49,9 @@ abstract class Manga with _$Manga {
     required MangaStartPage startPage,
     required DeltaId ideaMemoDeltaId,
     required MangaStatus status,
+    // 作品に付いたタグ。追加順を保つ。空リストは「タグなし」。
+    // null と空リストの 2 通りの「タグなし」を作らないため非 null で持つ。
+    @Default(<String>[]) List<String> tags,
   }) = _Manga;
 }
 

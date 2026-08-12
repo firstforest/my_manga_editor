@@ -235,6 +235,40 @@ class MockFirebaseService extends _i1.Mock implements _i2.FirebaseService {
       ) as _i3.Future<void>);
 
   @override
+  _i3.Future<void> addMangaTag(
+    String? mangaId,
+    String? tag,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addMangaTag,
+          [
+            mangaId,
+            tag,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> removeMangaTag(
+    String? mangaId,
+    String? tag,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #removeMangaTag,
+          [
+            mangaId,
+            tag,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
   _i3.Future<void> updateMangaPage(
     String? mangaId,
     String? pageId,

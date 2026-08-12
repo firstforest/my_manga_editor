@@ -33,6 +33,7 @@ users/{userId}/
 | startPage | `MangaStartPage` | 開始ページ方向 (left / right) |
 | ideaMemoDeltaId | `DeltaId` | アイデアメモの Delta への参照 |
 | status | `MangaStatus` | ステータス (idea / inProgress / complete) |
+| tags | `List<String>` | 作品に付いたタグ。追加順。空リストは「タグなし」 |
 
 ### MangaPage
 
@@ -87,6 +88,7 @@ Firestore `mangas/{mangaId}` ドキュメント。
 | ideaMemoDeltaId | `String?` | アイデアメモ Delta の参照 |
 | editLock | `EditLock?` | 編集ロック (埋め込み) |
 | status | `String?` | ステータス文字列 |
+| tags | `List<String>?` | タグ配列。フィールド欠損・null はいずれも「タグなし」として読む |
 
 ### CloudMangaPage
 
@@ -152,11 +154,35 @@ CloudManga に埋め込まれる同時編集防止用ロック。
 
 | モデル | 版 | 変更内容 | 移行方法 | 旧フィールド削除 (contract) |
 |---|---|---|---|---|
-| CloudManga | 1 | 初版 | — | — |
+| CloudManga | 1 | 初版。後に `status` / `tags` を追加したが、欠損時はデフォルト値 (`idea` / 空配列 = タグなし) で読めるため版は据え置き | — | — |
 | CloudMangaPage | 1 | 初版 (`stageDirectionDeltaId` / `dialoguesDeltaId` をトップレベルに保持) | — | — |
 | CloudMangaPage | 2 | SceneUnit 導入。セリフ+ト書きのペアを `sceneUnits` 配列に保持 | 読み込み時に旧2フィールドを `sceneUnits` 1要素へ変換 (`_migrateV1ToV2`) | 未定 (v1 クライアント消滅後) |
 | CloudDelta | 1 | 初版 | — | — |
 | CloudAppConfig | 1 | 初版 (`minSupportedBuildNumber`)。後に `noticeMessage` / `noticeId` を追加したが、欠損時はデフォルト値 (`0` / 空文字) で読めるため版は据え置き | — | — |
+
+## 作品タグ
+
+作品 (`Manga`) を自分の分類でまとめるための自由入力のタグ。
+連載のまとまり (`連載:ヒーロー` など) も、このタグの付け方で表現する
+(シリーズ専用の仕組みは持たない)。
+
+- 保存先: `mangas/{mangaId}` ドキュメントの `tags` (string の配列)
+- タグは独立したエンティティを持たない。「存在するタグの一覧」は
+  全作品の `tags` を平坦化・重複除去して導出する (`tagListProvider`)
+- 同一性は **trim 後の完全一致**。表記ゆれ (全半角・大文字小文字) は別タグ扱いで、
+  入力時の候補提示でタグの分裂を防ぐ
+- 制約: 1 タグは trim 後 1〜30 文字、1 作品あたり最大 20 個、同一作品内で重複不可
+- 追加・削除は **`FieldValue.arrayUnion` / `arrayRemove` による差分操作**
+  (`FirebaseService.addMangaTag` / `removeMangaTag`)。
+  配列全体を read-modify-write すると 2 端末の同時追加で片方が消えるため
+- 個数上限は `MangaRepository.addTag` が判定する。判定のために作品ドキュメントを
+  タグ追加 1 回につき 1 回読む (`FirebaseService.fetchManga`)。
+  読み取りと `arrayUnion` の間に排他はないので 2 端末の同時追加で 21 個目が入りうるが、
+  上限は UI 保護のための目安として扱う (読み込み側は個数で失敗しない)
+- 一覧の絞り込みは Firestore へクエリを投げず、購読済みの一覧をクライアント側で filter する
+- 実装: `MangaRepository.addTag` / `removeTag` → `tagFilterProvider` /
+  `filteredMangaListProvider` → `TagFilterBar` (一覧) / `MangaTagsWidget` (編集画面)
+- spec: [docs/spec/features/manga-tags/](../spec/features/manga-tags/)
 
 ## アプリ内お知らせ
 

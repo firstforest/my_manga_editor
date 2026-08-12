@@ -10,7 +10,7 @@ paths:
 
 ## Firestore Schema
 ```
-users/{userId}/mangas/{mangaId}           → CloudManga (name, startPageDirection, editLock)
+users/{userId}/mangas/{mangaId}           → CloudManga (name, startPageDirection, editLock, tags)
 users/{userId}/mangas/{mangaId}/pages/    → CloudMangaPage (pageIndex)
 users/{userId}/mangas/{mangaId}/deltas/   → CloudDelta (ops, fieldName, pageId?)
 ```
@@ -39,6 +39,17 @@ Defined in `model/manga.dart`:
 - Maintains `_pageToMangaMap` for MangaPageId → MangaId reverse lookups
 - Connectivity monitoring via `connectivity_plus` with automatic sync on reconnect
 - Converts between `CloudManga`/`CloudMangaPage`/`CloudDelta` (Firestore) and `Manga`/`MangaPage` (domain)
+
+## 配列フィールドの更新 (tags)
+
+`CloudManga.tags` のような配列フィールドは、**配列全体を read-modify-write しない**。
+2 端末が別の要素を同時に足すと後勝ちで片方が消えるため、
+`FieldValue.arrayUnion` / `arrayRemove` による差分操作を使う
+(`FirebaseService.addMangaTag` / `removeMangaTag`)。
+
+`FieldValue` は `cloud_firestore` の型なので Service の外へ出さない。
+Repository は `updateManga` に `FieldValue` を詰めた Map を渡すのではなく、
+Service の専用メソッドを呼ぶ。
 
 ## Edit Lock System
 - `LockManager` prevents concurrent editing via Firestore transactions

@@ -215,15 +215,9 @@ class FirebaseService {
   Future<String> createManga(CloudManga manga) async {
     try {
       final docRef = _mangasCollection.doc();
-      final mangaWithId = CloudManga(
-        id: docRef.id,
-        userId: manga.userId,
-        name: manga.name,
-        startPageDirection: manga.startPageDirection,
-        createdAt: manga.createdAt,
-        updatedAt: manga.updatedAt,
-        editLock: manga.editLock,
-      );
+      // 差し替えるのは採番された ID だけ。フィールドを手で写すと
+      // モデルに項目が増えたときに書き漏らすため copyWith を使う。
+      final mangaWithId = manga.copyWith(id: docRef.id);
       await docRef.set(mangaWithId.toFirestore());
       return docRef.id;
     } on FirebaseException catch (e) {
@@ -275,6 +269,43 @@ class FirebaseService {
     } on FirebaseException catch (e) {
       throw FirebaseServiceException(
         'Failed to update manga: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
+  /// Add a tag to a manga document.
+  ///
+  /// 配列全体を read-modify-write すると、2 端末が別のタグを同時に足したときに
+  /// 後勝ちで片方が消える。`FieldValue.arrayUnion` で差分だけを送ることでこれを避ける。
+  /// 既に同じタグがあれば何も起きない (冪等)。
+  Future<void> addMangaTag(String mangaId, String tag) async {
+    try {
+      await _mangasCollection.doc(mangaId).update({
+        'tags': FieldValue.arrayUnion([tag]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to add manga tag: ${e.message}',
+        code: e.code,
+      );
+    }
+  }
+
+  /// Remove a tag from a manga document.
+  ///
+  /// `addMangaTag` と同じ理由で `FieldValue.arrayRemove` を使う。
+  /// 存在しないタグを指定しても何も起きない (冪等)。
+  Future<void> removeMangaTag(String mangaId, String tag) async {
+    try {
+      await _mangasCollection.doc(mangaId).update({
+        'tags': FieldValue.arrayRemove([tag]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      throw FirebaseServiceException(
+        'Failed to remove manga tag: ${e.message}',
         code: e.code,
       );
     }

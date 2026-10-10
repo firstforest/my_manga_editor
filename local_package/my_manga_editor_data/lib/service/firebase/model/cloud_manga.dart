@@ -74,9 +74,9 @@ extension CloudMangaExt on CloudManga {
       status: data['status'] as String?,
       // tags フィールドを持たない旧ドキュメントは null のまま読み、
       // ドメイン変換時に空リストへ倒す (タグなし)。
-      // 遅延ビュー (cast) にすると型不正な要素が後の反復で初めて落ち、
-      // 一覧画面全体を巻き込む。ここで即座に変換して失敗をこの 1 件に閉じ込める。
-      tags: rawTags == null ? null : List<String>.from(rawTags),
+      // 文字列以外の要素は読み飛ばす。例外にすると watchAllMangas の
+      // ストリームごとエラーになり、1 件の不正で作品一覧全体が出なくなる。
+      tags: rawTags?.whereType<String>().toList(),
     );
   }
 }

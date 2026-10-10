@@ -26,7 +26,7 @@
 - 内容:
   - `Manga` に `@Default(<String>[]) List<String> tags` を追加
   - `CloudManga` に `List<String>? tags` を追加
-  - `CloudMangaExt.fromFirestore` で `(data['tags'] as List<dynamic>?)?.cast<String>()` を読む
+  - `CloudMangaExt.fromFirestore` で `(data['tags'] as List<dynamic>?)?.whereType<String>().toList()` を読む（文字列以外の要素は読み飛ばす）
   - `CloudMangaExt.toFirestore` で `'tags': tags ?? const <String>[]` を**常に**書き込む
   - `CloudMangaConversion.toManga` で `tags: tags ?? const []`、
     `MangaToCloudConversion.toCloudManga` で `tags: tags`

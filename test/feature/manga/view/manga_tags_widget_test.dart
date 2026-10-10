@@ -122,6 +122,33 @@ void main() {
     expect(find.widgetWithText(ActionChip, 'タグ'), findsOneWidget);
   });
 
+  testWidgets('候補が出ていても空のまま確定したら何も追加せず閉じる', (tester) async {
+    final repository = await _pumpWidget(
+      tester,
+      _manga('1'),
+      allManga: [
+        _manga('1'),
+        _manga('2', tags: ['連載:ヒーロー']),
+      ],
+    );
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+
+    // 打ちかけて消すと、空の入力に対して既存タグがすべて候補に並ぶ
+    await tester.enterText(find.byType(TextField), '連');
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '');
+    await tester.pumpAndSettle();
+    expect(find.text('連載:ヒーロー'), findsOneWidget);
+
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(repository.added, isEmpty);
+    expect(find.byType(TextField), findsNothing);
+  });
+
   testWidgets('追加できたら入力欄を閉じる', (tester) async {
     await _pumpWidget(tester, _manga('1'));
 

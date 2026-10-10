@@ -54,7 +54,7 @@ null と空リストの 2 通りの「タグ無し」を作らないため。
 |---|---|---|
 | tags | `List<String>?` | タグ配列。フィールド欠損・null はいずれも「タグ無し」として読む |
 
-- `fromFirestore`: `(data['tags'] as List<dynamic>?)?.cast<String>()`
+- `fromFirestore`: `(data['tags'] as List<dynamic>?)?.whereType<String>().toList()`（文字列以外の要素は読み飛ばす）
   → ドメイン変換時に `?? const []`
 - `toFirestore`: `'tags': tags ?? const <String>[]` を**常に**書く。
   タグ無しを空配列で表現する方針なので、キーの有無で状態を持たせない

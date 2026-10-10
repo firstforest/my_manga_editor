@@ -212,5 +212,25 @@ void main() {
       expect(env.container.read(tagFilterProvider),
           const TagFilter.tag('連載:ヒーロー'));
     });
+
+    test('作品一覧の購読がエラーになっても選択は維持される', () async {
+      final env = _containerWith([
+        _manga('1', tags: ['連載:ヒーロー']),
+      ]);
+      await _settle(env.container);
+      env.container.listen(tagFilterProvider, (_, __) {});
+      env.container.listen(tagListProvider, (_, __) {});
+
+      env.container
+          .read(tagFilterProvider.notifier)
+          .select(const TagFilter.tag('連載:ヒーロー'));
+
+      env.controller.addError(Exception('permission-denied'));
+      await _pump();
+
+      expect(env.container.read(tagFilterProvider),
+          const TagFilter.tag('連載:ヒーロー'));
+      expect(env.container.read(tagListProvider), ['連載:ヒーロー']);
+    });
   });
 }

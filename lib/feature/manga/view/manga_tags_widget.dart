@@ -158,6 +158,11 @@ class _TagInput extends HookWidget {
             hintText: 'タグを入力',
           ),
           onSubmitted: (text) {
+            // 空のまま確定したら、候補が出ていても選ばずに閉じる (AC-1.4)
+            if (text.trim().isEmpty) {
+              onCommit(text);
+              return;
+            }
             committedFromOption.value = false;
             // 候補が出ていれば、ハイライト中の候補が onSelected 経由で確定する
             selectHighlightedOption();

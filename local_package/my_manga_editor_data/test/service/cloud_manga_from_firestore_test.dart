@@ -42,12 +42,12 @@ void main() {
     expect(manga.tags!.join(','), '連載:ヒーロー,商業');
   });
 
-  test('tags に型不正な要素があれば読み込み時点で失敗する', () async {
+  test('tags の文字列以外の要素は読み飛ばす', () async {
     await write({
-      'tags': ['商業', 42],
+      'tags': ['商業', 42, null, '連載:ヒーロー'],
     });
 
-    expect(read, throwsA(isA<TypeError>()));
+    expect((await read()).tags, ['商業', '連載:ヒーロー']);
   });
 
   test('tags フィールドが無ければ null で読む', () async {

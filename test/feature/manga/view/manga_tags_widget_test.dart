@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
@@ -163,7 +164,7 @@ void main() {
     expect(find.widgetWithText(ActionChip, 'タグ'), findsOneWidget);
   });
 
-  testWidgets('候補が出ている状態で確定すると、入力途中の文字列ではなく候補が追加される', (tester) async {
+  testWidgets('候補が出ていても Enter では入力中の文字列が追加される', (tester) async {
     final repository = await _pumpWidget(
       tester,
       _manga('1'),
@@ -183,7 +184,52 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
 
+    expect(repository.added, ['連載']);
+  });
+
+  testWidgets('Tab でハイライト中の候補を補完し、Enter で確定する', (tester) async {
+    final repository = await _pumpWidget(
+      tester,
+      _manga('1'),
+      allManga: [
+        _manga('1'),
+        _manga('2', tags: ['連載:ヒーロー']),
+      ],
+    );
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '連載');
+    await tester.pumpAndSettle();
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+
+    // 補完しただけでは追加しない
+    expect(repository.added, isEmpty);
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller?.text, '連載:ヒーロー');
+
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
     expect(repository.added, ['連載:ヒーロー']);
+  });
+
+  testWidgets('候補が無いときの Tab は何もしない', (tester) async {
+    final repository = await _pumpWidget(tester, _manga('1'));
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '没ネタ');
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+
+    expect(repository.added, isEmpty);
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller?.text, '没ネタ');
   });
 
   testWidgets('候補をタップするとそのタグが追加される', (tester) async {
@@ -232,8 +278,8 @@ void main() {
     expect(repository.added, ['没ネタ']);
   });
 
-  testWidgets('大文字小文字が違っても候補に出て、保存済みの表記が追加される', (tester) async {
-    final repository = await _pumpWidget(
+  testWidgets('大文字小文字が違っても候補に出る', (tester) async {
+    await _pumpWidget(
       tester,
       _manga('1'),
       allManga: [
@@ -248,7 +294,22 @@ void main() {
     await tester.enterText(find.byType(TextField), 'web');
     await tester.pumpAndSettle();
     expect(find.text('Web連載'), findsOneWidget);
+  });
 
+  testWidgets('大文字小文字だけが違う既存タグを打つと、保存済みの表記で追加される', (tester) async {
+    final repository = await _pumpWidget(
+      tester,
+      _manga('1'),
+      allManga: [
+        _manga('1'),
+        _manga('2', tags: ['Web連載']),
+      ],
+    );
+
+    await tester.tap(find.widgetWithText(ActionChip, 'タグ'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'web連載');
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
 

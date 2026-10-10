@@ -1,4 +1,6 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
@@ -29,8 +31,15 @@ class MangaTagsWidget extends HookConsumerWidget {
         isAdding.value = false;
         return;
       }
+      // 大文字小文字だけが違う既存タグがあれば保存済みの表記で追加し、
+      // 同じつもりのタグが別表記で分裂するのを防ぐ
+      final query = value.trim().toLowerCase();
+      final tag = ref
+              .read(tagListProvider)
+              .firstWhereOrNull((t) => t.toLowerCase() == query) ??
+          value;
       try {
-        await ref.read(mangaProvider(manga.id).notifier).addTag(value);
+        await ref.read(mangaProvider(manga.id).notifier).addTag(tag);
       } on ValidationException catch (e) {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -119,7 +128,7 @@ class _TagInput extends HookWidget {
 
   final List<String> suggestions;
 
-  /// 候補を選んだとき、または候補に無い文字列を確定したときに、
+  /// 候補をタップしたとき、または Enter で入力中の文字列を確定したときに、
   /// 確定したタグ名を渡して呼ばれる。
   final ValueChanged<String> onCommit;
 
@@ -127,9 +136,9 @@ class _TagInput extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Autocomplete は候補を出しているときだけ onSelected を同期的に呼ぶ。
-    // 呼ばれたかどうかで「候補を選んだ」と「候補に無い文字列を打った」を見分ける。
-    final committedFromOption = useRef(false);
+    // Tab での補完と候補のタップはどちらも onSelected を通る。
+    // 補完のときは入力欄に候補を入れるだけで、確定はしない。
+    final completing = useRef(false);
 
     return SizedBox(
       width: 200,
@@ -143,36 +152,41 @@ class _TagInput extends HookWidget {
           return suggestions.where((t) => t.toLowerCase().contains(query));
         },
         onSelected: (option) {
-          committedFromOption.value = true;
+          if (completing.value) return;
           onCommit(option);
         },
         fieldViewBuilder:
-            (context, controller, focusNode, selectHighlightedOption) =>
-                TextField(
-          controller: controller,
-          focusNode: focusNode,
-          autofocus: true,
-          style: const TextStyle(fontSize: 14),
-          decoration: const InputDecoration(
-            isDense: true,
-            hintText: 'タグを入力',
-          ),
-          onSubmitted: (text) {
-            // 空のまま確定したら、候補が出ていても選ばずに閉じる (AC-1.4)
-            if (text.trim().isEmpty) {
-              onCommit(text);
-              return;
+            (context, controller, focusNode, selectHighlightedOption) => Focus(
+          canRequestFocus: false,
+          skipTraversal: true,
+          // Tab でハイライト中の候補を入力欄に補完する。
+          // 候補が無ければ何もしない (フォーカス移動もしない)。
+          onKeyEvent: (_, event) {
+            if (event is! KeyDownEvent ||
+                event.logicalKey != LogicalKeyboardKey.tab) {
+              return KeyEventResult.ignored;
             }
-            committedFromOption.value = false;
-            // 候補が出ていれば、ハイライト中の候補が onSelected 経由で確定する
+            completing.value = true;
             selectHighlightedOption();
-            if (!committedFromOption.value) {
-              onCommit(text);
-            }
+            completing.value = false;
+            return KeyEventResult.handled;
           },
-          // フォーカスが外れたら入力を破棄して閉じる。
-          // 入力途中の文字列を勝手にタグにしない。
-          onTapOutside: (_) => onCancel(),
+          child: TextField(
+            controller: controller,
+            focusNode: focusNode,
+            autofocus: true,
+            style: const TextStyle(fontSize: 14),
+            decoration: const InputDecoration(
+              isDense: true,
+              hintText: 'タグを入力',
+            ),
+            // Enter は候補が出ていても入力中の文字列で確定する。
+            // 既存タグの一部にあたる名前 (「連載:ヒーロー」がある中の「連載」) も作れるようにする。
+            onSubmitted: onCommit,
+            // フォーカスが外れたら入力を破棄して閉じる。
+            // 入力途中の文字列を勝手にタグにしない。
+            onTapOutside: (_) => onCancel(),
+          ),
         ),
       ),
     );

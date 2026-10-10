@@ -172,6 +172,7 @@
   - 現在のタグを `Chip`（`onDeleted` 付き）で並べ、末尾に「＋タグ」ボタンを置く
   - 追加入力は `Autocomplete<String>` で `tagList` を候補に出す（入力文字列を含むものを提示）
   - 確定時に trim して `MangaNotifier.addTag` を呼ぶ。空文字なら何もせず閉じる
+  - Enter は入力中の文字列で確定する。Tab でハイライト中の候補を入力欄に補完する
   - `ValidationException` / `StorageException` を catch して SnackBar を出す
 - 完了条件:
   - AC-1.1 〜 AC-1.8 を満たす

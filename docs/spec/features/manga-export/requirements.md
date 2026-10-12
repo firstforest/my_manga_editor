@@ -67,7 +67,7 @@ so that バックアップや他者との共有、他ツールへの一括移送
 - AC-2.1: WHEN ユーザーが編集画面 (`manga_edit_page`) のツールバーの保存ボタンを押した
   THE SYSTEM SHALL 作品全体を Markdown 形式のテキストとして組み立て、
   ブラウザ / OS のファイル保存ダイアログを介してローカルに保存する
-- AC-2.2: THE SYSTEM SHALL 出力ファイル名を `komatto_<sanitizedName>` とする。
+- AC-2.2: THE SYSTEM SHALL 出力ファイル名を `komakusa_<sanitizedName>` とする。
   `sanitizedName` は作品名から OS のファイル名禁止文字 `/ \ : * ? " < > |`（および制御文字）を
   `_` に置換した文字列
 - AC-2.3: THE SYSTEM SHALL 出力ファイルの拡張子を `.md`、MIME タイプを `text/markdown` とする

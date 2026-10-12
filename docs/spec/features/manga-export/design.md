@@ -95,7 +95,7 @@ sequenceDiagram
   FS-->>R: Cloud モデル一式
   R->>R: Markdown 組み立て (StringBuffer)
   R-->>MN: markdown string
-  MN->>FSV: saveFile(komatto_<sanitized>.md, bytes)
+  MN->>FSV: saveFile(komakusa_<sanitized>.md, bytes)
   alt 成功
     FSV-->>U: 保存ダイアログ
     V-->>U: SnackBar "<作品名>をダウンロードしました"

@@ -199,8 +199,8 @@ dev Firebase に繋いだ Web ビルドをプレビュー用 Worker (`my-manga-e
 
 | きっかけ | URL | 使いどころ |
 |---|---|---|
-| PR (push のたびに更新) | `https://pr-<番号>-my-manga-editor-preview.<subdomain>.workers.dev` (PR にコメントされる) | 変更ごとの見た目・動作の確認 |
-| `develop` への push | `https://my-manga-editor-preview.<subdomain>.workers.dev` | リリース前の確認。Google ログインも使える |
+| PR (push のたびに更新) | `https://pr-<番号>-my-manga-editor-preview.firstforest.workers.dev` (PR にコメントされる) | 変更ごとの見た目・動作の確認 |
+| `develop` への push | `https://my-manga-editor-preview.firstforest.workers.dev` | リリース前の確認。Google ログインも使える |
 
 - **PR の URL では Google ログインが使えない**。Firebase Auth の承認済みドメインは
   ワイルドカード指定ができず、PR ごとの URL は登録していないため。匿名ログインで確認する
@@ -224,15 +224,14 @@ dev Firebase に繋いだ Web ビルドをプレビュー用 Worker (`my-manga-e
    flutter build web --release --dart-define=ENV=dev --base-href /
    npx wrangler deploy --env preview
    ```
-3. 本番 URL を登録する。URL は `https://my-manga-editor.<subdomain>.workers.dev/`
-   (`<subdomain>` は Cloudflare ダッシュボードの Workers & Pages で確認できる)。末尾の `/` まで含める:
+3. 本番 URL を登録する (疎通確認とリリースノートで使う):
    ```bash
-   gh variable set PRODUCTION_URL --body 'https://my-manga-editor.<subdomain>.workers.dev/'
+   gh variable set PRODUCTION_URL --body 'https://my-manga-editor.firstforest.workers.dev/'
    ```
 4. Firebase Auth の承認済みドメインに追加する (Google ログインのため)。
    Firebase コンソール → Authentication → 設定 → 承認済みドメイン
-   - prod (`my-manga-editor`): `my-manga-editor.<subdomain>.workers.dev`
-   - dev (`my-manga-editor-dev`): `my-manga-editor-preview.<subdomain>.workers.dev`
+   - prod (`my-manga-editor`): `my-manga-editor.firstforest.workers.dev`
+   - dev (`my-manga-editor-dev`): `my-manga-editor-preview.firstforest.workers.dev`
 5. Google Cloud コンソールの OAuth クライアント (Web) の「承認済みの JavaScript 生成元」に
    同じドメインを追加する
 

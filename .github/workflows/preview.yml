@@ -4,9 +4,9 @@ name: Preview
 # 本番 Worker (my-manga-editor) には一切触らない。
 #
 #   develop への push → `wrangler deploy --env preview`
-#                       固定 URL https://my-manga-editor-preview.<subdomain>.workers.dev
+#                       固定 URL https://my-manga-editor-preview.firstforest.workers.dev
 #   PR                → `wrangler versions upload --env preview --preview-alias pr-<番号>`
-#                       PR ごとの URL https://pr-<番号>-my-manga-editor-preview.<subdomain>.workers.dev
+#                       PR ごとの URL https://pr-<番号>-my-manga-editor-preview.firstforest.workers.dev
 #                       (URL は PR にコメントする。push のたびに同じコメントを更新)
 #
 # PR ごとの URL は Firebase Auth の承認済みドメインに入っていないため Google ログインは使えない。

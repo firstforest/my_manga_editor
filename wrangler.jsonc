@@ -1,0 +1,25 @@
+// Flutter Web (build/web) を Cloudflare Workers の静的アセットとして配信する。
+// Worker スクリプトは持たない (assets のみ)。運用手順は docs/release.md 参照。
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // 本番: main への push で main.yml が `wrangler deploy` する (prod Firebase でビルド)
+  "name": "my-manga-editor",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./build/web",
+    // go_router のパスを直接開いたときも index.html を返す
+    "not_found_handling": "single-page-application"
+  },
+  "workers_dev": true,
+  // 本番 Worker にはバージョン URL を出さない (プレビューは下の別 Worker で行う)
+  "preview_urls": false,
+  "env": {
+    // プレビュー用の Worker (my-manga-editor-preview)。dev Firebase でビルドしたものだけを載せる。
+    // develop への push で `wrangler deploy --env preview` (固定 URL)、
+    // PR では `wrangler versions upload --env preview --preview-alias pr-<番号>` (PR ごとの URL)
+    "preview": {
+      "workers_dev": true,
+      "preview_urls": true
+    }
+  }
+}

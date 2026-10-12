@@ -124,7 +124,7 @@ cd local_package/my_manga_editor_data && dart run build_runner build -d
 
 ## CI/CD
 
-`main` ブランチへの push で GitHub Actions が Flutter Web をビルドし GitHub Pages にデプロイする (`.github/workflows/main.yml`)。
+`main` ブランチへの push で GitHub Actions が Flutter Web をビルドし Cloudflare Workers にデプロイする (`.github/workflows/main.yml`、配信設定は `wrangler.jsonc`)。PR と `develop` は dev Firebase に繋いだプレビュー用 Worker に公開される (`.github/workflows/preview.yml`)。
 
 ## 詳細リファレンス
 

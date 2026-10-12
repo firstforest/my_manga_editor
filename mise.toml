@@ -122,8 +122,13 @@ run = "node scripts/firestore_restore.mjs dev"
 [tasks.restore-prod]
 run = "node scripts/firestore_restore.mjs prod"
 
-# Web アプリのロールバック: 過去のリリースタグから GitHub Pages を再デプロイする
+# Web アプリのロールバック: 過去のリリースタグから本番 (Cloudflare Workers) を再デプロイする
 # 例: mise run rollback-web v1.0.1+2
 # 注意: main ブランチは直らないので、恒久対応 (revert / fix-forward) を忘れないこと
 [tasks.rollback-web]
 run = "gh workflow run main.yml --ref"
+
+# Web アプリの即時ロールバック: 本番 Worker を直前のデプロイに戻す (ビルド不要で数秒)
+# 認証は `npx wrangler login` を対話ターミナルで済ませておくこと
+[tasks.rollback-web-now]
+run = "npx wrangler rollback"

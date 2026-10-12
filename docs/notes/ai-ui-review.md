@@ -18,7 +18,7 @@ Claude Code に登録する。** 追加パッケージなし・アプリコー�
 
 | 初版の記述 | 実際 |
 |---|---|
-| 「本アプリはデスクトップ対応なので問題ない」 | **`macos/` ディレクトリが存在せず、macOS デスクトップは未対応。** git 管理下のプラットフォームは `android` / `ios` / `web` のみ。`mise run` も `flutter run --web-port=50505` で、実運用ターゲットは Web (GitHub Pages) |
+| 「本アプリはデスクトップ対応なので問題ない」 | **`macos/` ディレクトリが存在せず、macOS デスクトップは未対応。** git 管理下のプラットフォームは `android` / `ios` / `web` のみ。`mise run` も `flutter run --web-port=50505` で、実運用ターゲットは Web (Cloudflare Workers) |
 | `flutter run -d macos --print-dtd` で DTD URI を表示させる | **Flutter 3.44.4 の `flutter run` に `--print-dtd` は存在しない** (`flutter run --help` に該当オプションなし) |
 | (記載なし) | **`.mcp.json` を追加しても実行中の Claude Code セッションには反映されない。** MCP サーバーはセッション起動時に読み込まれるため、登録後にセッションを開き直す必要がある |
 | (記載なし) | **`dart mcp-server` 自身がアプリを起動・管理できる** (`launch_app` / `list_running_apps` / `stop_app`)。DTD URI を人間が手で渡す前提の手順は必須ではない |

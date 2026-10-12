@@ -63,6 +63,7 @@ jobs:
           PREV_TAG: ${{ steps.diff.outputs.prev_tag }}
           RULES_CHANGED: ${{ steps.diff.outputs.rules_changed }}
           BUILD_NUMBER: ${{ steps.diff.outputs.build_number }}
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
         run: |
           set -euo pipefail
 
@@ -107,14 +108,14 @@ jobs:
             fi
             echo "## リリース後の手動チェック"
             echo
-            echo "- [ ] 本番 URL (https://firstforest.github.io/my_manga_editor/) で動作確認"
+            echo "- [ ] 本番 URL (${PRODUCTION_URL}) で動作確認"
             if [ "${RULES_CHANGED}" = "true" ]; then
               echo "- [ ] **\`firestore.rules\` に変更あり** → \`mise run deploy-rules-prod\` を実行する"
               echo "  （ルールのデプロイは Web デプロイと連動していない）"
             fi
             echo "- [ ] 破壊的スキーマ変更を含む場合のみ: \`mise run config-set-prod minSupportedBuildNumber ${BUILD_NUMBER}\`"
             echo
-            echo "問題が起きた場合のロールバック: \`mise run rollback-web <前のタグ>\`"
+            echo "問題が起きた場合のロールバック: \`mise run rollback-web-now\` (直前のデプロイへ即時) または \`mise run rollback-web <前のタグ>\`"
             # Release ページ (/releases/tag/...) を基準に相対解決されるため絶対 URL で書く
             echo "（手順の詳細は [docs/release.md](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/main/docs/release.md)）"
             echo

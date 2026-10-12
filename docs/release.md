@@ -218,9 +218,11 @@ dev Firebase に繋いだ Web ビルドをプレビュー用 Worker (`my-manga-e
    gh secret set CLOUDFLARE_ACCOUNT_ID
    ```
 2. プレビュー用 Worker を作る。PR のプレビューは Worker が存在しないと作れないので、
-   `develop` への push か手動実行で 1 回デプロイしておく:
+   ローカルから 1 回デプロイしておく (以降は `develop` への push で更新される):
    ```bash
-   gh workflow run preview.yml --ref develop
+   npx wrangler login
+   flutter build web --release --dart-define=ENV=dev --base-href /
+   npx wrangler deploy --env preview
    ```
 3. 本番 URL を登録する。URL は `https://my-manga-editor.<subdomain>.workers.dev/`
    (`<subdomain>` は Cloudflare ダッシュボードの Workers & Pages で確認できる)。末尾の `/` まで含める:

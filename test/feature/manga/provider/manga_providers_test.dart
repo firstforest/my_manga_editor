@@ -13,7 +13,10 @@ import 'package:my_manga_editor_data/repository/manga_repository.dart';
 ])
 import 'manga_providers_test.mocks.dart';
 
-Future<MangaId> mockCreateNewManga({String? name = '無名の傑作'}) =>
+Future<MangaId> mockCreateNewManga({
+  String? name = '無名の傑作',
+  List<String>? tags = const [],
+}) =>
     Future.value(MangaId('0'));
 
 final testDialogues = '''セリフ1

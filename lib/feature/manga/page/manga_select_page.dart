@@ -3,8 +3,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor/feature/app_info/view/app_info_dialog.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_page_view_model.dart';
-import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
+import 'package:my_manga_editor/feature/manga/provider/tag_providers.dart';
 import 'package:my_manga_editor/feature/manga/view/kanban_column.dart';
+import 'package:my_manga_editor/feature/manga/view/tag_filter_bar.dart';
 import 'package:my_manga_editor/router.dart';
 
 class MangaSelectPage extends ConsumerWidget {
@@ -18,7 +19,7 @@ class MangaSelectPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mangaList = ref.watch(allMangaListProvider).value ?? [];
+    final mangaList = ref.watch(filteredMangaListProvider);
 
     final mangaByStatus = <MangaStatus, List<Manga>>{
       for (final status in MangaStatus.values)
@@ -33,9 +34,14 @@ class MangaSelectPage extends ConsumerWidget {
             icon: const Icon(Icons.add),
             tooltip: '新規作成',
             onPressed: () async {
+              // タグで絞り込んでいる最中の新規作成は、そのタグを付けて作る。
+              // 作った直後に一覧から消えて見えなくなるのを避けるため。
+              final filter = ref.read(tagFilterProvider);
               final mangaId = await ref
                   .read(mangaPageViewModelProvider.notifier)
-                  .createNewManga();
+                  .createNewManga(
+                    tags: filter is TagFilterTag ? [filter.name] : const [],
+                  );
               if (context.mounted) {
                 ref.read(routerProvider).go('/manga/${mangaId.id}');
               }
@@ -48,24 +54,32 @@ class MangaSelectPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final column in _columns)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: KanbanColumn(
-                    status: column.status,
-                    title: column.title,
-                    mangaList: mangaByStatus[column.status] ?? [],
-                  ),
-                ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const TagFilterBar(),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final column in _columns)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: KanbanColumn(
+                          status: column.status,
+                          title: column.title,
+                          mangaList: mangaByStatus[column.status] ?? [],
+                        ),
+                      ),
+                    ),
+                ],
               ),
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

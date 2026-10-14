@@ -3,12 +3,13 @@ flutter = "3.44.4"
 ruby = "latest"
 node = "22"
 
-# 依存解決（Flutter ルート / データ層パッケージ + Node ツール）
+# 依存解決（Flutter ルート / local_package 配下の各パッケージ + Node ツール）
 # Node 依存（firebase-tools, google-auth-library）は config/deploy 系タスクで使う
 [tasks.setup]
 run = [
   "flutter pub get",
   "cd local_package/my_manga_editor_data && flutter pub get",
+  "cd local_package/my_manga_editor_common && flutter pub get",
   "npm ci",
 ]
 
@@ -86,13 +87,15 @@ run = "flutter analyze"
 run = "flutter test"
 
 # CI (.github/workflows/ci.yml) と同じ品質ゲートをローカルで流す。
-# analyze / test はカレントパッケージしか見ないため、データ層は個別に実行する
+# analyze / test はカレントパッケージしか見ないため、local_package は個別に実行する
 [tasks.check]
 run = [
   "flutter analyze",
   "cd local_package/my_manga_editor_data && flutter analyze",
+  "cd local_package/my_manga_editor_common && flutter analyze",
   "flutter test",
   "cd local_package/my_manga_editor_data && flutter test",
+  "cd local_package/my_manga_editor_common && flutter test",
 ]
 
 # --- リリース運用 (詳細: docs/release.md) -----------------------------------

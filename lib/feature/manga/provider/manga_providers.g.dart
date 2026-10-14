@@ -196,7 +196,7 @@ final class MangaNotifierProvider
   }
 }
 
-String _$mangaNotifierHash() => r'95a48d54cececfa3790234cc558c814975a57d82';
+String _$mangaNotifierHash() => r'0c7d751ab380125b6d8027604a9697406d618782';
 
 final class MangaNotifierFamily extends $Family
     with
@@ -378,7 +378,7 @@ final class DeltaNotifierProvider
   }
 }
 
-String _$deltaNotifierHash() => r'c723a79f3ca58ab7f567152207755c3132174a54';
+String _$deltaNotifierHash() => r'54a1a0cdda963d79268f4b12af9d14a7d9e5fb6f';
 
 final class DeltaNotifierFamily extends $Family
     with

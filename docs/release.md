@@ -218,8 +218,10 @@ dev Firebase に繋いだ Web ビルドをプレビュー用 Worker (`my-manga-e
    (含めないと `wrangler deploy` がドメインの割り当てで失敗する):
    ```bash
    gh secret set CLOUDFLARE_API_TOKEN
-   gh secret set CLOUDFLARE_ACCOUNT_ID
    ```
+   アカウント ID は、トークンで見えるアカウントが 1 つなら wrangler が自動で決める。
+   複数のアカウントに権限を持つトークンにした場合は、`wrangler.jsonc` に `"account_id"` を書く
+   (アカウント ID は秘密情報ではない)
 2. プレビュー用 Worker を作る。PR のプレビューは Worker が存在しないと作れないので、
    ローカルから 1 回デプロイしておく (以降は `develop` への push で更新される):
    ```bash

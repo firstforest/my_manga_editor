@@ -32,7 +32,7 @@ GitHub Actions で Flutter Web を Cloudflare Workers (静的アセット) に�
   本番 Worker とプレビュー Worker は別物で、`preview.yml` は `--env preview` 以外で wrangler を呼ばない
 - 配信はドメイン直下なので `--base-href /` でビルドする
 - wrangler は `package.json` で固定し、CI では `npm ci` → `npx wrangler` で使う。
-  認証は secrets の `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID`、
+  認証は secrets の `CLOUDFLARE_API_TOKEN` だけ (アカウント ID はトークンから決まる)、
   本番 URL は vars の `PRODUCTION_URL` (疎通確認とリリースノートで使う)
 - `mise-action` の `install_args` は必要なツールだけにする (`flutter`、wrangler を使うジョブは `flutter node`)。
   `mise.toml` の `ruby` はソースビルドになり CI 時間を大きく浪費するため入れない

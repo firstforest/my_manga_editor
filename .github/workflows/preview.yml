@@ -33,13 +33,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       # Dependabot の PR などでは secrets が空になる。失敗にはせずスキップする
       - name: Check Cloudflare credentials
         id: creds
         run: |
-          if [ -n "${CLOUDFLARE_API_TOKEN}" ] && [ -n "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+          if [ -n "${CLOUDFLARE_API_TOKEN}" ]; then
             echo "available=true" >> "$GITHUB_OUTPUT"
           else
             echo "::notice::Cloudflare の secrets が使えないためプレビューをスキップします"

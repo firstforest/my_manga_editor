@@ -76,7 +76,8 @@ class MangaEditPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: MangaEditWidget(mangaId: mangaId, scrollController: scrollController),
+      body:
+          MangaEditWidget(mangaId: mangaId, scrollController: scrollController),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final pageIdList =

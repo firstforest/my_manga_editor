@@ -137,8 +137,7 @@ void main() {
       expect(find.text('Page 1 をコピーしました'), findsNothing);
     });
 
-    testWidgets('クリップボードへの書き込みが失敗しても失敗の SnackBar が出る (AC-1.4)',
-        (tester) async {
+    testWidgets('クリップボードへの書き込みが失敗しても失敗の SnackBar が出る (AC-1.4)', (tester) async {
       await tester.pumpWidget(_host(
         page: _page([('d-dlg', 'd-stg')]),
         repository: _FakeMangaRepository({

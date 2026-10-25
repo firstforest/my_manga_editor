@@ -57,7 +57,8 @@ class AppNoticeBanner extends ConsumerWidget {
                 // (「〜が表示されなくなります」など一番伝えたい部分) が黙って消える。
                 // 本文の長さは scripts/config.mjs 側でも制限している。
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: _maxMessageHeight),
+                  constraints:
+                      const BoxConstraints(maxHeight: _maxMessageHeight),
                   child: SingleChildScrollView(
                     child: Text(
                       notice.message,

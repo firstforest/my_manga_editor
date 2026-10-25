@@ -92,9 +92,7 @@ class _DesktopLayout extends HookConsumerWidget {
                             child: _StretchColumn(
                               spacing: 4.r,
                               children: [
-                                for (int i = 0;
-                                    i < page.sceneUnits.length;
-                                    i++)
+                                for (int i = 0; i < page.sceneUnits.length; i++)
                                   _SceneUnitWidget(
                                     mangaId: page.mangaId,
                                     sceneUnit: page.sceneUnits[i],

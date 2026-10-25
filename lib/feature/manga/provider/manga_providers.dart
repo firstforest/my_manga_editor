@@ -140,9 +140,7 @@ class MangaPageNotifier extends _$MangaPageNotifier {
 
   Future<void> addSceneUnit() async {
     final page = await future;
-    await ref
-        .read(mangaRepositoryProvider)
-        .addSceneUnit(page.mangaId, pageId);
+    await ref.read(mangaRepositoryProvider).addSceneUnit(page.mangaId, pageId);
   }
 
   Future<void> removeSceneUnit(int index) async {

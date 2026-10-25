@@ -141,7 +141,8 @@ void main() {
 
     test('Service が失敗したら StorageException に変換する', () async {
       when(firebase.addMangaTag(any, any)).thenThrow(
-        FirebaseServiceException('Failed to add manga tag', code: 'unavailable'),
+        FirebaseServiceException('Failed to add manga tag',
+            code: 'unavailable'),
       );
 
       await expectLater(
@@ -238,8 +239,8 @@ void main() {
 
       await repository.createNewManga(name: '新作', tags: ['連載:ヒーロー']);
 
-      final created =
-          verify(firebase.createManga(captureAny)).captured.single as CloudManga;
+      final created = verify(firebase.createManga(captureAny)).captured.single
+          as CloudManga;
       expect(created.tags, ['連載:ヒーロー']);
       expect(created.name, '新作');
     });
@@ -250,8 +251,8 @@ void main() {
 
       await repository.createNewManga();
 
-      final created =
-          verify(firebase.createManga(captureAny)).captured.single as CloudManga;
+      final created = verify(firebase.createManga(captureAny)).captured.single
+          as CloudManga;
       expect(created.tags, isEmpty);
     });
 
@@ -261,8 +262,8 @@ void main() {
 
       await repository.createNewManga(tags: ['  商業  ']);
 
-      final created =
-          verify(firebase.createManga(captureAny)).captured.single as CloudManga;
+      final created = verify(firebase.createManga(captureAny)).captured.single
+          as CloudManga;
       expect(created.tags, ['商業']);
     });
 
@@ -272,8 +273,8 @@ void main() {
 
       await repository.createNewManga(tags: ['', '   ', '商業']);
 
-      final created =
-          verify(firebase.createManga(captureAny)).captured.single as CloudManga;
+      final created = verify(firebase.createManga(captureAny)).captured.single
+          as CloudManga;
       expect(created.tags, ['商業']);
     });
 
@@ -283,8 +284,8 @@ void main() {
 
       await repository.createNewManga(tags: ['商業', ' 商業 ', '連載:ヒーロー']);
 
-      final created =
-          verify(firebase.createManga(captureAny)).captured.single as CloudManga;
+      final created = verify(firebase.createManga(captureAny)).captured.single
+          as CloudManga;
       expect(created.tags, ['商業', '連載:ヒーロー']);
     });
 
@@ -298,7 +299,8 @@ void main() {
 
     test('21 個のタグは TagLimitException を投げ、作品を作らない', () async {
       await expectLater(
-        () => repository.createNewManga(tags: List.generate(21, (i) => 'tag$i')),
+        () =>
+            repository.createNewManga(tags: List.generate(21, (i) => 'tag$i')),
         throwsA(isA<repo_exceptions.TagLimitException>()),
       );
       verifyNever(firebase.createManga(any));

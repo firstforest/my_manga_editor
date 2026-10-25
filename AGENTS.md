@@ -39,6 +39,13 @@ UI (lib/feature/) → Riverpod Notifier → Repository → Service → Firestore
 
 詳細は **[docs/design/architecture.md](docs/design/architecture.md)** を参照（全体俯瞰・レイヤー構造・技術スタック）。
 
+## 検証とレビュー
+
+- コミット・PR の前に `verify` スキル ([.claude/skills/verify/SKILL.md](.claude/skills/verify/SKILL.md)) で analyze・test・コード生成の漏れを確認する。コマンドの出力を見ずに「通った」と報告しない
+- テストを削除する・skip する・期待値を実装に合わせて書き換える、で通さない。テストのほうが間違っていると判断したら、直さずに根拠を添えて報告する
+- PR を作る前に `/code-review high` を実行し、指摘に対応する。スキーマ移行・`firestore.rules`・認証に触れる変更は `/code-review ultra` も検討する
+- `.dart` の整形は PostToolUse hook ([.claude/hooks/dart-format.sh](.claude/hooks/dart-format.sh)) が編集のたびに行う
+
 ## Reference Documentation
 
 作業対象に応じて以下を必ず参照する。

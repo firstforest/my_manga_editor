@@ -29,7 +29,7 @@
 - アプリの名前が「コマクサ (Komakusa)」になりました。ブラウザのタブやホーム画面に追加したときの
   名前も「Komakusa」と表示されます
 - 書き出すファイル名が `komakusa_作品名.md` になりました
-- Web 版の URL が <https://my-manga-editor.firstforest.workers.dev/> に変わりました。
+- Web 版の URL が <https://komakusa.firstforest.jp/> に変わりました。
   ブックマークを登録し直してください。Google アカウントでログインしていれば、
   新しい URL でもこれまでの作品がそのまま表示されます。
   **匿名ログインで使っている場合、新しい URL ではこれまでの作品は表示されません**。

@@ -31,7 +31,7 @@
 
 Web 版をブラウザで開くのが一番簡単です。インストールは不要です。
 
-**<https://my-manga-editor.firstforest.workers.dev/>**
+**<https://komakusa.firstforest.jp/>**
 
 ## 動作環境
 

@@ -1,0 +1,16 @@
+{
+  "description": "v1: tags フィールドを持たない作品 (タグ機能リリース前のドキュメント)。タグなしとして読める",
+  "document": {
+    "userId": "uid",
+    "name": "タグ機能より前の作品",
+    "startPageDirection": "left",
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-01-01T00:00:00Z",
+    "ideaMemoDeltaId": "idea-1",
+    "status": "idea"
+  },
+  "expected": {
+    "name": "タグ機能より前の作品",
+    "tags": []
+  }
+}

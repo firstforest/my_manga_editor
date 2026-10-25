@@ -1,0 +1,17 @@
+{
+  "description": "v1: tags が空配列の作品 (タグを 1 つも付けていない、または全部外した状態)",
+  "document": {
+    "userId": "uid",
+    "name": "タグなしの作品",
+    "startPageDirection": "right",
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-01-01T00:00:00Z",
+    "ideaMemoDeltaId": "idea-1",
+    "status": "inProgress",
+    "tags": []
+  },
+  "expected": {
+    "name": "タグなしの作品",
+    "tags": []
+  }
+}

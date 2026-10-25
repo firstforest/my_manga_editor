@@ -31,6 +31,24 @@ class ValidationException implements RepositoryException {
   ValidationException(this.message);
 }
 
+/// 1 タグが文字数の上限を超えている。
+///
+/// message は英語なので、利用者に見せる文言は UI 側で作る。
+/// UI が文言を出し分けられるよう、検証の種類ごとに型を分けている。
+class TagLengthException extends ValidationException {
+  final int maxLength;
+
+  TagLengthException(this.maxLength)
+      : super('Tag must be 1-$maxLength characters');
+}
+
+/// 1 作品に付けられるタグ数の上限に達している。
+class TagLimitException extends ValidationException {
+  final int maxCount;
+
+  TagLimitException(this.maxCount) : super('Too many tags (max $maxCount)');
+}
+
 /// Firestore operation failed (network error, quota exceeded, etc.)
 class StorageException implements RepositoryException {
   @override

@@ -18,6 +18,7 @@ _CloudManga _$CloudMangaFromJson(Map<String, dynamic> json) => _CloudManga(
           ? null
           : EditLock.fromJson(json['editLock'] as Map<String, dynamic>),
       status: json['status'] as String?,
+      tags: (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList(),
     );
 
 Map<String, dynamic> _$CloudMangaToJson(_CloudManga instance) =>
@@ -31,4 +32,5 @@ Map<String, dynamic> _$CloudMangaToJson(_CloudManga instance) =>
       'ideaMemoDeltaId': instance.ideaMemoDeltaId,
       'editLock': instance.editLock,
       'status': instance.status,
+      'tags': instance.tags,
     };

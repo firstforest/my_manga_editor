@@ -66,6 +66,17 @@ class MangaNotifier extends _$MangaNotifier {
     ref.read(mangaRepositoryProvider).updateMangaStatus(id, status);
   }
 
+  /// タグを追加する。空文字は何もせず正常終了する。
+  /// 文字数・個数の上限を超えると ValidationException を投げるので、
+  /// 呼び出し側で捕まえて利用者に伝えること。
+  Future<void> addTag(String value) async {
+    await ref.read(mangaRepositoryProvider).addTag(id, value);
+  }
+
+  Future<void> removeTag(String value) async {
+    await ref.read(mangaRepositoryProvider).removeTag(id, value);
+  }
+
   /// 作品全体を Markdown ファイルとして書き出し、書き出した作品名を返す。
   ///
   /// 戻り値は画面の完了通知に使う。呼び出し側が `mangaProvider` を読み直すと
@@ -84,7 +95,7 @@ class MangaNotifier extends _$MangaNotifier {
       final content =
           await ref.read(mangaRepositoryProvider).toMarkdown(manga.id);
       final saved = await FileSaver.instance.saveFile(
-        name: 'komatto_${sanitizeFileName(manga.name)}',
+        name: 'komakusa_${sanitizeFileName(manga.name)}',
         fileExtension: 'md',
         mimeType: MimeType.markdown,
         bytes: Uint8List.fromList(utf8.encode(content)),

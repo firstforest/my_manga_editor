@@ -6,6 +6,55 @@ import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/router.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 
+/// カード上のタグ表示。
+///
+/// カードの高さが作品ごとにばらつかないよう、表示は先頭 3 個までに揃え、
+/// 残りは `+N` で件数だけ示す。
+class _TagRow extends StatelessWidget {
+  const _TagRow({required this.tags});
+
+  static const _maxVisible = 3;
+
+  final List<String> tags;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = tags.take(_maxVisible).toList();
+    final hidden = tags.length - visible.length;
+    final scheme = Theme.of(context).colorScheme;
+
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      children: [
+        for (final tag in visible)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: scheme.secondaryContainer,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              tag,
+              style: TextStyle(
+                fontSize: 10,
+                color: scheme.onSecondaryContainer,
+              ),
+            ),
+          ),
+        if (hidden > 0)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Text(
+              '+$hidden',
+              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class KanbanCard extends ConsumerWidget {
   const KanbanCard({super.key, required this.manga});
 
@@ -97,6 +146,10 @@ class KanbanCard extends ConsumerWidget {
                 'ページ数: $pageCount',
                 style: TextStyle(fontSize: 11, color: Colors.grey[500]),
               ),
+              if (manga.tags.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                _TagRow(tags: manga.tags),
+              ],
             ],
           ),
         ),

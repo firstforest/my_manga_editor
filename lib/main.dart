@@ -34,7 +34,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
-      title: '漫画プロットエディタ Komatto',
+      title: '漫画プロットエディタ Komakusa',
       theme: ThemeData(
         textTheme: GoogleFonts.notoSansJpTextTheme(
           Theme.of(context).textTheme,

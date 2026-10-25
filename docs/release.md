@@ -6,24 +6,27 @@
 
 | 対象 | デプロイ方法 | ロールバック方法 |
 |---|---|---|
-| Web アプリ | `main` への push → GitHub Actions → GitHub Pages | 過去タグから再デプロイ (`mise run rollback-web`) |
+| Web アプリ | `main` への push → GitHub Actions → Cloudflare Workers | 直前のデプロイへ即時に戻す (`mise run rollback-web-now`) / 過去タグから再デプロイ (`mise run rollback-web`) |
+| Web プレビュー | PR / `develop` への push → GitHub Actions → プレビュー用 Worker (dev Firebase) | 不要 (本番に影響しない) |
 | Firestore セキュリティルール | `mise run deploy-rules-prod` (手動) | 過去タグの `firestore.rules` を再デプロイ |
 | Firestore データ | アプリが書き込む | バックアップから復元 (`mise run restore-prod`) |
 | `config/app` 設定 | `mise run config-set-prod` | 同コマンドで前の値に戻す |
 | 変更履歴の公開 | [CHANGELOG.md](../CHANGELOG.md) → GitHub Release (タグの push で `release.yml` が自動作成) | Release を編集・削除 |
 | 利用者への事前告知 | `mise run notice-prod "..."` (アプリ内バナー。デプロイ不要で即時) | `mise run notice-clear-prod` |
 
-GitHub Actions は 3 つに分かれている ([.claude/rules/ci.md](../.claude/rules/ci.md) 参照)。
+GitHub Actions は 4 つに分かれている ([.claude/rules/ci.md](../.claude/rules/ci.md) 参照)。
 
 | workflow | いつ動くか | 役割 |
 |---|---|---|
 | `ci.yml` | PR / `develop` への push | analyze・test・Web ビルドの確認。**リリース前の品質ゲート** |
-| `main.yml` | `main` への push | 本番ビルド → GitHub Pages デプロイ → 公開ページの疎通確認 |
+| `preview.yml` | PR / `develop` への push | dev Firebase でビルドしてプレビュー URL に公開 (下記「プレビュー」参照) |
+| `main.yml` | `main` への push | 本番ビルド → Cloudflare Workers へデプロイ → 公開ページの疎通確認 |
 | `release.yml` | `v*` タグの push | GitHub Release の作成（CHANGELOG の変更点 + リリース後の手動作業チェックリスト） |
 
 - 作業ブランチは `develop`、リリースブランチは `main`。`main` に push されると
   [.github/workflows/main.yml](../.github/workflows/main.yml) が `--dart-define=ENV=prod` で
-  Flutter Web をビルドし GitHub Pages (https://firstforest.github.io/my_manga_editor/) へデプロイする
+  Flutter Web をビルドし Cloudflare Workers の本番 Worker (`my-manga-editor`) へデプロイする。
+  本番 URL はリポジトリ変数 `PRODUCTION_URL` に登録してある (`gh variable get PRODUCTION_URL`)
 - リリースごとに `pubspec.yaml` の `version: x.y.z+N` の **ビルド番号 N を必ず +1** する
   (旧ビルドがブラウザにキャッシュされ続けるため。[.claude/rules/ci.md](../.claude/rules/ci.md) 参照)
 - リリースごとに `v<x.y.z+N>` 形式のタグを打つ。**タグがロールバックの単位**になる
@@ -97,9 +100,7 @@ gh run watch          # デプロイの進行状況を追う
       タグが 1 つも無い状態では `mise run rollback-web` が使えないため、
       最初のリリース前に現在の `main` にタグを打っておく:
       `git tag v1.0.0+1 origin/main && git push origin v1.0.0+1`
-- [ ] **タグからのデプロイが許可されているか**（下記「ロールバック」の事前設定）。
-      未設定だとロールバックが environment 保護で止まる
-- [ ] `develop` で動作確認済みか (`mise run run` は dev Firebase に接続する)
+- [ ] `develop` のプレビュー (固定 URL) で動作確認済みか (dev Firebase に接続している)
 - [ ] [CHANGELOG.md](../CHANGELOG.md) の `[Unreleased]` に利用者向けの変更点が書けているか
 - [ ] スキーマ変更を含む場合、[.claude/rules/data-layer.md](../.claude/rules/data-layer.md) の
       expand-contract ルールに従っているか (旧フィールドの削除は次リリース以降)
@@ -190,6 +191,50 @@ mise run deploy-rules-prod
 順序の原則: **ルールを緩める変更はアプリより先に、締める変更はアプリより後に**デプロイする
 (新旧どちらのクライアントも動く状態を保つ)。
 
+## プレビュー
+
+PR を作るか `develop` に push すると、[preview.yml](../.github/workflows/preview.yml) が
+dev Firebase に繋いだ Web ビルドをプレビュー用 Worker (`my-manga-editor-preview`) に公開する。
+本番 Worker とは別物なので、プレビューが本番の利用者やデータに影響することはない。
+
+| きっかけ | URL | 使いどころ |
+|---|---|---|
+| PR (push のたびに更新) | `https://pr-<番号>-my-manga-editor-preview.firstforest.workers.dev` (PR にコメントされる) | 変更ごとの見た目・動作の確認 |
+| `develop` への push | `https://my-manga-editor-preview.firstforest.workers.dev` | リリース前の確認。Google ログインも使える |
+
+- **PR の URL では Google ログインが使えない**。Firebase Auth の承認済みドメインは
+  ワイルドカード指定ができず、PR ごとの URL は登録していないため。匿名ログインで確認する
+- 動作確認で作ったデータは dev Firebase に入る
+- PR が閉じても URL は残る (エイリアスは Cloudflare 側で直近 1000 件まで保持され、古いものから消える)
+- フォークからの PR と Dependabot の PR では secrets が使えないため、プレビューは作られない
+
+## Cloudflare の初期設定
+
+最初に 1 回だけ行う。
+
+1. Cloudflare の API トークンを作り (テンプレート「Edit Cloudflare Workers」)、GitHub に登録する:
+   ```bash
+   gh secret set CLOUDFLARE_API_TOKEN
+   gh secret set CLOUDFLARE_ACCOUNT_ID
+   ```
+2. プレビュー用 Worker を作る。PR のプレビューは Worker が存在しないと作れないので、
+   ローカルから 1 回デプロイしておく (以降は `develop` への push で更新される):
+   ```bash
+   npx wrangler login
+   flutter build web --release --dart-define=ENV=dev --base-href /
+   npx wrangler deploy --env preview
+   ```
+3. 本番 URL を登録する (疎通確認とリリースノートで使う):
+   ```bash
+   gh variable set PRODUCTION_URL --body 'https://my-manga-editor.firstforest.workers.dev/'
+   ```
+4. Firebase Auth の承認済みドメインに追加する (Google ログインのため)。
+   Firebase コンソール → Authentication → 設定 → 承認済みドメイン
+   - prod (`my-manga-editor`): `my-manga-editor.firstforest.workers.dev`
+   - dev (`my-manga-editor-dev`): `my-manga-editor-preview.firstforest.workers.dev`
+5. Google Cloud コンソールの OAuth クライアント (Web) の「承認済みの JavaScript 生成元」に
+   同じドメインを追加する
+
 ## Firestore バックアップ
 
 ```bash
@@ -209,6 +254,19 @@ mise run backup               # dev  → backups/dev-<日時>/
 
 ### 1. Web アプリを前のバージョンに戻す (最速の応急処置)
 
+直前のデプロイに戻すだけなら、Cloudflare に残っている前のバージョンへ切り替える。
+ビルドしないので数秒で終わる:
+
+```bash
+mise run rollback-web-now              # = npx wrangler rollback (確認プロンプトあり)
+```
+
+`npx wrangler login` を対話ターミナルで済ませておくこと。
+戻し先を選びたい場合は `npx wrangler deployments list` で一覧を見て
+`npx wrangler rollback <version-id>` を使う (デプロイのメッセージに `main@<コミット>` が入っている)。
+
+2 つ以上前のリリースに戻したい・Cloudflare 側の履歴に頼れない場合は、タグから再ビルドする:
+
 ```bash
 git tag -l 'v*'                        # 戻せるタグを確認
 mise run rollback-web v1.0.1+2         # そのタグの時点のコードで再デプロイ
@@ -216,24 +274,8 @@ gh run watch                           # デプロイ完了を待つ
 ```
 
 仕組み: GitHub Actions の `workflow_dispatch` をタグ ref で起動し、そのタグの時点のコードを
-ビルド・デプロイする。
-
-> **事前設定 (1 回だけ必要)**
->
-> GitHub Pages の `github-pages` environment には deployment branch policy があり、
-> 初期状態では **`main` ブランチからのデプロイしか許可されていない**。
-> このままタグ ref で起動するとデプロイのジョブが environment 保護で止まり、
-> ロールバックが機能しない。タグを許可するポリシーを追加しておくこと:
->
-> ```bash
-> # 現在の許可対象を確認
-> gh api repos/firstforest/my_manga_editor/environments/github-pages/deployment-branch-policies
->
-> # v* タグからのデプロイを許可する
-> gh api --method POST \
->   repos/firstforest/my_manga_editor/environments/github-pages/deployment-branch-policies \
->   -f name='v*' -f type='tag'
-> ```
+ビルド・デプロイする。`production` environment に deployment branch policy を付けると
+タグ ref からのデプロイが止まるので、付ける場合は `v*` タグも許可すること。
 
 注意点:
 

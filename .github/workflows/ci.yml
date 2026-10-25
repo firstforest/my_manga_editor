@@ -81,13 +81,7 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Setup base-href
-        id: base-href
-        run: |
-          REPOSITORY=$(echo ${{ github.repository }} | sed -e "s#.*/##")
-          echo "repository=$REPOSITORY" >> $GITHUB_OUTPUT
-
       # デプロイ (main.yml) と同じ条件でビルドし、main へマージしてから
       # 初めてビルドが壊れていると分かる事態を防ぐ
       - name: Build Flutter Web
-        run: flutter build web --release --dart-define=ENV=prod --base-href /${{ steps.base-href.outputs.repository }}/
+        run: flutter build web --release --dart-define=ENV=prod --base-href /

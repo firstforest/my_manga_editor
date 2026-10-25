@@ -31,7 +31,7 @@
 
 Web 版をブラウザで開くのが一番簡単です。インストールは不要です。
 
-**<https://firstforest.github.io/my_manga_editor/>**
+**<https://my-manga-editor.firstforest.workers.dev/>**
 
 ## 動作環境
 

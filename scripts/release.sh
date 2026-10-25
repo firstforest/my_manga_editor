@@ -11,7 +11,7 @@
 #   3. flutter analyze && flutter test (ルート + local_package 配下の各パッケージ)
 #   4. prod Firestore のバックアップ (scripts/firestore_backup.mjs → backups/)
 #   5. pubspec.yaml のバージョンと CHANGELOG.md を更新してコミット (ビルド番号は必ず +1)
-#   6. タグ付け → main へマージ → push (main への push で GitHub Pages に自動デプロイ)
+#   6. タグ付け → main へマージ → push (main への push で Cloudflare Workers に自動デプロイ)
 #
 # リリースノートは CHANGELOG.md の `## [Unreleased]` セクションから取る。
 # 空のままではリリースできない (利用者に何が変わったか伝わらないため)。
@@ -131,7 +131,7 @@ fi
 echo
 echo "  バージョン: ${CURRENT} -> ${NEW_VERSION}"
 echo "  タグ:       ${TAG}"
-echo "  デプロイ先: prod (GitHub Pages, main への push で自動)"
+echo "  デプロイ先: prod (Cloudflare Workers, main への push で自動)"
 
 if $DRY_RUN; then
   echo

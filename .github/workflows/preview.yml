@@ -1,0 +1,116 @@
+name: Preview
+
+# dev Firebase に繋いだ Web ビルドを、プレビュー用 Worker (my-manga-editor-preview) に載せる。
+# 本番 Worker (my-manga-editor) には一切触らない。
+#
+#   develop への push → `wrangler deploy --env preview`
+#                       固定 URL https://my-manga-editor-preview.firstforest.workers.dev
+#   PR                → `wrangler versions upload --env preview --preview-alias pr-<番号>`
+#                       PR ごとの URL https://pr-<番号>-my-manga-editor-preview.firstforest.workers.dev
+#                       (URL は PR にコメントする。push のたびに同じコメントを更新)
+#
+# PR ごとの URL は Firebase Auth の承認済みドメインに入っていないため Google ログインは使えない。
+# 動作確認は匿名ログインで行う。Google ログインまで確かめたいときは develop の固定 URL を使う。
+on:
+  pull_request:
+  push:
+    branches: [ "develop" ]
+  workflow_dispatch:
+
+concurrency:
+  group: preview-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  preview:
+    name: Deploy preview (dev)
+    # フォークからの PR には secrets が渡らないため動かさない
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      # Dependabot の PR などでは secrets が空になる。失敗にはせずスキップする
+      - name: Check Cloudflare credentials
+        id: creds
+        run: |
+          if [ -n "${CLOUDFLARE_API_TOKEN}" ] && [ -n "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Cloudflare の secrets が使えないためプレビューをスキップします"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out repository
+        if: steps.creds.outputs.available == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup mise
+        if: steps.creds.outputs.available == 'true'
+        uses: jdx/mise-action@v2
+        with:
+          # ruby はソースビルドになり CI が大幅に遅くなるため入れない。node は wrangler 用
+          install_args: flutter node
+
+      - name: Install dependencies
+        if: steps.creds.outputs.available == 'true'
+        run: |
+          flutter pub get
+          npm ci
+
+      # ENV を指定しない = dev Firebase。プレビューから本番データには触れない
+      - name: Build Flutter Web (dev)
+        if: steps.creds.outputs.available == 'true'
+        run: flutter build web --release --dart-define=ENV=dev --base-href /
+
+      - name: Deploy develop preview
+        if: steps.creds.outputs.available == 'true' && github.event_name != 'pull_request'
+        id: develop
+        run: |
+          set -o pipefail
+          npx wrangler deploy --env preview --message "${GITHUB_REF_NAME}@${GITHUB_SHA::7}" | tee wrangler.log
+          URL=$(grep -oE 'https://my-manga-editor-preview\.[a-z0-9-]+\.workers\.dev' wrangler.log | head -n 1 || true)
+          echo "url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "### プレビュー (${GITHUB_REF_NAME}): ${URL:-URL を取得できませんでした}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload PR preview
+        if: steps.creds.outputs.available == 'true' && github.event_name == 'pull_request'
+        id: pr
+        env:
+          ALIAS: pr-${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -o pipefail
+          npx wrangler versions upload --env preview --preview-alias "${ALIAS}" \
+            --message "${ALIAS}@${HEAD_SHA::7}" | tee wrangler.log
+          URL=$(sed -n 's/^Version Preview Alias URL: //p' wrangler.log | head -n 1)
+          if [ -z "${URL}" ]; then
+            echo "::warning::wrangler の出力からプレビュー URL を取得できませんでした"
+          fi
+          echo "url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "### プレビュー (${ALIAS}): ${URL:-URL を取得できませんでした}" >> "$GITHUB_STEP_SUMMARY"
+
+      # PR ごとにコメントは 1 つだけにし、push のたびに更新する (MARKER で自分のコメントを探す)
+      - name: Comment preview URL on PR
+        if: steps.creds.outputs.available == 'true' && github.event_name == 'pull_request' && steps.pr.outputs.url != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          URL: ${{ steps.pr.outputs.url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          MARKER='<!-- cloudflare-preview -->'
+          BODY=$(printf '%s\n### プレビュー\n\n%s\n\n- コミット: %s\n- dev Firebase に接続しています。Google ログインは使えないため匿名ログインで確認してください\n' \
+            "${MARKER}" "${URL}" "${HEAD_SHA::7}")
+          COMMENT_ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" --paginate \
+            --jq ".[] | select(.body | startswith(\"${MARKER}\")) | .id" | head -n 1)
+          if [ -n "${COMMENT_ID}" ]; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" -f body="${BODY}" > /dev/null
+          else
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -f body="${BODY}" > /dev/null
+          fi

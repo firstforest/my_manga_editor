@@ -1,7 +1,11 @@
-name: Build & Deploy Flutter Web to GitHub Pages
+name: Build & Deploy Flutter Web to Cloudflare Workers
 
-# main への push で本番 (GitHub Pages + prod Firebase) へデプロイする。
+# main への push で本番 (Cloudflare Workers + prod Firebase) へデプロイする。
 # workflow_dispatch はロールバック用 (`mise run rollback-web <tag>` が過去タグ ref で起動する)。
+#
+# 必要な設定 (docs/release.md の「Cloudflare の初期設定」参照):
+#   secrets.CLOUDFLARE_API_TOKEN / secrets.CLOUDFLARE_ACCOUNT_ID
+#   vars.PRODUCTION_URL (疎通確認の対象。末尾 / 付き)
 on:
   push:
     branches: [ "main" ]
@@ -9,13 +13,11 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
-# Pages へのデプロイは同時に 1 つだけ。実行中のデプロイは中断しない
+# 本番へのデプロイは同時に 1 つだけ。実行中のデプロイは中断しない
 # (途中で止めると公開物が中途半端な状態になるため cancel-in-progress: false)
 concurrency:
-  group: "pages"
+  group: "production"
   cancel-in-progress: false
 
 jobs:
@@ -23,8 +25,8 @@ jobs:
     runs-on: ubuntu-latest
 
     environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
 
     steps:
       - name: Check out repository
@@ -32,32 +34,30 @@ jobs:
       - name: Setup mise
         uses: jdx/mise-action@v2
         with:
-          # mise.toml には ruby / node も含まれるが Web ビルドには不要。
-          # 特に ruby はソースビルドになり CI が大幅に遅くなるため入れない。
-          install_args: flutter
+          # ruby はソースビルドになり CI が大幅に遅くなるため入れない。node は wrangler 用
+          install_args: flutter node
       - name: Install dependencies
         run: flutter pub get
-      - name: Setup base-href
-        id: base-href
-        run: |
-          REPOSITORY=$(echo ${{ github.repository }} | sed -e "s#.*/##")
-          echo "repository=$REPOSITORY" >> $GITHUB_OUTPUT
+      - name: Install wrangler
+        run: npm ci
       - name: Build Flutter Web
-        run: flutter build web --release --dart-define=ENV=prod --base-href /${{ steps.base-href.outputs.repository }}/
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          # Upload entire repository
-          path: './build/web'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        run: flutter build web --release --dart-define=ENV=prod --base-href /
+      - name: Deploy to Cloudflare Workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy --message "${GITHUB_REF_NAME}@${GITHUB_SHA::7}"
 
-      # デプロイ直後は CDN 反映に数十秒かかることがあるためリトライしながら確認する。
-      # 「Actions は緑なのに本番が 404」を検知するのが目的
+      # 「Actions は緑なのに本番が 404」を検知するのが目的。
+      # 反映に時間がかかることがあるためリトライしながら確認する
       - name: Smoke test (公開ページの疎通確認)
+        env:
+          URL: ${{ vars.PRODUCTION_URL }}
         run: |
-          URL="${{ steps.deployment.outputs.page_url }}"
+          if [ -z "${URL}" ]; then
+            echo "::error::vars.PRODUCTION_URL が未設定です"
+            exit 1
+          fi
           echo "checking ${URL}"
           for i in $(seq 1 10); do
             code=$(curl -sS -o /dev/null -w '%{http_code}' "${URL}main.dart.js" || echo 000)

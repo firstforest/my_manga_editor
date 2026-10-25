@@ -138,11 +138,19 @@ class MangaPageNotifier extends _$MangaPageNotifier {
     ref.read(mangaRepositoryProvider).deleteMangaPage(pageId);
   }
 
-  Future<void> addSceneUnit() async {
+  /// [index] が null なら末尾に、指定があればその位置にカットを挿入する
+  Future<void> addSceneUnit({int? index}) async {
     final page = await future;
     await ref
         .read(mangaRepositoryProvider)
-        .addSceneUnit(page.mangaId, pageId);
+        .addSceneUnit(page.mangaId, pageId, index: index);
+  }
+
+  Future<void> reorderSceneUnit(int oldIndex, int newIndex) async {
+    final page = await future;
+    await ref
+        .read(mangaRepositoryProvider)
+        .reorderSceneUnit(page.mangaId, pageId, oldIndex, newIndex);
   }
 
   Future<void> removeSceneUnit(int index) async {

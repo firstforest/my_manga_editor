@@ -630,8 +630,10 @@ class MangaRepository {
   // SceneUnit Operations
   // ============================================================================
 
-  /// Add a new SceneUnit (dialogue + stageDirection pair) to a page
-  Future<void> addSceneUnit(MangaId mangaId, MangaPageId pageId) async {
+  /// Add a new SceneUnit (dialogue + stageDirection pair) to a page.
+  /// [index] が null なら末尾に、指定があればその位置に挿入する
+  Future<void> addSceneUnit(MangaId mangaId, MangaPageId pageId,
+      {int? index}) async {
     try {
       final userId = _authService.currentUser?.uid;
       if (userId == null) {
@@ -651,7 +653,9 @@ class MangaRepository {
 
       final existingUnits =
           List<Map<String, dynamic>>.from(currentPage.sceneUnits ?? []);
-      existingUnits.add(sceneUnit);
+      existingUnits.insert(
+          (index ?? existingUnits.length).clamp(0, existingUnits.length),
+          sceneUnit);
 
       await _firebaseService.updateMangaPage(mangaId.id, pageId.id, {
         'schemaVersion': CloudMangaPageExt.schemaVersion,
@@ -707,6 +711,47 @@ class MangaRepository {
       });
 
       logger.d('Removed SceneUnit at index $index from page: $pageId');
+    } on FirebaseException catch (e) {
+      throw _handleFirebaseException(e);
+    }
+  }
+
+  /// Move the SceneUnit at [oldIndex] to [newIndex].
+  /// newIndex は oldIndex の要素を取り除いた後のリストに対する挿入位置
+  Future<void> reorderSceneUnit(
+      MangaId mangaId, MangaPageId pageId, int oldIndex, int newIndex) async {
+    try {
+      final userId = _authService.currentUser?.uid;
+      if (userId == null) {
+        throw repo_exceptions.AuthException();
+      }
+
+      final currentPage =
+          await _firebaseService.fetchMangaPage(mangaId.id, pageId.id);
+      if (currentPage == null) {
+        throw repo_exceptions.NotFoundException('MangaPage', pageId.id);
+      }
+
+      final existingUnits =
+          List<Map<String, dynamic>>.from(currentPage.sceneUnits ?? []);
+      if (oldIndex < 0 ||
+          oldIndex >= existingUnits.length ||
+          newIndex < 0 ||
+          newIndex >= existingUnits.length ||
+          oldIndex == newIndex) {
+        return;
+      }
+
+      final moved = existingUnits.removeAt(oldIndex);
+      existingUnits.insert(newIndex, moved);
+
+      await _firebaseService.updateMangaPage(mangaId.id, pageId.id, {
+        'schemaVersion': CloudMangaPageExt.schemaVersion,
+        'sceneUnits': existingUnits,
+        'updatedAt': DateTime.now(),
+      });
+
+      logger.d('Moved SceneUnit from $oldIndex to $newIndex on page: $pageId');
     } on FirebaseException catch (e) {
       throw _handleFirebaseException(e);
     }

@@ -92,20 +92,18 @@ class _DesktopLayout extends HookConsumerWidget {
                             child: _StretchColumn(
                               spacing: 4.r,
                               children: [
-                                for (int i = 0;
-                                    i < page.sceneUnits.length;
-                                    i++)
+                                for (int i = 0; i < page.sceneUnits.length; i++)
                                   _SceneUnitWidget(
+                                    // 並び替え時に入力中のエディタ状態を
+                                    // カットと一緒に移動させるため
+                                    key: ValueKey(
+                                        page.sceneUnits[i].dialoguesDeltaId),
                                     mangaId: page.mangaId,
                                     sceneUnit: page.sceneUnits[i],
                                     index: i,
-                                    canRemove: page.sceneUnits.length > 1,
-                                    onRemove: () {
-                                      ref
-                                          .read(mangaPageProvider(mangaPageId)
-                                              .notifier)
-                                          .removeSceneUnit(i);
-                                    },
+                                    unitCount: page.sceneUnits.length,
+                                    onAction: (action) =>
+                                        _onSceneUnitAction(ref, i, action),
                                   ),
                               ],
                             ),
@@ -134,6 +132,22 @@ class _DesktopLayout extends HookConsumerWidget {
         ),
       ],
     );
+  }
+
+  void _onSceneUnitAction(WidgetRef ref, int index, _SceneUnitAction action) {
+    final notifier = ref.read(mangaPageProvider(mangaPageId).notifier);
+    switch (action) {
+      case _SceneUnitAction.insertAbove:
+        notifier.addSceneUnit(index: index);
+      case _SceneUnitAction.insertBelow:
+        notifier.addSceneUnit(index: index + 1);
+      case _SceneUnitAction.moveUp:
+        notifier.reorderSceneUnit(index, index - 1);
+      case _SceneUnitAction.moveDown:
+        notifier.reorderSceneUnit(index, index + 1);
+      case _SceneUnitAction.remove:
+        notifier.removeSceneUnit(index);
+    }
   }
 
   Row _buildToolBar(WidgetRef ref, BuildContext context) {
@@ -435,20 +449,29 @@ class _RenderStretchColumn extends RenderBox
   }
 }
 
+enum _SceneUnitAction {
+  insertAbove,
+  insertBelow,
+  moveUp,
+  moveDown,
+  remove,
+}
+
 class _SceneUnitWidget extends StatelessWidget {
   const _SceneUnitWidget({
+    super.key,
     required this.mangaId,
     required this.sceneUnit,
     required this.index,
-    required this.canRemove,
-    required this.onRemove,
+    required this.unitCount,
+    required this.onAction,
   });
 
   final MangaId mangaId;
   final SceneUnit sceneUnit;
   final int index;
-  final bool canRemove;
-  final VoidCallback onRemove;
+  final int unitCount;
+  final ValueChanged<_SceneUnitAction> onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -483,15 +506,55 @@ class _SceneUnitWidget extends StatelessWidget {
               ),
             ),
           ),
-          if (canRemove)
-            Align(
-              alignment: Alignment.topCenter,
-              child: IconButton(
-                onPressed: onRemove,
-                icon: const Icon(Icons.close, size: 16),
-                tooltip: 'カットを削除',
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              PopupMenuButton<_SceneUnitAction>(
+                icon: const Icon(Icons.more_vert, size: 16),
+                tooltip: 'カットの操作',
+                onSelected: onAction,
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: _SceneUnitAction.insertAbove,
+                    child: ListTile(
+                      leading: Icon(Icons.vertical_align_top),
+                      title: Text('上にカットを挿入'),
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: _SceneUnitAction.insertBelow,
+                    child: ListTile(
+                      leading: Icon(Icons.vertical_align_bottom),
+                      title: Text('下にカットを挿入'),
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
+                    value: _SceneUnitAction.moveUp,
+                    enabled: index > 0,
+                    child: const ListTile(
+                      leading: Icon(Icons.arrow_upward),
+                      title: Text('上へ移動'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: _SceneUnitAction.moveDown,
+                    enabled: index < unitCount - 1,
+                    child: const ListTile(
+                      leading: Icon(Icons.arrow_downward),
+                      title: Text('下へ移動'),
+                    ),
+                  ),
+                ],
               ),
-            ),
+              if (unitCount > 1)
+                IconButton(
+                  onPressed: () => onAction(_SceneUnitAction.remove),
+                  icon: const Icon(Icons.close, size: 16),
+                  tooltip: 'カットを削除',
+                ),
+            ],
+          ),
         ],
       ),
     );

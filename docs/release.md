@@ -26,7 +26,8 @@ GitHub Actions は 4 つに分かれている ([.claude/rules/ci.md](../.claude/
 - 作業ブランチは `develop`、リリースブランチは `main`。`main` に push されると
   [.github/workflows/main.yml](../.github/workflows/main.yml) が `--dart-define=ENV=prod` で
   Flutter Web をビルドし Cloudflare Workers の本番 Worker (`my-manga-editor`) へデプロイする。
-  本番 URL はリポジトリ変数 `PRODUCTION_URL` に登録してある (`gh variable get PRODUCTION_URL`)
+  本番 URL は https://komakusa.firstforest.jp/ (Worker のカスタムドメイン。`workers.dev` では配信しない)。
+  同じ値をリポジトリ変数 `PRODUCTION_URL` に登録してある (`gh variable get PRODUCTION_URL`)
 - リリースごとに `pubspec.yaml` の `version: x.y.z+N` の **ビルド番号 N を必ず +1** する
   (旧ビルドがブラウザにキャッシュされ続けるため。[.claude/rules/ci.md](../.claude/rules/ci.md) 参照)
 - リリースごとに `v<x.y.z+N>` 形式のタグを打つ。**タグがロールバックの単位**になる
@@ -212,11 +213,15 @@ dev Firebase に繋いだ Web ビルドをプレビュー用 Worker (`my-manga-e
 
 最初に 1 回だけ行う。
 
-1. Cloudflare の API トークンを作り (テンプレート「Edit Cloudflare Workers」)、GitHub に登録する:
+1. Cloudflare の API トークンを作り (テンプレート「Edit Cloudflare Workers」)、GitHub に登録する。
+   本番はカスタムドメインを使うので、Zone Resources に `firstforest.jp` を含める
+   (含めないと `wrangler deploy` がドメインの割り当てで失敗する):
    ```bash
    gh secret set CLOUDFLARE_API_TOKEN
-   gh secret set CLOUDFLARE_ACCOUNT_ID
    ```
+   アカウント ID は、トークンで見えるアカウントが 1 つなら wrangler が自動で決める。
+   複数のアカウントに権限を持つトークンにした場合は、`wrangler.jsonc` に `"account_id"` を書く
+   (アカウント ID は秘密情報ではない)
 2. プレビュー用 Worker を作る。PR のプレビューは Worker が存在しないと作れないので、
    ローカルから 1 回デプロイしておく (以降は `develop` への push で更新される):
    ```bash
@@ -224,13 +229,14 @@ dev Firebase に繋いだ Web ビルドをプレビュー用 Worker (`my-manga-e
    flutter build web --release --dart-define=ENV=dev --base-href /
    npx wrangler deploy --env preview
    ```
-3. 本番 URL を登録する (疎通確認とリリースノートで使う):
+3. 本番 URL を登録する (疎通確認とリリースノートで使う)。`komakusa.firstforest.jp` の
+   DNS レコードと証明書は、最初の本番デプロイで Cloudflare が自動で作る:
    ```bash
-   gh variable set PRODUCTION_URL --body 'https://my-manga-editor.firstforest.workers.dev/'
+   gh variable set PRODUCTION_URL --body 'https://komakusa.firstforest.jp/'
    ```
 4. Firebase Auth の承認済みドメインに追加する (Google ログインのため)。
    Firebase コンソール → Authentication → 設定 → 承認済みドメイン
-   - prod (`my-manga-editor`): `my-manga-editor.firstforest.workers.dev`
+   - prod (`my-manga-editor`): `komakusa.firstforest.jp`
    - dev (`my-manga-editor-dev`): `my-manga-editor-preview.firstforest.workers.dev`
 5. Google Cloud コンソールの OAuth クライアント (Web) の「承認済みの JavaScript 生成元」に
    同じドメインを追加する

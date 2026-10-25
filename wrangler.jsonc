@@ -10,7 +10,13 @@
     // go_router のパスを直接開いたときも index.html を返す
     "not_found_handling": "single-page-application"
   },
-  "workers_dev": true,
+  // 本番はカスタムドメインだけで配信する。DNS レコードと証明書はデプロイ時に Cloudflare が作る
+  // (firstforest.jp のゾーンが同じ Cloudflare アカウントにある前提)
+  "routes": [
+    { "pattern": "komakusa.firstforest.jp", "custom_domain": true }
+  ],
+  // workers.dev でも開けるとログイン状態 (特に匿名ログイン) が origin ごとに分かれるため閉じる
+  "workers_dev": false,
   // 本番 Worker にはバージョン URL を出さない (プレビューは下の別 Worker で行う)
   "preview_urls": false,
   "env": {
@@ -18,6 +24,8 @@
     // develop への push で `wrangler deploy --env preview` (固定 URL)、
     // PR では `wrangler versions upload --env preview --preview-alias pr-<番号>` (PR ごとの URL)
     "preview": {
+      // routes はトップレベルから継承されるため、空にして本番ドメインを取らないようにする
+      "routes": [],
       "workers_dev": true,
       "preview_urls": true
     }

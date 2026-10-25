@@ -16,7 +16,7 @@ GitHub Actions で Flutter Web を Cloudflare Workers (静的アセット) に�
 |---|---|---|
 | `ci.yml` | PR / `develop` への push / 手動 | 両パッケージの `flutter analyze`・`flutter test` と、デプロイと同条件の Web ビルド |
 | `preview.yml` | PR / `develop` への push / 手動 | `ENV=dev` でビルド → プレビュー用 Worker (`my-manga-editor-preview`) へ。PR は `pr-<番号>` エイリアスの URL を PR にコメント、`develop` は固定 URL へデプロイ |
-| `main.yml` | `main` への push / 手動 (`workflow_dispatch`) | `flutter build web --release --dart-define=ENV=prod` → 本番 Worker (`my-manga-editor`) へ `wrangler deploy` → 公開ページの疎通確認 |
+| `main.yml` | `main` への push / 手動 (`workflow_dispatch`) | `flutter build web --release --dart-define=ENV=prod` → 本番 Worker (`my-manga-editor`、カスタムドメイン `komakusa.firstforest.jp`) へ `wrangler deploy` → 公開ページの疎通確認 |
 | `release.yml` | `v*` タグの push | GitHub Release を作成（リリース後に手で行う作業のチェックリスト付き） |
 
 - バージョン管理: `mise` で Flutter / Dart のバージョンを固定
@@ -32,7 +32,7 @@ GitHub Actions で Flutter Web を Cloudflare Workers (静的アセット) に�
   本番 Worker とプレビュー Worker は別物で、`preview.yml` は `--env preview` 以外で wrangler を呼ばない
 - 配信はドメイン直下なので `--base-href /` でビルドする
 - wrangler は `package.json` で固定し、CI では `npm ci` → `npx wrangler` で使う。
-  認証は secrets の `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID`、
+  認証は secrets の `CLOUDFLARE_API_TOKEN` だけ (アカウント ID はトークンから決まる)、
   本番 URL は vars の `PRODUCTION_URL` (疎通確認とリリースノートで使う)
 - `mise-action` の `install_args` は必要なツールだけにする (`flutter`、wrangler を使うジョブは `flutter node`)。
   `mise.toml` の `ruby` はソースビルドになり CI 時間を大きく浪費するため入れない

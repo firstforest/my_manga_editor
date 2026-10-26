@@ -206,7 +206,9 @@ void main() {
           .read(tagFilterProvider.notifier)
           .select(const TagFilter.tag('連載:ヒーロー'));
 
-      env.controller.add([_manga('1', tags: ['連載:ヒーロー'])]);
+      env.controller.add([
+        _manga('1', tags: ['連載:ヒーロー'])
+      ]);
       await _pump();
 
       expect(env.container.read(tagFilterProvider),

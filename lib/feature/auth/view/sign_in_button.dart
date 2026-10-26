@@ -90,7 +90,8 @@ class SignInButton extends HookConsumerWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.login),
-          label: Text(isLoading.value ? 'Signing in...' : 'Sign in with Google'),
+          label:
+              Text(isLoading.value ? 'Signing in...' : 'Sign in with Google'),
         ),
         const SizedBox(height: 8),
         ElevatedButton.icon(
@@ -120,7 +121,8 @@ class SignInButton extends HookConsumerWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.person_outline),
-          label: Text(isLoading.value ? 'Signing in...' : 'Sign in anonymously'),
+          label:
+              Text(isLoading.value ? 'Signing in...' : 'Sign in anonymously'),
         ),
         if (errorMessage.value != null)
           Padding(
@@ -154,9 +156,8 @@ class SignInButton extends HookConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             CircleAvatar(
-              backgroundImage: user.photoURL != null
-                  ? NetworkImage(user.photoURL!)
-                  : null,
+              backgroundImage:
+                  user.photoURL != null ? NetworkImage(user.photoURL!) : null,
               child: user.photoURL == null
                   ? Icon(isAnonymous ? Icons.person_outline : Icons.person)
                   : null,

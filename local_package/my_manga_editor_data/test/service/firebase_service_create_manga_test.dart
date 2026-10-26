@@ -66,8 +66,7 @@ void main() {
   });
 
   test('status を Firestore ドキュメントへ書く', () async {
-    final mangaId =
-        await service.createManga(cloudManga(status: 'inProgress'));
+    final mangaId = await service.createManga(cloudManga(status: 'inProgress'));
 
     final data = await readManga(mangaId);
     expect(data['status'], 'inProgress');

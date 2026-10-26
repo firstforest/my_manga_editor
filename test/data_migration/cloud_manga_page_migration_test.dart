@@ -55,15 +55,13 @@ void main() {
 
       expect(cloudPage.sceneUnits, hasLength(1));
       expect(cloudPage.sceneUnits!.first['dialoguesDeltaId'], 'dialogue-1');
-      expect(
-          cloudPage.sceneUnits!.first['stageDirectionDeltaId'], 'stage-1');
+      expect(cloudPage.sceneUnits!.first['stageDirectionDeltaId'], 'stage-1');
       expect(cloudPage.memoDeltaId, 'memo-1');
 
       final page = cloudPage.toMangaPage();
       expect(page.sceneUnits, hasLength(1));
       expect(page.sceneUnits.first.dialoguesDeltaId, DeltaId('dialogue-1'));
-      expect(page.sceneUnits.first.stageDirectionDeltaId,
-          DeltaId('stage-1'));
+      expect(page.sceneUnits.first.stageDirectionDeltaId, DeltaId('stage-1'));
       expect(page.memoDeltaId, DeltaId('memo-1'));
     });
 
@@ -108,8 +106,7 @@ void main() {
 
       expect(page.sceneUnits, hasLength(1));
       expect(page.sceneUnits.first.dialoguesDeltaId, DeltaId('dialogue-2'));
-      expect(page.sceneUnits.first.stageDirectionDeltaId,
-          DeltaId('stage-2'));
+      expect(page.sceneUnits.first.stageDirectionDeltaId, DeltaId('stage-2'));
     });
   });
 
@@ -174,7 +171,9 @@ void main() {
           ),
         ],
       );
-      await firestore.doc(pagePath).set(newPage.toCloudMangaPage(0).toFirestore());
+      await firestore
+          .doc(pagePath)
+          .set(newPage.toCloudMangaPage(0).toFirestore());
 
       final raw = (await firestore.doc(pagePath).get()).data()!;
       // main の fromFirestore はこの2フィールドだけを見るため、

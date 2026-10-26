@@ -65,7 +65,9 @@ void main() {
 
     test('閉じるとその場で表示されなくなり、記録が残る', () async {
       final container = await _buildContainer(notice: _notice);
-      await container.read(dismissedNoticeIdProvider.notifier).dismiss('notice-1');
+      await container
+          .read(dismissedNoticeIdProvider.notifier)
+          .dismiss('notice-1');
 
       expect(container.read(visibleNoticeProvider), isNull);
       final prefs = await SharedPreferences.getInstance();

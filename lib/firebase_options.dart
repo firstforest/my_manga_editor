@@ -64,7 +64,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '948924085739',
     projectId: 'my-manga-editor',
     storageBucket: 'my-manga-editor.firebasestorage.app',
-    iosClientId: '948924085739-r6ji6m3r9emq3hg4tbhvo38ajspv77gi.apps.googleusercontent.com',
+    iosClientId:
+        '948924085739-r6ji6m3r9emq3hg4tbhvo38ajspv77gi.apps.googleusercontent.com',
     iosBundleId: 'jp.firstforest.manga.editor.myMangaEditor',
   );
 
@@ -74,7 +75,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '948924085739',
     projectId: 'my-manga-editor',
     storageBucket: 'my-manga-editor.firebasestorage.app',
-    iosClientId: '948924085739-r6ji6m3r9emq3hg4tbhvo38ajspv77gi.apps.googleusercontent.com',
+    iosClientId:
+        '948924085739-r6ji6m3r9emq3hg4tbhvo38ajspv77gi.apps.googleusercontent.com',
     iosBundleId: 'jp.firstforest.manga.editor.myMangaEditor',
   );
 
@@ -87,5 +89,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'my-manga-editor.firebasestorage.app',
     measurementId: 'G-TT9XN93VQ8',
   );
-
 }

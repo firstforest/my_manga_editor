@@ -1,0 +1,62 @@
+name: Claude Review
+
+# PR に AI レビューを 1 回だけ付ける保険。レビューの主軸は手元の `/code-review`
+# (docs/notes/ai-dev-flow.md)。手元のレビューと重ならないよう push のたびには動かさない。
+# 修正後にもう一度見てほしいときは Actions の画面から再実行する。
+#
+# code-review プラグイン (anthropics/claude-code の plugins/code-review) は
+# draft・クローズ済み・Claude のコメントが付いた PR を自分でスキップする。
+# 使うモデルも段階ごとにプラグインが選ぶので `--model` は付けない。
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+concurrency:
+  group: claude-review-${{ github.ref }}
+  cancel-in-progress: true
+
+# コメントは claude-code-action の GitHub App のトークンで書くので、
+# workflow のトークンにはリポジトリへの書き込みを許さない
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+  id-token: write
+
+jobs:
+  review:
+    name: Claude review
+    # フォークからの PR には secrets が渡らないため動かさない
+    if: github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+    steps:
+      # トークン未登録のときや Dependabot の PR では secrets が空になる。失敗にはせずスキップする
+      - name: Check Claude credentials
+        id: creds
+        run: |
+          if [ -n "${CLAUDE_CODE_OAUTH_TOKEN}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::CLAUDE_CODE_OAUTH_TOKEN が使えないため AI レビューをスキップします"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out repository
+        if: steps.creds.outputs.available == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Review
+        if: steps.creds.outputs.available == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
+          plugins: "code-review@claude-code-plugins"
+          prompt: "/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+          # インラインコメント以外は許可しない。この指定がないとインラインコメント用の MCP サーバーが起動しない
+          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment"'

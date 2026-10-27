@@ -329,8 +329,9 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
   @override
   _i3.Future<void> addSceneUnit(
     _i4.MangaId? mangaId,
-    _i4.MangaPageId? pageId,
-  ) =>
+    _i4.MangaPageId? pageId, {
+    int? index,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #addSceneUnit,
@@ -338,6 +339,7 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
             mangaId,
             pageId,
           ],
+          {#index: index},
         ),
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),
@@ -356,6 +358,27 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
             mangaId,
             pageId,
             index,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> reorderSceneUnit(
+    _i4.MangaId? mangaId,
+    _i4.MangaPageId? pageId,
+    int? oldIndex,
+    int? newIndex,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #reorderSceneUnit,
+          [
+            mangaId,
+            pageId,
+            oldIndex,
+            newIndex,
           ],
         ),
         returnValue: _i3.Future<void>.value(),

@@ -45,6 +45,7 @@ UI (lib/feature/) → Riverpod Notifier → Repository → Service → Firestore
 - テストを削除する・skip する・期待値を実装に合わせて書き換える、で通さない。テストのほうが間違っていると判断したら、直さずに根拠を添えて報告する
 - PR を作る前に `/code-review high` を実行し、指摘に対応する。スキーマ移行・`firestore.rules`・認証に触れる変更は `/code-review ultra` も検討する
 - `.dart` の整形は PostToolUse hook ([.claude/hooks/dart-format.sh](.claude/hooks/dart-format.sh)) が編集のたびに行う
+- この仕組みの全体像と今後の導入計画は [docs/notes/ai-dev-flow.md](docs/notes/ai-dev-flow.md)
 
 ## Reference Documentation
 

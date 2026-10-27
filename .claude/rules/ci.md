@@ -18,6 +18,7 @@ GitHub Actions で Flutter Web を Cloudflare Workers (静的アセット) に�
 | `preview.yml` | PR / `develop` への push / 手動 | `ENV=dev` でビルド → プレビュー用 Worker (`my-manga-editor-preview`) へ。PR は `pr-<番号>` エイリアスの URL を PR にコメント、`develop` は固定 URL へデプロイ |
 | `main.yml` | `main` への push / 手動 (`workflow_dispatch`) | `flutter build web --release --dart-define=ENV=prod` → 本番 Worker (`my-manga-editor`、カスタムドメイン `komakusa.firstforest.jp`) へ `wrangler deploy` → 公開ページの疎通確認 |
 | `release.yml` | `v*` タグの push | GitHub Release を作成（リリース後に手で行う作業のチェックリスト付き） |
+| `claude-review.yml` | PR の作成 / draft 解除 | `claude-code-action` + code-review プラグインで PR にインラインコメントを 1 回だけ付ける (手元の `/code-review` の保険)。認証は secrets の `CLAUDE_CODE_OAUTH_TOKEN` (`claude setup-token` で作る 1 年有効のトークン)。未登録ならスキップ |
 
 - バージョン管理: `mise` で Flutter / Dart のバージョンを固定
 - `main.yml` の `workflow_dispatch` はロールバックの実行口も兼ねる

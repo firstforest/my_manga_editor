@@ -44,6 +44,12 @@ UI (lib/feature/) → Riverpod Notifier → Repository → Service → Firestore
 - コミット・PR の前に `verify` スキル ([.claude/skills/verify/SKILL.md](.claude/skills/verify/SKILL.md)) で analyze・test・コード生成の漏れを確認する。コマンドの出力を見ずに「通った」と報告しない
 - テストを削除する・skip する・期待値を実装に合わせて書き換える、で通さない。テストのほうが間違っていると判断したら、直さずに根拠を添えて報告する
 - PR を作る前に `/code-review high` を実行し、指摘に対応する。スキーマ移行・`firestore.rules`・認証に触れる変更は `/code-review ultra` も検討する
+- PR を開くと `claude-review.yml` が 1 回だけ AI レビューを付ける。手元のレビューの代わりにはしない
+- レビューで必ず見る観点 (詳細は [.claude/rules/data-layer.md](.claude/rules/data-layer.md)):
+  - Firestore のスキーマ変更は expand-contract。旧フィールドを消さない、過去の移行ステップを編集しない、変更前の fixture を足す
+  - `FieldValue` など `cloud_firestore` の型を Service の外に出さない
+  - 配列フィールドは read-modify-write せず `arrayUnion` / `arrayRemove` で更新する
+  - `firestore.rules` と認証まわりは、他人のデータに触れられる経路ができていないか
 - `.dart` の整形は PostToolUse hook ([.claude/hooks/dart-format.sh](.claude/hooks/dart-format.sh)) が編集のたびに行う
 - この仕組みの全体像と今後の導入計画は [docs/notes/ai-dev-flow.md](docs/notes/ai-dev-flow.md)
 

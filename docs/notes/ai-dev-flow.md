@@ -18,45 +18,40 @@
 | 動作確認 | `/verify-ui` で claude-in-chrome から AC を 1 つずつ操作し、スクリーンショットを証拠に残す | PR のプレビュー URL に Playwright で最低限の確認 | リリース前に develop の固定 URL で Google ログイン込みの確認 |
 | レビュー | `verify` に続けて PR 前に `/code-review high`。スキーマ・`firestore.rules`・認証を触るときは `ultra` も | PR を開いたときに 1 回だけ `claude-code-action` がインラインコメント (保険) | 指摘の採否とマージ |
 
-## 導入済み (Phase 0)
+## 導入済み (Phase 0〜1)
 
 | もの | 場所 |
 |---|---|
-| `verify` スキル | [.claude/skills/verify/SKILL.md](../../.claude/skills/verify/SKILL.md) |
+| `verify` スキル。PR を作る前なら続けて `/code-review high` を実行する | [.claude/skills/verify/SKILL.md](../../.claude/skills/verify/SKILL.md) |
 | `.dart` を編集のたびに `dart format` する hook | [.claude/settings.json](../../.claude/settings.json), [.claude/hooks/dart-format.sh](../../.claude/hooks/dart-format.sh) |
-| 検証とレビューの方針 | [AGENTS.md](../../AGENTS.md) の「検証とレビュー」 |
+| 検証とレビューの方針、レビューで必ず見る観点 | [AGENTS.md](../../AGENTS.md) の「検証とレビュー」 |
 | PR テンプレート | [.github/pull_request_template.md](../../.github/pull_request_template.md) |
+| PR を開いたときに 1 回だけ付く AI レビュー (保険) | [.github/workflows/claude-review.yml](../../.github/workflows/claude-review.yml) |
+| テストの流儀 (レイヤーごとに何を差し替えるか) | [.claude/rules/testing.md](../../.claude/rules/testing.md) |
 
-## Phase 1 — 手元のレビューを主軸にし、CI のレビューを保険で付ける (1〜2 時間)
+## Phase 1 — 手元のレビューを主軸にし、CI のレビューを保険で付ける
 
-### やること
+### 残りの作業 (人)
 
-1. **手元のレビューを PR 作成の手順に組み込む**。`verify` スキルの報告のあとに「PR を作る前なら `/code-review high` を続けて実行し、指摘に対応してから PR を作る」手順を足す。`ultra` を使う条件は AGENTS.md の「検証とレビュー」のまま
-2. **必須のレビュー観点を常に読まれる場所に書く**。expand-contract、`FieldValue` を Service の外に出さない等は AGENTS.md の「検証とレビュー」(と CI の `prompt`) に書く。path 指定の rules は Claude が対象ファイルを Read / Edit したときに読み込まれるので、差分だけを読むレビューでは読まれない可能性がある
-3. **`.github/workflows/claude-review.yml`** を追加する。Claude Code で `/install-github-app` を実行し、review workflow を選ぶと雛形が作られる
-   - `uses: anthropics/claude-code-action@v1`
-   - `plugin_marketplaces: "https://github.com/anthropics/claude-code.git"`、`plugins: "code-review@claude-code-plugins"`、`prompt` で `/code-review:code-review --comment <owner/repo>/pull/<番号>` を実行
-   - `claude_args` に `--allowedTools "mcp__github_inline_comment__create_inline_comment"` (インラインコメント以外は許可しない。この指定がないとインラインコメント用の MCP サーバーが起動しない)。あわせて `--model` で使うモデルを固定し、`--max-turns` で上限を付ける (値は試運転の結果で決める)
-   - `permissions`: `contents: read` / `pull-requests: read` / `issues: read` / `id-token: write`。リポジトリには書き込ませない
-   - トリガー: `pull_request: [opened, ready_for_review]`。`if: github.event.pull_request.draft == false` で draft を除く。`concurrency` で同じ ref の古い実行を打ち切り、`timeout-minutes: 20`
-   - 修正後にもう一度見てほしいときは、Actions の画面から再実行する
-4. **認証 (人の作業)**: `claude setup-token` で 1 年有効の OAuth トークンを作り、GitHub の secrets `CLAUDE_CODE_OAUTH_TOKEN` に登録する。失効日をカレンダーに入れる
-5. **数本の PR で CI を残すか決める**。所要時間とサブスクの使用量を確認し、手元のレビューの指摘と比べる
+1. **認証**: `claude setup-token` で 1 年有効の OAuth トークンを作り、GitHub の secrets `CLAUDE_CODE_OAUTH_TOKEN` に登録する。失効日をカレンダーに入れる。未登録の間、`claude-review.yml` はスキップされる
+2. **数本の PR で CI を残すか決める**。所要時間とサブスクの使用量を確認し、手元のレビューの指摘と比べる
    - CI が手元で見落とした指摘をほとんど出さず、手元のレビューを飛ばした PR も見つからない → `claude-review.yml` を外す
    - 手元のレビューを飛ばした PR がたびたび見つかる → 残す
-6. **`.claude/rules/testing.md`** (`paths: test/**, local_package/**/test/**`) に既存テストの流儀を明文化する
-   - mockito `@GenerateNiceMocks`、extension type の ID には `Fake`
-   - `ProviderContainer` はテストごとに作る
-   - Notifier ではなく依存先の Repository をモックする
-   - Quill を含む重い Widget は導線だけを切り出して検証する
-   - スキーマ変更時は `test/data_migration/fixtures/` に変更前の生ドキュメントを足す
+   - 20 分の timeout で打ち切られるようなら、`claude_args` に `--max-turns` を足すか timeout を延ばす
+
+### code-review プラグインの性質
+
+- 段階ごとに haiku / sonnet / Opus のサブエージェントを使い分ける (変更の要約、CLAUDE.md への準拠、バグ探し、指摘の検証)。モデルはプラグインが選ぶので `--model` は付けていない
+- 1 回で 7 つ以上のサブエージェントを起動するので、`--max-turns` を小さく付けると途中で止まる。上限は `timeout-minutes` で付けている
+- draft・クローズ済み・Claude のコメントが付いた PR は自分でスキップする
+- プロジェクト固有の観点として読むのは CLAUDE.md (ルートと変更ファイルのディレクトリ) だけで、`.claude/rules/` は読まない。このリポジトリの CLAUDE.md は `@AGENTS.md` を取り込むだけなので、必須の観点は AGENTS.md に書いている
+- 報告するのは「コンパイルが通らない」「入力によらず結果が誤る」「CLAUDE.md への明白な違反」に絞られる。設計や読みやすさの指摘は手元の `/code-review` に任せる
 
 ### 注意
 
 - 手元と CI で同じ PR を何度もレビューすると、同じサブスクの使用量を重ねて消費する。CI は PR 1 本につき 1 回に留める
 - `REVIEW.md` は Anthropic がホストする Code Review 用の設定で、このプラグイン構成では読まれない
 - フォークからの PR には secrets が渡らないので、AI レビューは動かない (`preview.yml` と同じ)
-- `.claude/rules/ci.md` の Workflow 表に `claude-review.yml` を足す
 
 ## Phase 2 — プレビューへの自動ブラウザ確認と CI の強化 (半日)
 
@@ -124,7 +119,7 @@
 ## 確かめていないこと
 
 - `verify` という名前のスキルがコミット前に自動で実行されるか (公式 docs の記述にもとづくが未確認)
-- CI の code-review プラグインが、path 指定の `.claude/rules/*.md` を読み込むか
+- CI の code-review プラグインのサブエージェントが、CLAUDE.md の `@AGENTS.md` を辿って AGENTS.md を読むか
 - Dart MCP の `flutter_driver_command` が Flutter Web (debug) で動くか
 - Playwright MCP のアクセシビリティスナップショットが Flutter Web で役に立つか
 - OAuth トークンを CI で使うことの利用規約上の扱い (Claude Code の docs では許容されている)
@@ -134,6 +129,7 @@
 ## 出典
 
 - Claude Code: [best practices](https://code.claude.com/docs/en/best-practices) / [GitHub Actions](https://code.claude.com/docs/en/github-actions) / [長期トークン](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token) / [skills](https://code.claude.com/docs/en/skills) / [hooks](https://code.claude.com/docs/en/hooks) / [path 指定の rules](https://code.claude.com/docs/en/memory#path-specific-rules) / [Code Review](https://code.claude.com/docs/en/code-review) / [ローカルの code review](https://code.claude.com/docs/en/code-review-local) / [ultrareview](https://code.claude.com/docs/en/ultrareview) / [プラン別の提供状況](https://code.claude.com/docs/en/feature-availability#availability-by-subscription-plan)
+- [code-review プラグイン](https://github.com/anthropics/claude-code/blob/main/plugins/code-review/commands/code-review.md)
 - [anthropics/claude-code-action](https://github.com/anthropics/claude-code-action) ([入力一覧](https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md#inputs), [セキュリティ](https://github.com/anthropics/claude-code-action/blob/main/docs/security.md))
 - [Solving code review at Anthropic](https://claude.dev/blog/solving-code-review-at-anthropic/)
 - Flutter: [Web のアクセシビリティ](https://docs.flutter.dev/ui/accessibility/web-accessibility) / [flutter/flutter#177670](https://github.com/flutter/flutter/issues/177670) / [flutter/flutter#193705](https://github.com/flutter/flutter/issues/193705) / [integration tests](https://docs.flutter.dev/testing/integration-tests)

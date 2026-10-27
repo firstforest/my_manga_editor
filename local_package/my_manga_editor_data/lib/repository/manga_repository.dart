@@ -251,7 +251,7 @@ class MangaRepository {
       normalized.add(trimmed);
     }
 
-    if (normalized.length > maxTagsPerManga) {
+    if (normalized.length >= maxTagsPerManga) {
       throw repo_exceptions.TagLimitException(maxTagsPerManga);
     }
 
@@ -284,7 +284,9 @@ class MangaRepository {
         throw repo_exceptions.TagLimitException(maxTagsPerManga);
       }
 
-      await _firebaseService.addMangaTag(id.id, trimmed);
+      await _firebaseService.updateManga(id.id, {
+        'tags': [...currentTags, trimmed],
+      });
       logger.d('Added tag to manga: $id -> $trimmed');
     } on repo_exceptions.ValidationException {
       rethrow;

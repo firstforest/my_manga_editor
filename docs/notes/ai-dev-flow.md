@@ -93,7 +93,7 @@ Maestro CLI は Java 17 が要る。CI と同じ版 (`preview.yml` の `MAESTRO_
 - Maestro の Web 対応はベータ。待ち時間は `extendedWaitUntil` で長めに取る
 - 手元の Chrome (claude-in-chrome) で確かめるときは、タブが裏に回ると描画が止まり、画面遷移やアニメーションが進まない。`document.visibilityState` が `hidden` なら結果を信用しない
 - 合成したホイールイベントは CanvasKit に届かない ([ai-ui-review.md](./ai-ui-review.md))。スクロールが要る確認は画面内の操作で代替する
-- 画面から `ref.read(xxxProvider.notifier)` で呼ぶ非同期メソッドは、`await` の間に autoDispose の Provider が破棄されうる。破棄されるかは描画のタイミングで変わり、セマンティクスの有無でも変わる。処理の間は `ref.keepAlive()` で破棄を止める ([manga_page_view_model.dart](../../lib/feature/manga/provider/manga_page_view_model.dart))
+- 画面から `ref.read(xxxProvider.notifier)` で呼ぶ非同期メソッドは、`await` の間に autoDispose の Provider が破棄されうる。破棄されるかは描画のタイミングで変わり、セマンティクスの有無でも変わる。状態を持たない操作は `@Riverpod(keepAlive: true)` の Notifier に置く ([manga_creator.dart](../../lib/feature/manga/provider/manga_creator.dart))
 
 ## Phase 3 — 動作確認とテスト追加のスキル化 (使いながら)
 

@@ -30,7 +30,7 @@ Firestore への追加クエリは発生しない。絞り込みは既に購読�
 | UI (`lib/feature/manga/page/manga_edit_page.dart`) | `MangaTitle` の開始ページ選択の右に `MangaTagsWidget` を並べる (行を増やさず `toolbarHeight` に収める) |
 | State (`lib/feature/manga/provider/tag_providers.dart`) | **新規**。`TagFilter` (freezed union) / `tagList` / `TagFilterNotifier` / `filteredMangaList` |
 | State (`lib/feature/manga/provider/manga_providers.dart`) | `MangaNotifier.addTag` / `removeTag` を追加 |
-| State (`lib/feature/manga/provider/manga_page_view_model.dart`) | `createNewManga` に初期タグを渡せるようにする |
+| State (`lib/feature/manga/provider/manga_creator.dart`) | 新規作成で、絞り込み中のタグを `MangaRepository.createNewManga` に渡す |
 | Repository (`manga_repository.dart`) | `addTag` / `removeTag` 追加、`createNewManga` に `tags` 引数追加、変換 extension の対応 |
 | Service (`firebase_service.dart`) | **`addMangaTag` / `removeMangaTag` を追加**（下記「配列操作を Service に置く理由」参照） |
 | Backend | Firestore の `mangas/{mangaId}` に `tags` 配列が増えるのみ。セキュリティルール変更なし |

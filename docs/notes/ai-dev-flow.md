@@ -84,12 +84,14 @@ Maestro CLI は Java 17 が要る。CI と同じ版 (`preview.yml` の `MAESTRO_
 ### 残りの作業
 
 - 実行のたびに dev Firebase に匿名ユーザーが 1 人ずつ溜まる (作った作品はフローの最後で消している)。定期的に掃除する仕組みを用意する
-- 作品カードのタイトル・ページ数と、タグの絞り込みチップ (「すべて」「タグなし」) がセマンティクスに出ない。スクリーンリーダーでも読めないので、`Semantics` を足してからフローで使う
+- タグの絞り込みをフローで確かめるときは、チップに `Semantics(identifier:)` を付けて Maestro の `id:` で指定する
 
 ### Flutter Web と Maestro の注意
 
 - Maestro は Flutter のセマンティクスで要素を探す。`ENV=dev` (手元・プレビュー) のビルドだけ起動時に有効にしている ([lib/env_config.dart](../../lib/env_config.dart) の `enableSemanticsOnStart`)。本番は Flutter の既定どおり無効で、スクリーンリーダーの利用者が隠しボタン (Enable accessibility) で有効にする。e2e は本番のビルドに対しては流せない
 - アイコンだけのボタンは tooltip の文言で指定する。ボタンを足すときは tooltip を付ける
+- 作品カードは、作品名をラベル、ページ数とタグを値にしたボタン。削除ボタンはカードとは別のボタン ([kanban_card.dart](../../lib/feature/manga/view/kanban_card.dart))
+- タグの絞り込みチップ (「すべて」「タグなし」) はラベル付きのボタンでスクリーンリーダーは読めるが、Maestro からは文言で見つけられない
 - Maestro の Web 対応はベータ。待ち時間は `extendedWaitUntil` で長めに取る
 - 手元の Chrome (claude-in-chrome) で確かめるときは、タブが裏に回ると描画が止まり、画面遷移やアニメーションが進まない。`document.visibilityState` が `hidden` なら結果を信用しない
 - 合成したホイールイベントは CanvasKit に届かない ([ai-ui-review.md](./ai-ui-review.md))。スクロールが要る確認は画面内の操作で代替する

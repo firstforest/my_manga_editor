@@ -28,12 +28,20 @@ class MangaPageViewModelNotifier extends _$MangaPageViewModelNotifier {
   ///
   /// [tags] を渡すとその作品に最初から付いた状態で作られる
   /// (一覧をタグで絞り込んでいる最中の新規作成で使う)。
+  ///
+  /// 画面は listen せずに notifier を読んで呼ぶので、書き込みを待つ間に
+  /// この Provider が破棄されうる。終わるまで keepAlive で破棄を止める。
   Future<MangaId> createNewManga({List<String> tags = const []}) async {
-    final mangaRepository = ref.read(mangaRepositoryProvider);
-    final selectedId = await mangaRepository.createNewManga(tags: tags);
-    await mangaRepository.createNewMangaPage(selectedId);
+    final link = ref.keepAlive();
+    try {
+      final mangaRepository = ref.read(mangaRepositoryProvider);
+      final selectedId = await mangaRepository.createNewManga(tags: tags);
+      await mangaRepository.createNewMangaPage(selectedId);
 
-    selectManga(selectedId);
-    return selectedId;
+      selectManga(selectedId);
+      return selectedId;
+    } finally {
+      link.close();
+    }
   }
 }

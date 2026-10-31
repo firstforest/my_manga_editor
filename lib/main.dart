@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,6 +13,12 @@ import 'package:my_manga_editor_data/my_manga_editor_data.dart';
 Future<void> main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Flutter Web はセマンティクスが既定で無効で、スクリーンリーダーや e2e (Maestro) が
+  // 画面の要素を見つけられない。常に有効にする
+  if (kIsWeb) {
+    SemanticsBinding.instance.ensureSemantics();
+  }
 
   final env = EnvConfig.current;
 

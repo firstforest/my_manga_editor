@@ -62,11 +62,13 @@ class MangaEditPage extends HookConsumerWidget {
                           SnackBar(content: Text('$nameをダウンロードしました')));
                     }
                   : null,
+              tooltip: 'ダウンロード',
               icon: Icon(Icons.save_alt)),
           IconButton(
             onPressed: () {
               ref.read(routerProvider).go('/manga/${mangaId.id}/grid');
             },
+            tooltip: 'グリッド表示',
             icon: const Icon(Icons.grid_view),
           ),
           // Online status indicator
@@ -79,6 +81,7 @@ class MangaEditPage extends HookConsumerWidget {
       body:
           MangaEditWidget(mangaId: mangaId, scrollController: scrollController),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'ページを追加',
         onPressed: () async {
           final pageIdList =
               await ref.read(mangaPageIdListProvider(mangaId).future);

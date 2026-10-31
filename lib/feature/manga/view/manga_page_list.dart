@@ -50,6 +50,7 @@ class MangaPageList extends HookConsumerWidget {
                           .read(mangaProvider(manga.id).notifier)
                           .addNewPage(index + 1);
                     },
+                    tooltip: 'ここにページを追加',
                     icon: const Icon(Icons.add),
                   ),
                 ),

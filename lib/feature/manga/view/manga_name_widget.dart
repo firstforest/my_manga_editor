@@ -67,6 +67,7 @@ class MangaNameWidget extends HookConsumerWidget {
                         .updateName(nameEditController.text);
                     isNameEdit.value = false;
                   },
+                  tooltip: '作品名を確定',
                   icon: const Icon(Icons.done),
                 ),
               ],

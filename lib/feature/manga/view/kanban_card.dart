@@ -127,6 +127,7 @@ class KanbanCard extends ConsumerWidget {
                       onPressed: () {
                         ref.read(mangaProvider(manga.id).notifier).delete();
                       },
+                      tooltip: '作品を削除',
                       icon: const Icon(Icons.delete, size: 16),
                     ),
                   ),

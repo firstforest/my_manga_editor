@@ -1,6 +1,6 @@
 # プレビュー URL に対する最低限の確認 (Maestro, Web)。
 # 実行: maestro test --headless -e BASE_URL=<URL> e2e/
-# Flutter Web の要素はセマンティクス (lib/main.dart で常に有効) を通して見つける。
+# Flutter Web の要素はセマンティクスを通して見つける。ENV=dev のビルドだけが起動時に有効にするので、本番のビルドには流せない。
 # アイコンだけのボタンは tooltip の文言で指定する。
 url: ${BASE_URL}
 name: smoke

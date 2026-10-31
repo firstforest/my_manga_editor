@@ -14,13 +14,11 @@ Future<void> main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Flutter Web はセマンティクスが既定で無効で、スクリーンリーダーや e2e (Maestro) が
-  // 画面の要素を見つけられない。常に有効にする
-  if (kIsWeb) {
+  final env = EnvConfig.current;
+
+  if (kIsWeb && env.enableSemanticsOnStart) {
     SemanticsBinding.instance.ensureSemantics();
   }
-
-  final env = EnvConfig.current;
 
   // Initialize Firebase with environment-specific options
   await initializeFirebase(options: env.firebaseOptions);

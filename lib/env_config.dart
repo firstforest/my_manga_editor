@@ -9,21 +9,31 @@ class EnvConfig {
   const EnvConfig._({
     required this.firebaseOptions,
     required this.webClientId,
+    required this.enableSemanticsOnStart,
   });
 
   final FirebaseOptions firebaseOptions;
   final String? webClientId;
 
+  /// Web で起動時にセマンティクスを有効にするか。
+  ///
+  /// Flutter Web は既定で無効にしておき、スクリーンリーダーの利用者が
+  /// 隠しボタン (Enable accessibility) で有効にする。e2e (Maestro) は
+  /// セマンティクスで要素を探すので、dev (手元・プレビュー) では常に有効にする。
+  final bool enableSemanticsOnStart;
+
   static const _prod = EnvConfig._(
     firebaseOptions: prod.DefaultFirebaseOptions.web, // replaced at runtime
     webClientId:
         '948924085739-adqjuonj6bf2le0kscqisgoptfjhbm1l.apps.googleusercontent.com',
+    enableSemanticsOnStart: false,
   );
 
   static const _dev = EnvConfig._(
     firebaseOptions: dev.DefaultFirebaseOptions.web, // replaced at runtime
     webClientId:
         '411539508745-cvecht9c5v0iohf0e38a2j61mde9tgqb.apps.googleusercontent.com',
+    enableSemanticsOnStart: true,
   );
 
   static EnvConfig get current => switch (_env) {
@@ -37,6 +47,7 @@ class EnvConfig {
     return EnvConfig._(
       firebaseOptions: options,
       webClientId: webClientId,
+      enableSemanticsOnStart: enableSemanticsOnStart,
     );
   }
 }

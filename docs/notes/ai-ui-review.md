@@ -111,9 +111,10 @@ flutter run -d web-server --web-port=50505       # http://localhost:50505 で配
 **Dart MCP の `widget_inspector` を使わなくても、Flutter Web のセマンティクスを
 有効化すれば UI 階層が DOM のアクセシビリティツリーとして取れる。**
 
-CanvasKit 描画では DOM に描画内容が出ないが、このアプリは起動時に
-`SemanticsBinding.instance.ensureSemantics()` を呼ぶ ([lib/main.dart](../../lib/main.dart)) ので、
-アクセシビリティツリーがそのまま構築されている。
+CanvasKit 描画では DOM に描画内容が出ないが、このアプリは `ENV=dev` のビルド (手元・プレビュー) では
+起動時に `SemanticsBinding.instance.ensureSemantics()` を呼ぶ ([lib/main.dart](../../lib/main.dart)) ので、
+アクセシビリティツリーがそのまま構築されている。本番のビルドは Flutter の既定どおり無効で、
+`<flt-semantics-placeholder>` (Enable accessibility) を押したときに有効になる。
 
 アクセシビリティツリーを読むと、実際に以下が取れた:
 

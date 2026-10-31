@@ -88,7 +88,7 @@ Maestro CLI は Java 17 が要る。CI と同じ版 (`preview.yml` の `MAESTRO_
 
 ### Flutter Web と Maestro の注意
 
-- Maestro は Flutter のセマンティクスで要素を探す。[lib/main.dart](../../lib/main.dart) が Web で常に有効にしている
+- Maestro は Flutter のセマンティクスで要素を探す。`ENV=dev` (手元・プレビュー) のビルドだけ起動時に有効にしている ([lib/env_config.dart](../../lib/env_config.dart) の `enableSemanticsOnStart`)。本番は Flutter の既定どおり無効で、スクリーンリーダーの利用者が隠しボタン (Enable accessibility) で有効にする。e2e は本番のビルドに対しては流せない
 - アイコンだけのボタンは tooltip の文言で指定する。ボタンを足すときは tooltip を付ける
 - Maestro の Web 対応はベータ。待ち時間は `extendedWaitUntil` で長めに取る
 - 手元の Chrome (claude-in-chrome) で確かめるときは、タブが裏に回ると描画が止まり、画面遷移やアニメーションが進まない。`document.visibilityState` が `hidden` なら結果を信用しない
@@ -100,7 +100,7 @@ Maestro CLI は Java 17 が要る。CI と同じ版 (`preview.yml` の `MAESTRO_
 1. **`.claude/skills/verify-ui/SKILL.md`** (`disable-model-invocation: true`、手動で起動)
    - 引数は feature slug かプレビュー URL
    - ローカルなら `flutter run -d web-server --web-port=50505` (`-d chrome` は拡張が入らないので不可)
-   - claude-in-chrome で開き、匿名ログイン (セマンティクスはアプリが起動時に有効にするので、アクセシビリティツリーはそのまま読める)
+   - claude-in-chrome で開き、匿名ログイン (`ENV=dev` のビルドはセマンティクスを起動時に有効にするので、アクセシビリティツリーはそのまま読める)
    - `docs/spec/features/<slug>/requirements.md` の AC を 1 つずつ操作し、pass / fail / 未確認 と証拠 (スクリーンショット・`read_page` の抜粋) を表で出す
    - ローカル実行時は dart MCP の `get_runtime_errors` で RenderFlex overflow なども拾う
    - 既知の制約 (ホイールスクロール不可、名前のないアイコンボタン、DEBUG バナー) を本文に書く

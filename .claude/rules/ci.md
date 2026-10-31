@@ -37,6 +37,9 @@ GitHub Actions で Flutter Web を Cloudflare Workers (静的アセット) に�
   本番 URL は vars の `PRODUCTION_URL` (疎通確認とリリースノートで使う)
 - `mise-action` の `install_args` は必要なツールだけにする (`flutter`、wrangler を使うジョブは `flutter node`)。
   `mise.toml` の `ruby` はソースビルドになり CI 時間を大きく浪費するため入れない
+- `claude-review.yml` は、PR 上の workflow ファイルが**デフォルトブランチ (`develop`) のものと同じ内容でないと動かない** (claude-code-action の検証)。
+  このときジョブは失敗ではなく pass になり、ログに `Workflow validation failed` の注記が出るだけなので、
+  `claude-review.yml` 自体を変える PR ではレビューが付かない前提で見る
 - `flutter analyze` / `flutter test` は**カレントパッケージしか対象にしない**。
   `local_package/my_manga_editor_data` は個別に実行する
   （`ci.yml` と [scripts/release.sh](../../scripts/release.sh) の双方で対応済み。

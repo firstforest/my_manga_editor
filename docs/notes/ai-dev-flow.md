@@ -31,13 +31,23 @@
 
 ## Phase 1 — 手元のレビューを主軸にし、CI のレビューを保険で付ける
 
+### 試運転の結果 (2026-10-28, PR #24)
+
+わざと問題を 2 つ入れた PR で動かした。所要 46 秒で、2 件ともインラインコメントで指摘された。
+
+| 入れた問題 | 指摘 |
+|---|---|
+| タグ上限の判定を `>` → `>=` (ちょうど 20 個が拒否される) | 指摘あり。修正案 (suggestion) 付き |
+| `addTag` を `arrayUnion` から配列全体の read-modify-write に変更 | 指摘あり。AGENTS.md の「配列フィールドは read-modify-write しない」を名指しし、重複の発生も指摘 |
+
+CLAUDE.md の `@AGENTS.md` をたどって AGENTS.md の観点が使われることも、2 件目で確かめられた。
+
 ### 残りの作業 (人)
 
-1. **認証**: `claude setup-token` で 1 年有効の OAuth トークンを作り、GitHub の secrets `CLAUDE_CODE_OAUTH_TOKEN` に登録する。失効日をカレンダーに入れる。未登録の間、`claude-review.yml` はスキップされる
-2. **数本の PR で CI を残すか決める**。所要時間とサブスクの使用量を確認し、手元のレビューの指摘と比べる
+1. **トークンの更新**: `CLAUDE_CODE_OAUTH_TOKEN` は 2026-10-28 に登録した 1 年有効のトークン。失効する前に `claude setup-token` で作り直し、`gh secret set CLAUDE_CODE_OAUTH_TOKEN` で登録し直す (値はプロンプトに貼る。引数に書くと改行の混入やシェル履歴への残留が起きる)
+2. **普段の PR で CI を残すか決める**。サブスクの使用量を確認し、手元のレビューの指摘と比べる
    - CI が手元で見落とした指摘をほとんど出さず、手元のレビューを飛ばした PR も見つからない → `claude-review.yml` を外す
    - 手元のレビューを飛ばした PR がたびたび見つかる → 残す
-   - 20 分の timeout で打ち切られるようなら、`claude_args` に `--max-turns` を足すか timeout を延ばす
 
 ### code-review プラグインの性質
 
@@ -52,6 +62,8 @@
 - 手元と CI で同じ PR を何度もレビューすると、同じサブスクの使用量を重ねて消費する。CI は PR 1 本につき 1 回に留める
 - `REVIEW.md` は Anthropic がホストする Code Review 用の設定で、このプラグイン構成では読まれない
 - フォークからの PR には secrets が渡らないので、AI レビューは動かない (`preview.yml` と同じ)
+- PR 上の `claude-review.yml` がデフォルトブランチ (`develop`) のものと同じ内容でないと、レビューは走らずにジョブが pass になる。このためデフォルトブランチを `develop` にしている
+- 失敗の詳細はログで伏せられる (公開リポジトリのため)。認証エラーは「1 ターン・`modelUsage` が空・`is_error: true`」として現れる
 
 ## Phase 2 — プレビューへの自動ブラウザ確認と CI の強化 (半日)
 
@@ -119,7 +131,6 @@
 ## 確かめていないこと
 
 - `verify` という名前のスキルがコミット前に自動で実行されるか (公式 docs の記述にもとづくが未確認)
-- CI の code-review プラグインのサブエージェントが、CLAUDE.md の `@AGENTS.md` を辿って AGENTS.md を読むか
 - Dart MCP の `flutter_driver_command` が Flutter Web (debug) で動くか
 - Playwright MCP のアクセシビリティスナップショットが Flutter Web で役に立つか
 - OAuth トークンを CI で使うことの利用規約上の扱い (Claude Code の docs では許容されている)

@@ -83,11 +83,11 @@ Maestro CLI は Java 17 が要る。CI と同じ版 (`preview.yml` の `MAESTRO_
 
 ### 残りの作業
 
-- 実行のたびに dev Firebase に匿名ユーザーが 1 人ずつ溜まる (作った作品はフローの最後で消している)。定期的に掃除する仕組みを用意する
 - タグの絞り込みをフローで確かめるときは、チップに `Semantics(identifier:)` を付けて Maestro の `id:` で指定する
 
 ### Flutter Web と Maestro の注意
 
+- 実行のたびに dev Firebase に匿名ユーザーが 1 人できる。作った作品はフローの最後で消し、匿名ユーザーは dev プロジェクトの「匿名アカウントの自動削除」(Firebase Authentication with Identity Platform) で、作成から 30 日を過ぎると消える
 - Maestro は Flutter のセマンティクスで要素を探す。`ENV=dev` (手元・プレビュー) のビルドだけ起動時に有効にしている ([lib/env_config.dart](../../lib/env_config.dart) の `enableSemanticsOnStart`)。本番は Flutter の既定どおり無効で、スクリーンリーダーの利用者が隠しボタン (Enable accessibility) で有効にする。e2e は本番のビルドに対しては流せない
 - アイコンだけのボタンは tooltip の文言で指定する。ボタンを足すときは tooltip を付ける
 - 作品カードは、作品名をラベル、ページ数とタグを値にしたボタン。削除ボタンはカードとは別のボタン ([kanban_card.dart](../../lib/feature/manga/view/kanban_card.dart))
@@ -144,7 +144,6 @@ Maestro CLI は Java 17 が要る。CI と同じ版 (`preview.yml` の `MAESTRO_
 - Dart MCP の `flutter_driver_command` が Flutter Web (debug) で動くか
 - Playwright MCP のアクセシビリティスナップショットが Flutter Web で役に立つか
 - OAuth トークンを CI で使うことの利用規約上の扱い (Claude Code の docs では許容されている)
-- Firebase Auth に匿名アカウントを自動削除する設定があるか
 - 空の `flt-semantics` がクリックを遮るバグが Flutter 3.44.4 で起きるか
 
 ## 出典

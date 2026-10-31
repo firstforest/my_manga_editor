@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,6 +15,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final env = EnvConfig.current;
+
+  if (kIsWeb && env.enableSemanticsOnStart) {
+    SemanticsBinding.instance.ensureSemantics();
+  }
 
   // Initialize Firebase with environment-specific options
   await initializeFirebase(options: env.firebaseOptions);

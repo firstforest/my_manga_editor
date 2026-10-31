@@ -34,7 +34,7 @@ final class MangaPageViewModelNotifierProvider extends $AsyncNotifierProvider<
 }
 
 String _$mangaPageViewModelNotifierHash() =>
-    r'6adde32aa25651a9583e3f616d2df68bef148f5c';
+    r'5c867bc5e264f423370b61f1d69ef3b94760de53';
 
 abstract class _$MangaPageViewModelNotifier
     extends $AsyncNotifier<MangaPageViewModel> {

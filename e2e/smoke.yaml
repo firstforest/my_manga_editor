@@ -1,0 +1,38 @@
+# プレビュー URL に対する最低限の確認 (Maestro, Web)。
+# 実行: maestro test --headless -e BASE_URL=<URL> e2e/
+# Flutter Web の要素はセマンティクスを通して見つける。ENV=dev のビルドだけが起動時に有効にするので、本番のビルドには流せない。
+# アイコンだけのボタンは tooltip の文言で指定する。
+url: ${BASE_URL}
+name: smoke
+---
+- launchApp
+
+# 起動直後は Firebase の初期化と認証状態の確定を待つ
+- extendedWaitUntil:
+    visible: "Sign in anonymously"
+    timeout: 60000
+- tapOn: "Sign in anonymously"
+
+- extendedWaitUntil:
+    visible: "漫画を選択"
+    timeout: 30000
+- assertVisible: "アイデア"
+
+- tapOn: "新規作成"
+
+# 新規作品はページを 1 枚持った状態で編集画面に開く
+- extendedWaitUntil:
+    visible: "ページを追加"
+    timeout: 30000
+- assertVisible: "グリッド表示"
+- assertVisible: "セリフをコピー"
+
+# dev Firebase に作品を溜めないよう、作った作品を消して終える
+- back
+- extendedWaitUntil:
+    visible: "漫画を選択"
+    timeout: 30000
+- tapOn: "作品を削除"
+- extendedWaitUntil:
+    notVisible: "作品を削除"
+    timeout: 30000

@@ -18,7 +18,7 @@
 | 動作確認 | `/verify-ui` で claude-in-chrome から AC を 1 つずつ操作し、スクリーンショットを証拠に残す | PR のプレビュー URL に Playwright で最低限の確認 | リリース前に develop の固定 URL で Google ログイン込みの確認 |
 | レビュー | `verify` に続けて PR 前に `/code-review high`。スキーマ・`firestore.rules`・認証を触るときは `ultra` も | PR を開いたときに 1 回だけ `claude-code-action` がインラインコメント (保険) | 指摘の採否とマージ |
 
-## 導入済み (Phase 0〜1)
+## 導入済み
 
 | もの | 場所 |
 |---|---|
@@ -28,6 +28,7 @@
 | PR テンプレート | [.github/pull_request_template.md](../../.github/pull_request_template.md) |
 | PR を開いたときに 1 回だけ付く AI レビュー (保険) | [.github/workflows/claude-review.yml](../../.github/workflows/claude-review.yml) |
 | テストの流儀 (レイヤーごとに何を差し替えるか) | [.claude/rules/testing.md](../../.claude/rules/testing.md) |
+| CI の format の差分チェックとコード生成のし忘れチェック | [.github/workflows/ci.yml](../../.github/workflows/ci.yml) |
 
 ## Phase 1 — 手元のレビューを主軸にし、CI のレビューを保険で付ける
 
@@ -65,7 +66,7 @@ CLAUDE.md の `@AGENTS.md` をたどって AGENTS.md の観点が使われるこ
 - PR 上の `claude-review.yml` がデフォルトブランチ (`develop`) のものと同じ内容でないと、レビューは走らずにジョブが pass になる。このためデフォルトブランチを `develop` にしている
 - 失敗の詳細はログで伏せられる (公開リポジトリのため)。認証エラーは「1 ターン・`modelUsage` が空・`is_error: true`」として現れる
 
-## Phase 2 — プレビューへの自動ブラウザ確認と CI の強化 (半日)
+## Phase 2 — プレビューへの自動ブラウザ確認 (半日)
 
 ### やること
 
@@ -75,9 +76,6 @@ CLAUDE.md の `@AGENTS.md` をたどって AGENTS.md の観点が使われるこ
    - 匿名ログイン → 作品一覧の見出しが出る
    - 新規作成 → 編集画面に遷移し、カットの「︙」メニューがある
 3. **`preview.yml` に `smoke` ジョブ**を追加する。`preview` ジョブの `outputs.url` を `BASE_URL` として渡し、`npx playwright install --with-deps chromium` → `npx playwright test`。失敗時は HTML レポートを artifact に残す
-4. **`ci.yml` に 2 ステップ**追加する (各パッケージで)
-   - `dart format --output=none --set-exit-if-changed lib test`
-   - `dart run build_runner build -d` → `git diff --exit-code` (コード生成のし忘れを検知)
 
 ### Flutter Web 特有の注意
 
@@ -126,7 +124,7 @@ CLAUDE.md の `@AGENTS.md` をたどって AGENTS.md の観点が使われるこ
 
 - GitHub Actions: 公開リポジトリの標準ランナーは無料。Playwright の確認で +2〜3 分、AI レビューで +数分〜十数分
 - AI レビュー: CI では PR 1 本につき 1 回。OAuth トークンならサブスクの使用量から消費され、追加の請求はない。API キーで動かす場合、1 PR あたりの公式の目安はない (概算で $0.5〜2)
-- 自動生成ファイルの差分がレビューの入力を大きく膨らませる。Phase 2 のコード生成のズレの検知で、生成し忘れによる余計な差分を防ぐ
+- 自動生成ファイルの差分がレビューの入力を大きく膨らませる。`ci.yml` のコード生成のし忘れチェックで、余計な差分が入るのを防ぐ
 
 ## 確かめていないこと
 

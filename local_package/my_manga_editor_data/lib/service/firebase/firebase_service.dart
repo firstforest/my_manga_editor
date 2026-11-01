@@ -561,6 +561,31 @@ class FirebaseBatchWrapper {
     });
   }
 
+  /// Delete a page in the batch
+  void deletePage(String mangaId, String pageId) {
+    _batch
+        .delete(_mangasCollection.doc(mangaId).collection('pages').doc(pageId));
+  }
+
+  /// Update a delta in the batch
+  void updateDelta(
+      String mangaId, String deltaId, Map<String, dynamic> updates) {
+    _batch.update(_deltaRef(mangaId, deltaId), {
+      ...updates,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Delete a delta in the batch
+  void deleteDelta(String mangaId, String deltaId) {
+    _batch.delete(_deltaRef(mangaId, deltaId));
+  }
+
+  DocumentReference<Map<String, dynamic>> _deltaRef(
+      String mangaId, String deltaId) {
+    return _mangasCollection.doc(mangaId).collection('deltas').doc(deltaId);
+  }
+
   /// Commit the batch
   Future<void> commit() => _batch.commit();
 }

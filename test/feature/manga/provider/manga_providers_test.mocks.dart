@@ -386,6 +386,30 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
       ) as _i3.Future<void>);
 
   @override
+  _i3.Future<bool> moveSceneUnit({
+    required _i4.MangaId? mangaId,
+    required _i4.MangaPageId? fromPageId,
+    required _i4.DeltaId? dialoguesDeltaId,
+    required _i4.MangaPageId? toPageId,
+    required int? toIndex,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #moveSceneUnit,
+          [],
+          {
+            #mangaId: mangaId,
+            #fromPageId: fromPageId,
+            #dialoguesDeltaId: dialoguesDeltaId,
+            #toPageId: toPageId,
+            #toIndex: toIndex,
+          },
+        ),
+        returnValue: _i3.Future<bool>.value(false),
+        returnValueForMissingStub: _i3.Future<bool>.value(false),
+      ) as _i3.Future<bool>);
+
+  @override
   _i3.Future<String> toMarkdown(_i4.MangaId? mangaId) => (super.noSuchMethod(
         Invocation.method(
           #toMarkdown,

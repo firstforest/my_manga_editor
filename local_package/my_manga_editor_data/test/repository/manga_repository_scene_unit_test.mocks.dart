@@ -1091,3 +1091,103 @@ class MockUser extends _i1.Mock implements _i3.User {
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 }
+
+/// A class which mocks [FirebaseBatchWrapper].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockFirebaseBatchWrapper extends _i1.Mock
+    implements _i2.FirebaseBatchWrapper {
+  @override
+  void update(
+    String? pageId,
+    Map<String, dynamic>? updates,
+  ) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #update,
+          [
+            pageId,
+            updates,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void updatePage(
+    String? mangaId,
+    String? pageId,
+    Map<String, dynamic>? updates,
+  ) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #updatePage,
+          [
+            mangaId,
+            pageId,
+            updates,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void deletePage(
+    String? mangaId,
+    String? pageId,
+  ) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #deletePage,
+          [
+            mangaId,
+            pageId,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void updateDelta(
+    String? mangaId,
+    String? deltaId,
+    Map<String, dynamic>? updates,
+  ) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #updateDelta,
+          [
+            mangaId,
+            deltaId,
+            updates,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void deleteDelta(
+    String? mangaId,
+    String? deltaId,
+  ) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #deleteDelta,
+          [
+            mangaId,
+            deltaId,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i4.Future<void> commit() => (super.noSuchMethod(
+        Invocation.method(
+          #commit,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+}

@@ -118,7 +118,7 @@ Firestore `mangas/{mangaId}/deltas/{deltaId}` ドキュメント。Flutter Quill
 | mangaId | `String` | 親 Manga ID |
 | ops | `List<dynamic>` | Quill Delta operations |
 | fieldName | `String` | フィールド種別: 'ideaMemo' / 'memoDelta' / 'stageDirectionDelta' / 'dialoguesDelta' |
-| pageId | `String?` | ページ ID (Manga レベルの場合は null) |
+| pageId | `String?` | 現在所属するページの ID (Manga レベルの場合は null)。カットが別のページへ移ると書き換わり、ページ削除時はこの値で集めて削除する |
 | createdAt | `DateTime` | 作成日時 |
 | updatedAt | `DateTime` | 更新日時 |
 

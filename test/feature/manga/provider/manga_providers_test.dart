@@ -96,4 +96,55 @@ void main() {
       expect(sanitizeFileName(''), '');
     });
   });
+
+  group('MangaNotifier', () {
+    final mangaId = MangaId('mid');
+    final p1 = MangaPageId('p1');
+    final p2 = MangaPageId('p2');
+    final p3 = MangaPageId('p3');
+
+    MangaNotifier notifier() {
+      when(mockMangaRepository.getMangaStream(any))
+          .thenAnswer((_) => const Stream.empty());
+      return providerContainer.read(mangaProvider(mangaId).notifier);
+    }
+
+    test('movePage は最新の並びに対してページを前後に動かす', () async {
+      when(mockMangaRepository.watchAllMangaPageIdList(mangaId))
+          .thenAnswer((_) => Stream.value([p1, p2, p3]));
+
+      expect(await notifier().movePage(p2, 1), isTrue);
+      verify(mockMangaRepository.reorderPages(mangaId, [p1, p3, p2])).called(1);
+
+      await notifier().movePage(p2, -1);
+      verify(mockMangaRepository.reorderPages(mangaId, [p2, p1, p3])).called(1);
+    });
+
+    test('movePage は先頭より前・末尾より後ろへは動かさない', () async {
+      when(mockMangaRepository.watchAllMangaPageIdList(mangaId))
+          .thenAnswer((_) => Stream.value([p1, p2, p3]));
+
+      expect(await notifier().movePage(p1, -1), isFalse);
+      expect(await notifier().movePage(p3, 1), isFalse);
+
+      verifyNever(mockMangaRepository.reorderPages(any, any));
+    });
+
+    test('moveSceneUnit は Repository に委譲する', () async {
+      await notifier().moveSceneUnit(
+        fromPageId: p1,
+        dialoguesDeltaId: DeltaId('d'),
+        toPageId: p3,
+        toIndex: 0,
+      );
+
+      verify(mockMangaRepository.moveSceneUnit(
+        mangaId: mangaId,
+        fromPageId: p1,
+        dialoguesDeltaId: DeltaId('d'),
+        toPageId: p3,
+        toIndex: 0,
+      )).called(1);
+    });
+  });
 }

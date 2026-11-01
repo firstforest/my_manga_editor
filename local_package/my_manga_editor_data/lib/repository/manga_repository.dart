@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:characters/characters.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -437,9 +438,11 @@ class MangaRepository {
         throw repo_exceptions.AuthException();
       }
 
-      // Get existing pages to determine next page index
+      // ページ削除で pageIndex に欠番ができるので、件数ではなく最大値の次にする
       final existingPages = await _firebaseService.fetchMangaPages(mangaId.id);
-      final nextPageIndex = existingPages.length;
+      final nextPageIndex = existingPages.fold<int>(
+              -1, (maxIndex, page) => max(maxIndex, page.pageIndex)) +
+          1;
 
       // Create CloudMangaPage first (without delta IDs)
       final cloudPage = CloudMangaPage(
@@ -594,12 +597,9 @@ class MangaRepository {
         throw repo_exceptions.NotFoundException('MangaPage', pageId.id);
       }
 
-      // Fetch all deltas for this page and delete them
-      final allDeltas = await _firebaseService.fetchDeltas(mangaId.id);
-      final pageDeltas = allDeltas.where((d) => d.pageId == pageId.id).toList();
-
-      for (final delta in pageDeltas) {
-        await _firebaseService.deleteDelta(mangaId.id, delta.id);
+      final pageDeltaIds = await _fetchPageDeltaIds(mangaId, pageId);
+      for (final deltaId in pageDeltaIds) {
+        await _firebaseService.deleteDelta(mangaId.id, deltaId);
       }
 
       // Delete the page document
@@ -609,7 +609,7 @@ class MangaRepository {
       _pageToMangaMap.remove(pageId);
 
       logger.d(
-          'Deleted manga page: $pageId and ${pageDeltas.length} associated deltas');
+          'Deleted manga page: $pageId and ${pageDeltaIds.length} associated deltas');
     } on FirebaseException catch (e) {
       throw _handleFirebaseException(e);
     }
@@ -755,6 +755,112 @@ class MangaRepository {
     } on FirebaseException catch (e) {
       throw _handleFirebaseException(e);
     }
+  }
+
+  /// Move the SceneUnit [dialoguesDeltaId] of [fromPageId] to [toIndex] of [toPageId].
+  ///
+  /// 移すカットは位置ではなく [dialoguesDeltaId] で探す。ドラッグを始めてから離すまでに
+  /// 元ページのカットが増減しても、別のカットを動かさないため。見つからなければ何もしない。
+  ///
+  /// [toIndex] は移動先ページの、挿入前の sceneUnits に対する挿入位置 (0..length)。
+  /// 同じページ内の移動では取り除いた後のリストに対する位置に読み替える。
+  ///
+  /// 別ページへの移動は 1 つの batch で書く。Delta の `pageId` も移動先に書き換えるのは、
+  /// ページ削除が Delta を `pageId` で集めて消すため（書き換えないと移したカットまで消える）。
+  /// 元ページが空になる場合はページとその残りの Delta も同じ batch で削除し、true を返す。
+  Future<bool> moveSceneUnit({
+    required MangaId mangaId,
+    required MangaPageId fromPageId,
+    required DeltaId dialoguesDeltaId,
+    required MangaPageId toPageId,
+    required int toIndex,
+  }) async {
+    try {
+      final userId = _authService.currentUser?.uid;
+      if (userId == null) {
+        throw repo_exceptions.AuthException();
+      }
+
+      final fromPage =
+          await _firebaseService.fetchMangaPage(mangaId.id, fromPageId.id);
+      if (fromPage == null) {
+        throw repo_exceptions.NotFoundException('MangaPage', fromPageId.id);
+      }
+      final fromIndex = (fromPage.sceneUnits ?? []).indexWhere(
+          (unit) => unit['dialoguesDeltaId'] == dialoguesDeltaId.id);
+      if (fromIndex < 0) {
+        return false;
+      }
+
+      if (fromPageId == toPageId) {
+        await reorderSceneUnit(mangaId, fromPageId, fromIndex,
+            toIndex > fromIndex ? toIndex - 1 : toIndex);
+        return false;
+      }
+
+      final toPage =
+          await _firebaseService.fetchMangaPage(mangaId.id, toPageId.id);
+      if (toPage == null) {
+        throw repo_exceptions.NotFoundException('MangaPage', toPageId.id);
+      }
+
+      final fromUnits =
+          List<Map<String, dynamic>>.from(fromPage.sceneUnits ?? []);
+      final toUnits = List<Map<String, dynamic>>.from(toPage.sceneUnits ?? []);
+      if (toIndex < 0 || toIndex > toUnits.length) {
+        return false;
+      }
+
+      final moved = fromUnits.removeAt(fromIndex);
+      toUnits.insert(toIndex, moved);
+      final movedDeltaIds = [
+        moved['dialoguesDeltaId'] as String?,
+        moved['stageDirectionDeltaId'] as String?,
+      ].whereType<String>().toSet();
+
+      final batch = _firebaseService.batch();
+      final deletesFromPage = fromUnits.isEmpty;
+      if (deletesFromPage) {
+        for (final deltaId in await _fetchPageDeltaIds(mangaId, fromPageId)) {
+          if (!movedDeltaIds.contains(deltaId)) {
+            batch.deleteDelta(mangaId.id, deltaId);
+          }
+        }
+        batch.deletePage(mangaId.id, fromPageId.id);
+      } else {
+        batch.updatePage(mangaId.id, fromPageId.id, {
+          'schemaVersion': CloudMangaPageExt.schemaVersion,
+          'sceneUnits': fromUnits,
+        });
+      }
+      batch.updatePage(mangaId.id, toPageId.id, {
+        'schemaVersion': CloudMangaPageExt.schemaVersion,
+        'sceneUnits': toUnits,
+      });
+      for (final deltaId in movedDeltaIds) {
+        batch.updateDelta(mangaId.id, deltaId, {'pageId': toPageId.id});
+      }
+      await batch.commit();
+
+      if (deletesFromPage) {
+        _pageToMangaMap.remove(fromPageId);
+      }
+      logger.d('Moved SceneUnit from $fromPageId[$fromIndex] '
+          'to $toPageId[$toIndex]');
+      return deletesFromPage;
+    } on FirebaseException catch (e) {
+      throw _handleFirebaseException(e);
+    }
+  }
+
+  /// ページに所属する（`pageId` がそのページの）Delta の ID
+  Future<List<String>> _fetchPageDeltaIds(
+      MangaId mangaId, MangaPageId pageId) async {
+    final allDeltas = await _firebaseService.fetchDeltas(mangaId.id);
+    return allDeltas
+        .where((d) => d.pageId == pageId.id)
+        .map((d) => d.id)
+        .toList();
   }
 
   /// Helper: create dialogue + stageDirection delta pair for a SceneUnit

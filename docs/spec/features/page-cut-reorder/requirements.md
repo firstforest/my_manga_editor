@@ -1,7 +1,7 @@
 # Requirements: ページとカットの並べ替え
 
 ## メタデータ
-- Status: draft
+- Status: implemented
 - Owner: TBD
 - Last Updated: 2026-11-01
 - Related:

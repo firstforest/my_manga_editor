@@ -4,8 +4,8 @@
 
 編集画面のページリストを `ReorderableListView` から通常の `ListView` に置き換え、ページのドラッグをなくす。
 空いたドラッグ操作をカットに割り当て、Flutter 標準の `Draggable` / `DragTarget` で
-**カットのハンドル → カットの間の挿入スロット** へのドラッグを組む。挿入スロットはすべてのページに置くので、
-同じページ内の並べ替えとページをまたぐ移動を同じ仕組みで扱える。
+**カットのハンドル → カットの上半分（前へ挿入）／下半分（後ろへ挿入）** へのドラッグを組む。
+受け皿はすべてのページのカットに置くので、同じページ内の並べ替えとページをまたぐ移動を同じ仕組みで扱える。
 
 ページをまたぐ移動は、Repository に `moveSceneUnit` を足し、次の書き込みを **1 つの `WriteBatch`** にまとめる。
 
@@ -25,7 +25,7 @@
 
 | レイヤー | この機能の追加・変更点 |
 |---|---|
-| UI (`lib/feature/manga/view/`) | `manga_page_list.dart`: `ListView` 化、ページごとの `GlobalKey`。`manga_page_widget.dart`: ページの「︙」メニュー、カットのハンドル・挿入スロット、メモ削除の確認ダイアログ。ドラッグ中の自動スクロール |
+| UI (`lib/feature/manga/view/`) | `manga_page_list.dart`: `ListView` 化、ページごとの `GlobalKey`、ドラッグ中の自動スクロール。`scene_unit_drag.dart`: カットのハンドル・受け皿・自動スクロール。`page_menu_button.dart`: ページの「︙」メニュー。`manga_page_widget.dart`: それらの組み込みとメモ削除の確認ダイアログ |
 | State (`provider/manga_providers.dart`) | `MangaNotifier.moveSceneUnit` を追加。ページの前後移動は既存の `reorderPage` を使う |
 | Repository | `MangaRepository.moveSceneUnit` を追加。同じページなら既存の `reorderSceneUnit` と同じ処理 |
 | Service | `FirebaseBatchWrapper` に `updateDelta` / `deletePage` / `deleteDelta` を追加 |
@@ -50,11 +50,11 @@
 ```mermaid
 sequenceDiagram
   participant U as User
-  participant V as View (_SceneUnitDropSlot)
+  participant V as View (SceneUnitDropTarget)
   participant N as MangaNotifier
   participant R as MangaRepository
   participant F as Firestore
-  U->>V: ページ3のカットのハンドルをドラッグし、ページ4の先頭スロットで離す
+  U->>V: ページ3のカットのハンドルをドラッグし、ページ4の先頭カットの上半分で離す
   V->>V: 元ページが最後の1カットでメモが空でなければ確認ダイアログ
   V->>N: moveSceneUnit(from: p3, fromIndex, to: p4, toIndex: 0)
   N->>R: moveSceneUnit(...)
@@ -108,27 +108,31 @@ Future<void> moveSceneUnit({
 
 | 部品 | 役割 |
 |---|---|
-| `_SceneUnitDragData` | ドラッグで運ぶ値。`pageId` / `index` / `dialoguesDeltaId` |
-| カットのハンドル | `_SceneUnitWidget` の右列（「︙」の上）に `Icons.drag_indicator`。`Draggable<_SceneUnitDragData>` で包む。テキスト欄は包まないので範囲選択と衝突しない (AC-1.6) |
-| `_SceneUnitDropSlot` | 各ページのカットの前後（カット n 個に対し n+1 個）に置く `DragTarget`。ホバー中だけ挿入線を出す (AC-1.3) |
-| ドラッグ中の見た目 | `feedback` はセリフ先頭 1 行を出す幅固定の小さなカード。元の位置は `childWhenDragging` で薄く表示 |
-| ページの「︙」メニュー | `_PageAction { moveBackward, moveForward, delete }`。デスクトップ・モバイル両方のツールバーに置き、ゴミ箱アイコンを置き換える |
+| `SceneUnitDragData` | ドラッグで運ぶ値。元ページの ID・番号・カット数・メモの DeltaId と、カットの index・セリフの DeltaId |
+| `SceneUnitDragHandle` | `_SceneUnitWidget` の右列（「︙」の上）に `Icons.drag_indicator`。`Draggable<SceneUnitDragData>` で包む。テキスト欄は包まないので範囲選択と衝突しない (AC-1.6) |
+| `SceneUnitDropTarget` | 各カットを包む `DragTarget`。ポインタが上半分なら index、下半分なら index+1 を挿入位置とし、ホバー中だけカットの上端／下端に挿入線を出す (AC-1.3)。カットの間の余白で離したときは何もしない |
+| ドラッグ中の見た目 | `feedback` はセリフ先頭 1 行を出す幅固定の小さなカード。元のカットは全体を薄く表示 |
+| ページの「︙」メニュー (`page_menu_button.dart`) | `PageAction { moveBackward, moveForward, delete }`。デスクトップ・モバイル両方のツールバーに置き、ゴミ箱アイコンを置き換える |
 
-### スロット位置から移動先の index への変換
+### 挿入位置から移動先の index への変換
 
-スロット番号 `s`（0..n）と元の位置 `o` から決める。純粋関数にして単体テストする。
+挿入位置 `s`（0..n）と元の位置 `o` から決める。UI 側の判定は純粋関数 `sceneUnitDropIndex` にして単体テストする。
 
 | 条件 | 結果 |
 |---|---|
-| 同じページで `s == o` または `s == o + 1` | 移動しない (AC-1.5) |
-| 同じページでそれ以外 | `reorder(o, s > o ? s - 1 : s)` |
+| 同じページで `s == o` または `s == o + 1` | 移動しない (AC-1.5)。挿入線も出さない |
+| 同じページでそれ以外 | `moveSceneUnit(toIndex: s)`。Repository が `reorderSceneUnit(o, s > o ? s - 1 : s)` に読み替える |
 | 別のページ | `moveSceneUnit(toIndex: s)` |
 
 ### ドラッグ中の自動スクロール
 
-`Draggable.onDragUpdate` で受けたポインタの位置を、ページリストの `ScrollController` に渡す小さなヘルパで処理する。
-ページリストの表示領域の上下端から一定距離（目安 48px）に入っている間、近さに応じた速さでスクロールし続け、
-ドラッグ終了で止める (AC-2.2)。ページ内のカット欄（高さ固定の `SingleChildScrollView`）にも同じヘルパを使う。
+`EdgeAutoScroller` が、表示領域の上下端から 48px 以内にポインタがある間、近さに応じた速さでスクロールし続ける (AC-2.2)。
+
+- ページリスト: リスト全体を包む `CutDragScope` の `Listener` がポインタの移動を受け、カットのドラッグ中だけスクロールする。
+  ドラッグ元のカットはスクロールで画面外に出ると破棄され、`Draggable` のコールバックが届かなくなるため、
+  ポインタを押した時点の祖先である `Listener` で受け、ポインタを離したら必ず止める
+- ページ内のカット欄（高さ固定の `SingleChildScrollView`）: ポインタの下にある `SceneUnitDropTarget` の `onMove` で、
+  そのカット欄をスクロールする。受け皿から離れる・落とすと止める
 
 ## 状態遷移 / ライフサイクル
 
@@ -159,8 +163,13 @@ UI は commit の完了を待たずに操作を終え、失敗時だけ `catchEr
   - 別のページ: 元から消え、移動先の指定位置に入り、Delta 2 件の `pageId` が移動先になる。1 回の batch commit で行われる
   - 元ページの最後のカット: ページ削除、メモ Delta 削除、移した Delta は削除されない、戻り値 `true`
   - ページが見つからない: `NotFoundException`。index 範囲外: 何も書かない
-- ユニット（root）: スロット位置 → 移動先 index の変換関数、`MangaNotifier.moveSceneUnit` が Repository に委譲すること
-- ウィジェット: ページの「︙」メニューで先頭は「前へ」、末尾は「次へ」が無効。ゴミ箱アイコンがない
+- ユニット（root）: 挿入位置 → 移動先 index の変換関数、`MangaNotifier.moveSceneUnit` が Repository に委譲すること、
+  `MangaNotifier.movePage` が最新の並びに対して前後へ動かし、端を越えないこと
+- ウィジェット
+  - `PageMenuButton`: 先頭は「前へ」、末尾は「次へ」が無効。選んだ項目に応じた移動量・削除を伝える
+  - `MangaPageList` をデスクトップ幅で組み、Fake の Repository で: 同じページ内・別ページへのドラッグ、
+    元の位置の前後に落としたときは移動しない、メモありの確認ダイアログ（キャンセル／実行）、メモなしは確認しない、
+    ページの「︙」メニューで次へ移動・ゴミ箱アイコンがない、ドラッグ中のリスト下端での自動スクロール
 - 手動（Web とデスクトップ）
   - 同じページ内のドラッグ、別のページへのドラッグ、画面外のページへの自動スクロール
   - テキスト欄内のドラッグで範囲選択になりカットが動かない

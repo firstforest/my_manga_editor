@@ -172,9 +172,10 @@ class _DesktopLayout extends HookConsumerWidget {
 
   Future<void> _onSceneUnitDrop(BuildContext context, WidgetRef ref,
       SceneUnitDragData data, int toIndex) async {
-    // ref は await をまたぐ前にまとめて読む（その間に画面が閉じられると StateError になるため）
+    // ref は await をまたぐ前にまとめて読む（その間に画面が閉じられると StateError になるため）。
+    // Notifier は待っている間に破棄されうるので、container から移動の直前に読み直す
     final messenger = ScaffoldMessenger.of(context);
-    final notifier = ref.read(mangaProvider(page.mangaId).notifier);
+    final container = ProviderScope.containerOf(context);
     final repository = ref.read(mangaRepositoryProvider);
 
     if (data.removesSourcePageWhenMovedTo(mangaPageId)) {
@@ -187,8 +188,7 @@ class _DesktopLayout extends HookConsumerWidget {
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            content: Text(
-                'ページ ${data.pageNumber} を削除します。このページのメモも削除されます'),
+            content: Text('ページ ${data.pageNumber} を削除します。このページのメモも削除されます'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
@@ -206,12 +206,12 @@ class _DesktopLayout extends HookConsumerWidget {
     }
 
     try {
-      await notifier.moveSceneUnit(
-        fromPageId: data.pageId,
-        fromIndex: data.index,
-        toPageId: mangaPageId,
-        toIndex: toIndex,
-      );
+      await container.read(mangaProvider(page.mangaId).notifier).moveSceneUnit(
+            fromPageId: data.pageId,
+            fromIndex: data.index,
+            toPageId: mangaPageId,
+            toIndex: toIndex,
+          );
     } catch (e, stackTrace) {
       logger.e('カットの移動に失敗しました', error: e, stackTrace: stackTrace);
       messenger.showSnackBar(

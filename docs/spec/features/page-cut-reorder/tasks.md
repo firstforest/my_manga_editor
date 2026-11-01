@@ -66,12 +66,12 @@
   - AC-3.1〜AC-3.7, AC-4.1, AC-4.2 が満たされる
 - 依存: なし（T-001〜T-003 と並行可）
 
-### T-005: カットのハンドルと挿入スロットで、同じページ内のドラッグを実装
+### T-005: カットのハンドルと受け皿で、同じページ内のドラッグを実装
 - 対象: `lib/feature/manga/view/manga_page_widget.dart`（大きくなるならカットのドラッグ部品を `scene_unit_drag.dart` などに切り出す）
 - 内容:
-  - `_SceneUnitDragData`、ハンドル (`Draggable`)、`_SceneUnitDropSlot` (`DragTarget`) と挿入線
-  - スロット位置 → 移動先 index の変換を純粋関数にして単体テスト
-  - この時点では同じページ内のスロットだけ受け付ける
+  - `SceneUnitDragData`、ハンドル (`Draggable`)、カットを包む `SceneUnitDropTarget` (`DragTarget`) と挿入線
+  - 挿入位置 → 移動先 index の変換を純粋関数にして単体テスト
+  - この時点では同じページ内の受け皿だけ受け付ける
 - 完了条件:
   - AC-1.1〜AC-1.7 が満たされる（手動確認: テキスト欄内のドラッグで範囲選択になる）
 - 依存: T-003, T-004
@@ -79,7 +79,7 @@
 ### T-006: ページをまたぐドロップと最後のカットの確認ダイアログ
 - 対象: `lib/feature/manga/view/manga_page_widget.dart`（または T-005 で切り出したファイル）
 - 内容:
-  - 別のページのスロットも受け付け、`MangaNotifier.moveSceneUnit` を呼ぶ
+  - 別のページの受け皿も受け付け、`MangaNotifier.moveSceneUnit` を呼ぶ
   - 元ページのカットが 1 つでメモの平文が空でないとき、確認ダイアログ（AC-2.6 の文言）
   - ページが見つからない等の失敗は SnackBar
 - 完了条件:

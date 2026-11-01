@@ -135,6 +135,7 @@ class _QuillEditor extends HookConsumerWidget {
         ),
         Expanded(
           child: QuillTextFieldSemantics(
+            controller: controller,
             focusNode: focusNode,
             label: '何でも書ける場所',
             child: QuillEditor.basic(

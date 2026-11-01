@@ -639,6 +639,7 @@ class _QuillEditor extends HookWidget {
 
     final padding = EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r);
     final editor = QuillTextFieldSemantics(
+      controller: quillController,
       focusNode: focusNode,
       label: placeholder,
       child: QuillEditor.basic(

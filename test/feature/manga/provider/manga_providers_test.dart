@@ -113,21 +113,19 @@ void main() {
       when(mockMangaRepository.watchAllMangaPageIdList(mangaId))
           .thenAnswer((_) => Stream.value([p1, p2, p3]));
 
-      await notifier().movePage(p2, 1);
-      verify(mockMangaRepository.reorderPages(mangaId, [p1, p3, p2]))
-          .called(1);
+      expect(await notifier().movePage(p2, 1), isTrue);
+      verify(mockMangaRepository.reorderPages(mangaId, [p1, p3, p2])).called(1);
 
       await notifier().movePage(p2, -1);
-      verify(mockMangaRepository.reorderPages(mangaId, [p2, p1, p3]))
-          .called(1);
+      verify(mockMangaRepository.reorderPages(mangaId, [p2, p1, p3])).called(1);
     });
 
     test('movePage は先頭より前・末尾より後ろへは動かさない', () async {
       when(mockMangaRepository.watchAllMangaPageIdList(mangaId))
           .thenAnswer((_) => Stream.value([p1, p2, p3]));
 
-      await notifier().movePage(p1, -1);
-      await notifier().movePage(p3, 1);
+      expect(await notifier().movePage(p1, -1), isFalse);
+      expect(await notifier().movePage(p3, 1), isFalse);
 
       verifyNever(mockMangaRepository.reorderPages(any, any));
     });
@@ -135,7 +133,7 @@ void main() {
     test('moveSceneUnit は Repository に委譲する', () async {
       await notifier().moveSceneUnit(
         fromPageId: p1,
-        fromIndex: 2,
+        dialoguesDeltaId: DeltaId('d'),
         toPageId: p3,
         toIndex: 0,
       );
@@ -143,7 +141,7 @@ void main() {
       verify(mockMangaRepository.moveSceneUnit(
         mangaId: mangaId,
         fromPageId: p1,
-        fromIndex: 2,
+        dialoguesDeltaId: DeltaId('d'),
         toPageId: p3,
         toIndex: 0,
       )).called(1);

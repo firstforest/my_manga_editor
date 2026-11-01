@@ -178,37 +178,39 @@ class _DesktopLayout extends HookConsumerWidget {
     final container = ProviderScope.containerOf(context);
     final repository = ref.read(mangaRepositoryProvider);
 
-    if (data.removesSourcePageWhenMovedTo(mangaPageId)) {
-      // 元ページは画面外で provider が破棄されていることがあるので、Repository から直接読む
-      final memo =
-          await repository.getDeltaStream(data.mangaId, data.memoDeltaId).first;
-      final hasMemo = memo != null && deltaToPlainText(memo).trim().isNotEmpty;
-      if (hasMemo) {
-        if (!context.mounted) return;
-        final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            content: Text('ページ ${data.pageNumber} を削除します。このページのメモも削除されます'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('キャンセル'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('移動して削除'),
-              ),
-            ],
-          ),
-        );
-        if (confirmed != true) return;
-      }
-    }
-
     try {
+      if (data.removesSourcePageWhenMovedTo(mangaPageId)) {
+        // 元ページは画面外で provider が破棄されていることがあるので、Repository から直接読む
+        final memo = await repository
+            .getDeltaStream(data.mangaId, data.memoDeltaId)
+            .first;
+        final hasMemo =
+            memo != null && deltaToPlainText(memo).trim().isNotEmpty;
+        if (hasMemo) {
+          if (!context.mounted) return;
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              content: Text('ページ ${data.pageNumber} を削除します。このページのメモも削除されます'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('キャンセル'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('移動して削除'),
+                ),
+              ],
+            ),
+          );
+          if (confirmed != true) return;
+        }
+      }
+
       await container.read(mangaProvider(page.mangaId).notifier).moveSceneUnit(
             fromPageId: data.pageId,
-            fromIndex: data.index,
+            dialoguesDeltaId: data.dialoguesDeltaId,
             toPageId: mangaPageId,
             toIndex: toIndex,
           );

@@ -50,31 +50,33 @@ class MangaNotifier extends _$MangaNotifier {
     ref.read(mangaRepositoryProvider).reorderPages(id, pageIdList);
   }
 
-  /// [pageId] のページを [offset] だけ後ろ（負なら前）へ動かす。
+  /// [pageId] のページを [offset] だけ後ろ（負なら前）へ動かし、並びが変わったかを返す。
   /// 連打されても直前の移動を巻き戻さないよう、保存済みの最新の並びに対して適用する
-  Future<void> movePage(MangaPageId pageId, int offset) async {
+  Future<bool> movePage(MangaPageId pageId, int offset) async {
     final repo = ref.read(mangaRepositoryProvider);
     final pageIdList = [...await repo.watchAllMangaPageIdList(id).first];
     final oldIndex = pageIdList.indexOf(pageId);
     final newIndex = oldIndex + offset;
     if (oldIndex < 0 || newIndex < 0 || newIndex >= pageIdList.length) {
-      return;
+      return false;
     }
     pageIdList.insert(newIndex, pageIdList.removeAt(oldIndex));
     await repo.reorderPages(id, pageIdList);
+    return true;
   }
 
+  /// [dialoguesDeltaId] のカットを動かす。
   /// [toIndex] は移動先ページの、挿入前のカット列に対する挿入位置
   Future<void> moveSceneUnit({
     required MangaPageId fromPageId,
-    required int fromIndex,
+    required DeltaId dialoguesDeltaId,
     required MangaPageId toPageId,
     required int toIndex,
   }) async {
     await ref.read(mangaRepositoryProvider).moveSceneUnit(
           mangaId: id,
           fromPageId: fromPageId,
-          fromIndex: fromIndex,
+          dialoguesDeltaId: dialoguesDeltaId,
           toPageId: toPageId,
           toIndex: toIndex,
         );

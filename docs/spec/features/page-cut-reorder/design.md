@@ -56,7 +56,7 @@ sequenceDiagram
   participant F as Firestore
   U->>V: ページ3のカットのハンドルをドラッグし、ページ4の先頭カットの上半分で離す
   V->>V: 元ページが最後の1カットでメモが空でなければ確認ダイアログ
-  V->>N: moveSceneUnit(from: p3, fromIndex, to: p4, toIndex: 0)
+  V->>N: moveSceneUnit(from: p3, dialoguesDeltaId, to: p4, toIndex: 0)
   N->>R: moveSceneUnit(...)
   R->>F: fetchMangaPage(p3), fetchMangaPage(p4)
   R->>F: batch: p3.sceneUnits 更新 / p4.sceneUnits 更新 / Delta×2 の pageId=p4
@@ -79,13 +79,15 @@ sequenceDiagram
 
 ```dart
 // MangaRepository
+/// 移すカットは位置ではなくセリフの DeltaId で探す（ドラッグ中に元ページのカットが増減しても別のカットを動かさない）。
+/// 見つからなければ何もしない。
 /// [toIndex] は移動先ページの、挿入前の sceneUnits に対する挿入位置 (0..length)。
 /// fromPageId == toPageId のときは、取り除いた後のリストに対する位置に読み替えて reorderSceneUnit と同じ処理をする。
 /// 戻り値は元ページを削除したかどうか。
 Future<bool> moveSceneUnit({
   required MangaId mangaId,
   required MangaPageId fromPageId,
-  required int fromIndex,
+  required DeltaId dialoguesDeltaId,
   required MangaPageId toPageId,
   required int toIndex,
 });
@@ -96,9 +98,11 @@ void deletePage(String mangaId, String pageId);
 void deleteDelta(String mangaId, String deltaId);
 
 // MangaNotifier
+/// 並びが変わったかを返す（端を越える移動は何もしない）
+Future<bool> movePage(MangaPageId pageId, int offset);
 Future<void> moveSceneUnit({
   required MangaPageId fromPageId,
-  required int fromIndex,
+  required DeltaId dialoguesDeltaId,
   required MangaPageId toPageId,
   required int toIndex,
 });
@@ -182,6 +186,7 @@ UI は commit の完了を待たずに操作を終え、失敗時だけ `catchEr
 - 旧クライアントは `pageId` が書き換わった Delta をそのまま読める。旧クライアントでページを削除しても、
   `pageId` で集めて消すので新クライアントと同じ結果になる
 - [data-model.md](../../../design/data-model.md) の `CloudDelta.pageId` の説明を「現在所属するページ」に更新する
+- ページ削除で `pageIndex` に欠番ができるため、新しいページの `pageIndex` はページ数ではなく既存の最大値 + 1 にする（同じ値が重なると並びが崩れる）
 - 編集画面のページリストからページのドラッグがなくなる。CHANGELOG の「変更」に書く
 
 ## 代替案 (Alternatives Considered)

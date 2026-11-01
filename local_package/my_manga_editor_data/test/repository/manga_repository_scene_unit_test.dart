@@ -153,8 +153,8 @@ void main() {
       when(firebase.batch()).thenReturn(batch);
       when(firebase.fetchMangaPage('mid', 'p2')).thenAnswer(
           (_) async => _cloudPage([_unit('x'), _unit('y')], id: 'p2'));
-      when(firebase.fetchMangaPage('mid', 'solo')).thenAnswer(
-          (_) async => _cloudPage([_unit('s')], id: 'solo'));
+      when(firebase.fetchMangaPage('mid', 'solo'))
+          .thenAnswer((_) async => _cloudPage([_unit('s')], id: 'solo'));
       when(firebase.fetchDeltas('mid')).thenAnswer((_) async => [
             delta('solo-memo', 'solo'),
             delta('s-d', 'solo'),
@@ -176,7 +176,7 @@ void main() {
       final deleted = await repository.moveSceneUnit(
         mangaId: MangaId('mid'),
         fromPageId: MangaPageId('pid'),
-        fromIndex: 0,
+        dialoguesDeltaId: DeltaId('a-d'),
         toPageId: MangaPageId('pid'),
         toIndex: 3,
       );
@@ -191,7 +191,7 @@ void main() {
         await repository.moveSceneUnit(
           mangaId: MangaId('mid'),
           fromPageId: MangaPageId('pid'),
-          fromIndex: 1,
+          dialoguesDeltaId: DeltaId('b-d'),
           toPageId: MangaPageId('pid'),
           toIndex: slot,
         );
@@ -204,7 +204,7 @@ void main() {
       final deleted = await repository.moveSceneUnit(
         mangaId: MangaId('mid'),
         fromPageId: MangaPageId('pid'),
-        fromIndex: 1,
+        dialoguesDeltaId: DeltaId('b-d'),
         toPageId: MangaPageId('p2'),
         toIndex: 0,
       );
@@ -224,7 +224,7 @@ void main() {
       await repository.moveSceneUnit(
         mangaId: MangaId('mid'),
         fromPageId: MangaPageId('pid'),
-        fromIndex: 0,
+        dialoguesDeltaId: DeltaId('a-d'),
         toPageId: MangaPageId('p2'),
         toIndex: 2,
       );
@@ -232,11 +232,27 @@ void main() {
       expect(dialogueIds(batchedUnits('p2')), ['x-d', 'y-d', 'a-d']);
     });
 
+    test('ドラッグ中に元ページのカットが増えていても、ID で探したカットを動かす', () async {
+      when(firebase.fetchMangaPage('mid', 'pid')).thenAnswer((_) async =>
+          _cloudPage([_unit('new'), _unit('a'), _unit('b'), _unit('c')]));
+
+      await repository.moveSceneUnit(
+        mangaId: MangaId('mid'),
+        fromPageId: MangaPageId('pid'),
+        dialoguesDeltaId: DeltaId('b-d'),
+        toPageId: MangaPageId('p2'),
+        toIndex: 0,
+      );
+
+      expect(dialogueIds(batchedUnits('pid')), ['new-d', 'a-d', 'c-d']);
+      expect(dialogueIds(batchedUnits('p2')), ['b-d', 'x-d', 'y-d']);
+    });
+
     test('最後の 1 カットを移すと元ページと残りの Delta を同じ batch で削除する', () async {
       final deleted = await repository.moveSceneUnit(
         mangaId: MangaId('mid'),
         fromPageId: MangaPageId('solo'),
-        fromIndex: 0,
+        dialoguesDeltaId: DeltaId('s-d'),
         toPageId: MangaPageId('p2'),
         toIndex: 1,
       );
@@ -253,18 +269,18 @@ void main() {
       verify(batch.commit()).called(1);
     });
 
-    test('index が範囲外なら何も書かない', () async {
+    test('移すカットが元ページに見つからない、または挿入位置が範囲外なら何も書かない', () async {
       await repository.moveSceneUnit(
         mangaId: MangaId('mid'),
         fromPageId: MangaPageId('pid'),
-        fromIndex: 3,
+        dialoguesDeltaId: DeltaId('gone-d'),
         toPageId: MangaPageId('p2'),
         toIndex: 0,
       );
       await repository.moveSceneUnit(
         mangaId: MangaId('mid'),
         fromPageId: MangaPageId('pid'),
-        fromIndex: 0,
+        dialoguesDeltaId: DeltaId('a-d'),
         toPageId: MangaPageId('p2'),
         toIndex: 3,
       );
@@ -280,13 +296,34 @@ void main() {
         repository.moveSceneUnit(
           mangaId: MangaId('mid'),
           fromPageId: MangaPageId('pid'),
-          fromIndex: 0,
+          dialoguesDeltaId: DeltaId('a-d'),
           toPageId: MangaPageId('gone'),
           toIndex: 0,
         ),
         throwsA(isA<NotFoundException>()),
       );
       verifyNever(firebase.batch());
+    });
+  });
+
+  group('MangaRepository.createNewMangaPage', () {
+    test('ページ削除で pageIndex に欠番があっても、既存の最大値の次を使う', () async {
+      CloudMangaPage withIndex(String id, int index) =>
+          _cloudPage([_unit(id)], id: id).copyWith(pageIndex: index);
+      when(firebase.fetchMangaPages('mid'))
+          .thenAnswer((_) async => [withIndex('p0', 0), withIndex('p2', 2)]);
+      when(firebase.createMangaPage('mid', any))
+          .thenAnswer((_) async => 'created');
+      var count = 0;
+      when(firebase.createDelta('mid', any))
+          .thenAnswer((_) async => 'new${count++}');
+
+      await repository.createNewMangaPage(MangaId('mid'));
+
+      final created = verify(firebase.createMangaPage('mid', captureAny))
+          .captured
+          .single as CloudMangaPage;
+      expect(created.pageIndex, 3);
     });
   });
 }

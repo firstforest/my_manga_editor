@@ -389,7 +389,7 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
   _i3.Future<bool> moveSceneUnit({
     required _i4.MangaId? mangaId,
     required _i4.MangaPageId? fromPageId,
-    required int? fromIndex,
+    required _i4.DeltaId? dialoguesDeltaId,
     required _i4.MangaPageId? toPageId,
     required int? toIndex,
   }) =>
@@ -400,7 +400,7 @@ class MockMangaRepository extends _i1.Mock implements _i2.MangaRepository {
           {
             #mangaId: mangaId,
             #fromPageId: fromPageId,
-            #fromIndex: fromIndex,
+            #dialoguesDeltaId: dialoguesDeltaId,
             #toPageId: toPageId,
             #toIndex: toIndex,
           },

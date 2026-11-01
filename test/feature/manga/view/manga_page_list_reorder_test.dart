@@ -16,7 +16,7 @@ final _p2 = MangaPageId('p2');
 
 typedef _Move = ({
   MangaPageId from,
-  int fromIndex,
+  String cut,
   MangaPageId to,
   int toIndex,
 });
@@ -50,13 +50,13 @@ class _FakeMangaRepository extends Fake implements MangaRepository {
   Future<bool> moveSceneUnit({
     required MangaId mangaId,
     required MangaPageId fromPageId,
-    required int fromIndex,
+    required DeltaId dialoguesDeltaId,
     required MangaPageId toPageId,
     required int toIndex,
   }) async {
     moves.add((
       from: fromPageId,
-      fromIndex: fromIndex,
+      cut: dialoguesDeltaId.id,
       to: toPageId,
       toIndex: toIndex,
     ));
@@ -155,7 +155,7 @@ void main() {
     await _drag(tester, _handle(0), _cut(1), lowerHalf: true);
 
     expect(repository.moves, [
-      (from: _p1, fromIndex: 0, to: _p1, toIndex: 2),
+      (from: _p1, cut: 'a-d', to: _p1, toIndex: 2),
     ]);
   });
 
@@ -169,7 +169,7 @@ void main() {
     await _drag(tester, _handle(1), _cut(2), lowerHalf: true);
 
     expect(repository.moves, [
-      (from: _p1, fromIndex: 1, to: _p2, toIndex: 1),
+      (from: _p1, cut: 'b-d', to: _p2, toIndex: 1),
     ]);
   });
 
@@ -205,7 +205,7 @@ void main() {
     await tester.tap(find.text('移動して削除'));
     await tester.pumpAndSettle();
     expect(repository.moves, [
-      (from: _p2, fromIndex: 0, to: _p1, toIndex: 0),
+      (from: _p2, cut: 'x-d', to: _p1, toIndex: 0),
     ]);
   });
 
@@ -220,7 +220,7 @@ void main() {
 
     expect(find.byType(AlertDialog), findsNothing);
     expect(repository.moves, [
-      (from: _p2, fromIndex: 0, to: _p1, toIndex: 0),
+      (from: _p2, cut: 'x-d', to: _p1, toIndex: 0),
     ]);
   });
 
@@ -242,8 +242,7 @@ void main() {
     ]);
   });
 
-  testWidgets('カットをドラッグしたままリストの下端に近づけると自動でスクロールし、離すと止まる',
-      (tester) async {
+  testWidgets('カットをドラッグしたままリストの下端に近づけると自動でスクロールし、離すと止まる', (tester) async {
     final repository = _FakeMangaRepository(pages: [
       for (var i = 0; i < 8; i++) _page(MangaPageId('p$i'), ['u$i']),
     ]);

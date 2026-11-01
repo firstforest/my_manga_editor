@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -23,8 +22,24 @@ class MangaPageList extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pageIdList = ref.watch(mangaPageIdListProvider(manga.id)).value ?? [];
     final pageKeys = useMemoized(() => <MangaPageId, GlobalKey>{});
-    // メニューで動かしたページ。新しい並びが届いたら見える位置までスクロールする
-    final reveal = useRef<({MangaPageId pageId, int offset})?>(null);
+    // 削除されたページのキーを持ち続けない
+    pageKeys.removeWhere((pageId, _) => !pageIdList.contains(pageId));
+    // メニューで動かしたページ。新しい並びが届いたら見える位置までスクロールする。
+    // height は動かす前のページの高さで、移動先がまだ組み立てられていないときの送り量に使う
+    final reveal =
+        useRef<({MangaPageId pageId, int offset, double height})?>(null);
+
+    void ensureVisible(BuildContext targetContext, int offset) {
+      Scrollable.ensureVisible(
+        targetContext,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        // 前へ動かしたらページの上端、後ろへ動かしたら下端を表示領域に入れる
+        alignmentPolicy: offset < 0
+            ? ScrollPositionAlignmentPolicy.keepVisibleAtStart
+            : ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+      );
+    }
 
     useEffect(() {
       final target = reveal.value;
@@ -32,16 +47,21 @@ class MangaPageList extends HookConsumerWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         reveal.value = null;
         final targetContext = pageKeys[target.pageId]?.currentContext;
-        if (targetContext == null || !targetContext.mounted) return;
-        Scrollable.ensureVisible(
-          targetContext,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          // 前へ動かしたらページの上端、後ろへ動かしたら下端を表示領域に入れる
-          alignmentPolicy: target.offset < 0
-              ? ScrollPositionAlignmentPolicy.keepVisibleAtStart
-              : ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
-        );
+        if (targetContext != null && targetContext.mounted) {
+          ensureVisible(targetContext, target.offset);
+          return;
+        }
+        // 移動先が表示範囲の外で組み立てられていない。動かした向きへ送ってから合わせる
+        if (!scrollController.hasClients) return;
+        final position = scrollController.position;
+        position.jumpTo((position.pixels + target.offset.sign * target.height)
+            .clamp(position.minScrollExtent, position.maxScrollExtent));
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final targetContext = pageKeys[target.pageId]?.currentContext;
+          if (targetContext != null && targetContext.mounted) {
+            ensureVisible(targetContext, target.offset);
+          }
+        });
       });
       return null;
     }, [pageIdList]);
@@ -49,10 +69,15 @@ class MangaPageList extends HookConsumerWidget {
     Future<void> movePage(MangaPageId pageId, int offset) async {
       final messenger = ScaffoldMessenger.of(context);
       final notifier = ref.read(mangaProvider(manga.id).notifier);
-      reveal.value = (pageId: pageId, offset: offset);
+      final height = pageKeys[pageId]?.currentContext?.size?.height ?? 0;
+      reveal.value = (pageId: pageId, offset: offset, height: height);
       try {
-        await notifier.movePage(pageId, offset);
+        final moved = await notifier.movePage(pageId, offset);
+        if (!moved) {
+          reveal.value = null;
+        }
       } catch (e, stackTrace) {
+        reveal.value = null;
         logger.e('ページの移動に失敗しました', error: e, stackTrace: stackTrace);
         messenger.showSnackBar(
           const SnackBar(content: Text('ページを移動できませんでした')),
@@ -65,8 +90,6 @@ class MangaPageList extends HookConsumerWidget {
       child: ListView.builder(
         controller: scrollController,
         padding: EdgeInsets.all(8.r),
-        // 前後のページを組み立てておき、メニューで動かした先へスクロールできるようにする
-        scrollCacheExtent: const ScrollCacheExtent.viewport(1),
         itemCount: pageIdList.length,
         itemBuilder: (context, index) {
           final pageId = pageIdList[index];

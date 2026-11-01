@@ -119,7 +119,7 @@ class CutDragScope extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dragging = useMemoized(() => ValueNotifier(false));
+    final dragging = useValueNotifier(false);
     final scroller = useMemoized(EdgeAutoScroller.new);
     useEffect(() => scroller.stop, const []);
 

@@ -8,19 +8,31 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/feature/manga/view/copy_page_dialogues.dart';
+import 'package:my_manga_editor/feature/manga/view/page_menu_button.dart';
+import 'package:my_manga_editor/feature/manga/view/scene_unit_drag.dart';
+import 'package:my_manga_editor_common/delta_text.dart';
+import 'package:my_manga_editor_common/logger.dart';
+import 'package:my_manga_editor_data/repository/manga_repository.dart';
 import 'package:my_manga_editor/hooks/quill_controller_hook.dart';
 
 class MangaPageWidget extends HookConsumerWidget {
   const MangaPageWidget({
     super.key,
     required this.pageIndex,
+    required this.pageCount,
     required this.startPage,
     required this.mangaPageId,
+    required this.onMovePage,
   });
 
+  /// 1 始まりのページ番号
   final int pageIndex;
+  final int pageCount;
   final MangaStartPage startPage;
   final MangaPageId mangaPageId;
+
+  /// ページを [offset] だけ後ろ（負なら前）へ動かす
+  final ValueChanged<int> onMovePage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,15 +43,19 @@ class MangaPageWidget extends HookConsumerWidget {
               return switch (constraints.maxWidth) {
                 < 480 => _MobileLayout(
                     pageIndex: pageIndex,
+                    pageCount: pageCount,
                     startPage: startPage,
                     mangaPageId: mangaPageId,
                     page: value,
+                    onMovePage: onMovePage,
                   ),
                 _ => _DesktopLayout(
                     pageIndex: pageIndex,
+                    pageCount: pageCount,
                     startPage: startPage,
                     mangaPageId: mangaPageId,
                     page: value,
+                    onMovePage: onMovePage,
                   ),
               };
             }),
@@ -51,15 +67,19 @@ class MangaPageWidget extends HookConsumerWidget {
 class _DesktopLayout extends HookConsumerWidget {
   const _DesktopLayout({
     required this.pageIndex,
+    required this.pageCount,
     required this.startPage,
     required this.mangaPageId,
     required this.page,
+    required this.onMovePage,
   });
 
   final int pageIndex;
+  final int pageCount;
   final MangaStartPage startPage;
   final MangaPageId mangaPageId;
   final MangaPage page;
+  final ValueChanged<int> onMovePage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -93,17 +113,33 @@ class _DesktopLayout extends HookConsumerWidget {
                               spacing: 4.r,
                               children: [
                                 for (int i = 0; i < page.sceneUnits.length; i++)
-                                  _SceneUnitWidget(
+                                  SceneUnitDropTarget(
                                     // 並び替え時に入力中のエディタ状態を
                                     // カットと一緒に移動させるため
                                     key: ValueKey(
                                         page.sceneUnits[i].dialoguesDeltaId),
-                                    mangaId: page.mangaId,
-                                    sceneUnit: page.sceneUnits[i],
+                                    pageId: mangaPageId,
                                     index: i,
-                                    unitCount: page.sceneUnits.length,
-                                    onAction: (action) =>
-                                        _onSceneUnitAction(ref, i, action),
+                                    onDrop: (data, toIndex) => _onSceneUnitDrop(
+                                        context, ref, data, toIndex),
+                                    child: _SceneUnitWidget(
+                                      mangaId: page.mangaId,
+                                      sceneUnit: page.sceneUnits[i],
+                                      index: i,
+                                      unitCount: page.sceneUnits.length,
+                                      dragData: SceneUnitDragData(
+                                        mangaId: page.mangaId,
+                                        pageId: mangaPageId,
+                                        pageNumber: pageIndex,
+                                        index: i,
+                                        unitCount: page.sceneUnits.length,
+                                        memoDeltaId: page.memoDeltaId,
+                                        dialoguesDeltaId:
+                                            page.sceneUnits[i].dialoguesDeltaId,
+                                      ),
+                                      onAction: (action) =>
+                                          _onSceneUnitAction(ref, i, action),
+                                    ),
                                   ),
                               ],
                             ),
@@ -134,6 +170,56 @@ class _DesktopLayout extends HookConsumerWidget {
     );
   }
 
+  Future<void> _onSceneUnitDrop(BuildContext context, WidgetRef ref,
+      SceneUnitDragData data, int toIndex) async {
+    // ref は await をまたぐ前にまとめて読む（その間に画面が閉じられると StateError になるため）
+    final messenger = ScaffoldMessenger.of(context);
+    final notifier = ref.read(mangaProvider(page.mangaId).notifier);
+    final repository = ref.read(mangaRepositoryProvider);
+
+    if (data.removesSourcePageWhenMovedTo(mangaPageId)) {
+      // 元ページは画面外で provider が破棄されていることがあるので、Repository から直接読む
+      final memo =
+          await repository.getDeltaStream(data.mangaId, data.memoDeltaId).first;
+      final hasMemo = memo != null && deltaToPlainText(memo).trim().isNotEmpty;
+      if (hasMemo) {
+        if (!context.mounted) return;
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            content: Text(
+                'ページ ${data.pageNumber} を削除します。このページのメモも削除されます'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('キャンセル'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('移動して削除'),
+              ),
+            ],
+          ),
+        );
+        if (confirmed != true) return;
+      }
+    }
+
+    try {
+      await notifier.moveSceneUnit(
+        fromPageId: data.pageId,
+        fromIndex: data.index,
+        toPageId: mangaPageId,
+        toIndex: toIndex,
+      );
+    } catch (e, stackTrace) {
+      logger.e('カットの移動に失敗しました', error: e, stackTrace: stackTrace);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('カットを移動できませんでした')),
+      );
+    }
+  }
+
   void _onSceneUnitAction(WidgetRef ref, int index, _SceneUnitAction action) {
     final notifier = ref.read(mangaPageProvider(mangaPageId).notifier);
     switch (action) {
@@ -161,11 +247,12 @@ class _DesktopLayout extends HookConsumerWidget {
           icon: const Icon(Icons.copy),
         ),
         Spacer(),
-        IconButton(
-          onPressed: () {
-            ref.read(mangaPageProvider(mangaPageId).notifier).delete();
-          },
-          icon: const Icon(Icons.delete),
+        PageMenuButton(
+          pageIndex: pageIndex,
+          pageCount: pageCount,
+          onMovePage: onMovePage,
+          onDelete: () =>
+              ref.read(mangaPageProvider(mangaPageId).notifier).delete(),
         ),
       ],
     );
@@ -197,15 +284,19 @@ class _DesktopLayout extends HookConsumerWidget {
 class _MobileLayout extends HookConsumerWidget {
   const _MobileLayout({
     required this.pageIndex,
+    required this.pageCount,
     required this.startPage,
     required this.mangaPageId,
     required this.page,
+    required this.onMovePage,
   });
 
   final int pageIndex;
+  final int pageCount;
   final MangaStartPage startPage;
   final MangaPageId mangaPageId;
   final MangaPage page;
+  final ValueChanged<int> onMovePage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -288,11 +379,12 @@ class _MobileLayout extends HookConsumerWidget {
           icon: const Icon(Icons.copy),
         ),
         Spacer(),
-        IconButton(
-          onPressed: () {
-            ref.read(mangaPageProvider(mangaPageId).notifier).delete();
-          },
-          icon: const Icon(Icons.delete),
+        PageMenuButton(
+          pageIndex: pageIndex,
+          pageCount: pageCount,
+          onMovePage: onMovePage,
+          onDelete: () =>
+              ref.read(mangaPageProvider(mangaPageId).notifier).delete(),
         ),
       ],
     );
@@ -457,13 +549,13 @@ enum _SceneUnitAction {
   remove,
 }
 
-class _SceneUnitWidget extends StatelessWidget {
+class _SceneUnitWidget extends HookWidget {
   const _SceneUnitWidget({
-    super.key,
     required this.mangaId,
     required this.sceneUnit,
     required this.index,
     required this.unitCount,
+    required this.dragData,
     required this.onAction,
   });
 
@@ -471,10 +563,19 @@ class _SceneUnitWidget extends StatelessWidget {
   final SceneUnit sceneUnit;
   final int index;
   final int unitCount;
+  final SceneUnitDragData dragData;
   final ValueChanged<_SceneUnitAction> onAction;
 
   @override
   Widget build(BuildContext context) {
+    final dragging = useState(false);
+    return Opacity(
+      opacity: dragging.value ? 0.4 : 1,
+      child: _buildContent(dragging),
+    );
+  }
+
+  Widget _buildContent(ValueNotifier<bool> dragging) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -509,6 +610,10 @@ class _SceneUnitWidget extends StatelessWidget {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              SceneUnitDragHandle(
+                data: dragData,
+                onDragging: (value) => dragging.value = value,
+              ),
               PopupMenuButton<_SceneUnitAction>(
                 icon: const Icon(Icons.more_vert, size: 16),
                 tooltip: 'カットの操作',

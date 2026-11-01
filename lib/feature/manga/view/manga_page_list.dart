@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:my_manga_editor_common/logger.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/feature/manga/view/manga_page_widget.dart';
+import 'package:my_manga_editor/feature/manga/view/scene_unit_drag.dart';
 
 class MangaPageList extends HookConsumerWidget {
   const MangaPageList({
@@ -18,53 +22,87 @@ class MangaPageList extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pageIdList = ref.watch(mangaPageIdListProvider(manga.id)).value ?? [];
+    final pageKeys = useMemoized(() => <MangaPageId, GlobalKey>{});
+    // メニューで動かしたページ。新しい並びが届いたら見える位置までスクロールする
+    final reveal = useRef<({MangaPageId pageId, int offset})?>(null);
 
-    return ReorderableListView.builder(
-      padding: EdgeInsets.all(8.r),
-      itemBuilder: (context, index) {
-        final pageId = pageIdList[index];
-        return Card(
-          key: ValueKey(pageId),
-          child: Container(
-            padding: EdgeInsets.only(
-              top: 8.r,
-              bottom: 8.r,
-              left: 24.r,
-              right: 24.r + 8.w,
-            ),
-            child: Column(
-              children: [
-                MangaPageWidget(
-                  pageIndex: index + 1,
-                  startPage: manga.startPage,
-                  mangaPageId: pageId,
-                ),
-                SizedBox(
-                  height: 4.r,
-                ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: IconButton(
-                    onPressed: () {
-                      ref
-                          .read(mangaProvider(manga.id).notifier)
-                          .addNewPage(index + 1);
-                    },
-                    icon: const Icon(Icons.add),
-                  ),
-                ),
-              ],
-            ),
-          ),
+    useEffect(() {
+      final target = reveal.value;
+      if (target == null) return null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        reveal.value = null;
+        final targetContext = pageKeys[target.pageId]?.currentContext;
+        if (targetContext == null || !targetContext.mounted) return;
+        Scrollable.ensureVisible(
+          targetContext,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          // 前へ動かしたらページの上端、後ろへ動かしたら下端を表示領域に入れる
+          alignmentPolicy: target.offset < 0
+              ? ScrollPositionAlignmentPolicy.keepVisibleAtStart
+              : ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
         );
-      },
-      itemCount: pageIdList.length,
-      onReorderItem: (oldIndex, newIndex) {
-        ref
-            .read(mangaProvider(manga.id).notifier)
-            .reorderPage(pageIdList, oldIndex, newIndex);
-      },
+      });
+      return null;
+    }, [pageIdList]);
+
+    Future<void> movePage(MangaPageId pageId, int offset) async {
+      final messenger = ScaffoldMessenger.of(context);
+      final notifier = ref.read(mangaProvider(manga.id).notifier);
+      reveal.value = (pageId: pageId, offset: offset);
+      try {
+        await notifier.movePage(pageId, offset);
+      } catch (e, stackTrace) {
+        logger.e('ページの移動に失敗しました', error: e, stackTrace: stackTrace);
+        messenger.showSnackBar(
+          const SnackBar(content: Text('ページを移動できませんでした')),
+        );
+      }
+    }
+
+    return CutDragScope(
       scrollController: scrollController,
+      child: ListView.builder(
+        controller: scrollController,
+        padding: EdgeInsets.all(8.r),
+        // 前後のページを組み立てておき、メニューで動かした先へスクロールできるようにする
+        scrollCacheExtent: const ScrollCacheExtent.viewport(1),
+        itemCount: pageIdList.length,
+        itemBuilder: (context, index) {
+          final pageId = pageIdList[index];
+          return Card(
+            key: pageKeys.putIfAbsent(pageId, GlobalKey.new),
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 8.r, horizontal: 24.r),
+              child: Column(
+                children: [
+                  MangaPageWidget(
+                    pageIndex: index + 1,
+                    pageCount: pageIdList.length,
+                    startPage: manga.startPage,
+                    mangaPageId: pageId,
+                    onMovePage: (offset) => movePage(pageId, offset),
+                  ),
+                  SizedBox(
+                    height: 4.r,
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: IconButton(
+                      onPressed: () {
+                        ref
+                            .read(mangaProvider(manga.id).notifier)
+                            .addNewPage(index + 1);
+                      },
+                      icon: const Icon(Icons.add),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

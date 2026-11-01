@@ -246,6 +246,7 @@ class _DesktopLayout extends HookConsumerWidget {
         IconButton(
           onPressed: () =>
               copyPageDialoguesWithFeedback(context, ref, page, pageIndex),
+          tooltip: 'セリフをコピー',
           icon: const Icon(Icons.copy),
         ),
         Spacer(),
@@ -344,6 +345,7 @@ class _MobileLayout extends HookConsumerWidget {
                         );
                       }
                     : null,
+                tooltip: '前のページ',
                 icon: Icon(Icons.arrow_left_rounded),
               ),
               TabPageSelector(
@@ -358,6 +360,7 @@ class _MobileLayout extends HookConsumerWidget {
                         );
                       }
                     : null,
+                tooltip: '次のページ',
                 icon: Icon(Icons.arrow_right_rounded),
               ),
             ],
@@ -378,6 +381,7 @@ class _MobileLayout extends HookConsumerWidget {
         IconButton(
           onPressed: () =>
               copyPageDialoguesWithFeedback(context, ref, page, pageIndex),
+          tooltip: 'セリフをコピー',
           icon: const Icon(Icons.copy),
         ),
         Spacer(),

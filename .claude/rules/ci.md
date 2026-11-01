@@ -14,8 +14,8 @@ GitHub Actions で Flutter Web を Cloudflare Workers (静的アセット) に�
 
 | ファイル | トリガー | 処理 |
 |---|---|---|
-| `ci.yml` | PR / `develop` への push / 手動 | 両パッケージの `flutter analyze`・`flutter test` と、デプロイと同条件の Web ビルド |
-| `preview.yml` | PR / `develop` への push / 手動 | `ENV=dev` でビルド → プレビュー用 Worker (`my-manga-editor-preview`) へ。PR は `pr-<番号>` エイリアスの URL を PR にコメント、`develop` は固定 URL へデプロイ |
+| `ci.yml` | PR / `develop` への push / 手動 | 各パッケージの `dart format` の差分チェック、`build_runner` の生成し忘れチェック、`flutter analyze`・`flutter test` と、デプロイと同条件の Web ビルド |
+| `preview.yml` | PR / `develop` への push / 手動 | `ENV=dev` でビルド → プレビュー用 Worker (`my-manga-editor-preview`) へ。PR は `pr-<番号>` エイリアスの URL を PR にコメント、`develop` は固定 URL へデプロイ。続く `smoke` ジョブが、そのプレビュー URL に `e2e/` の Maestro フローを流す (失敗時はスクリーンショットなどを artifact `maestro-debug` に残す) |
 | `main.yml` | `main` への push / 手動 (`workflow_dispatch`) | `flutter build web --release --dart-define=ENV=prod` → 本番 Worker (`my-manga-editor`、カスタムドメイン `komakusa.firstforest.jp`) へ `wrangler deploy` → 公開ページの疎通確認 |
 | `release.yml` | `v*` タグの push | GitHub Release を作成（リリース後に手で行う作業のチェックリスト付き） |
 | `claude-review.yml` | PR の作成 / draft 解除 | `claude-code-action` + code-review プラグインで PR にインラインコメントを 1 回だけ付ける (手元の `/code-review` の保険)。認証は secrets の `CLAUDE_CODE_OAUTH_TOKEN` (`claude setup-token` で作る 1 年有効のトークン)。未登録ならスキップ |
@@ -37,6 +37,9 @@ GitHub Actions で Flutter Web を Cloudflare Workers (静的アセット) に�
   本番 URL は vars の `PRODUCTION_URL` (疎通確認とリリースノートで使う)
 - `mise-action` の `install_args` は必要なツールだけにする (`flutter`、wrangler を使うジョブは `flutter node`)。
   `mise.toml` の `ruby` はソースビルドになり CI 時間を大きく浪費するため入れない
+- `claude-review.yml` は、PR 上の workflow ファイルが**デフォルトブランチ (`develop`) のものと同じ内容でないと動かない** (claude-code-action の検証)。
+  このときジョブは失敗ではなく pass になり、ログに `Workflow validation failed` の注記が出るだけなので、
+  `claude-review.yml` 自体を変える PR ではレビューが付かない前提で見る
 - `flutter analyze` / `flutter test` は**カレントパッケージしか対象にしない**。
   `local_package/my_manga_editor_data` は個別に実行する
   （`ci.yml` と [scripts/release.sh](../../scripts/release.sh) の双方で対応済み。

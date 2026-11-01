@@ -9,7 +9,7 @@ paths:
 
 - `@riverpod` (function-style) for streams/futures: `allMangaList`, `mangaPageIdList`, `onlineStatus`
 - `@Riverpod(keepAlive: true)` for persistent state: `MangaRepository`, `FirebaseService`
-- `@riverpod` class notifiers for complex UI state: `MangaPageViewModelNotifier`
+- `@riverpod` class notifiers for complex UI state: `TagFilterNotifier`
 
 ## Testing Providers
 - Tests in `test/feature/manga/provider/` using Mockito with `@GenerateNiceMocks`

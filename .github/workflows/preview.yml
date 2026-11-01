@@ -33,6 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    outputs:
+      deployed: ${{ steps.creds.outputs.available }}
+      url: ${{ steps.pr.outputs.url || steps.develop.outputs.url }}
     steps:
       # Dependabot の PR などでは secrets が空になる。失敗にはせずスキップする
       - name: Check Cloudflare credentials
@@ -113,3 +116,57 @@ jobs:
           else
             gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -f body="${BODY}" > /dev/null
           fi
+
+  # デプロイしたプレビュー URL に対して e2e/ の Maestro フローを流す (最低限の確認)
+  smoke:
+    name: Smoke test (Maestro)
+    needs: preview
+    # URL の有無ではなくデプロイしたかで判断する。URL を取り出せなかったときに黙ってスキップさせない
+    if: needs.preview.outputs.deployed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # 外部のバイナリを動かすので、PR への書き込み権限は渡さない
+    permissions:
+      contents: read
+    env:
+      MAESTRO_VERSION: 2.12.0
+      MAESTRO_SHA256: a6044a84542f522f434c5dc3d609e60c7446d423f3ed1b2ae513f5c48663ec5e
+      MAESTRO_CLI_NO_ANALYTICS: "true"
+      MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: "true"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # インストールスクリプトは使わず、版を固定した zip をチェックサムで確かめてから入れる
+      - name: Install Maestro
+        run: |
+          curl -fsSL -o "${RUNNER_TEMP}/maestro.zip" \
+            "https://github.com/mobile-dev-inc/Maestro/releases/download/cli-${MAESTRO_VERSION}/maestro.zip"
+          echo "${MAESTRO_SHA256}  ${RUNNER_TEMP}/maestro.zip" | sha256sum -c -
+          unzip -q "${RUNNER_TEMP}/maestro.zip" -d "${RUNNER_TEMP}"
+          echo "${RUNNER_TEMP}/maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Run smoke flows
+        env:
+          BASE_URL: ${{ needs.preview.outputs.url }}
+        run: |
+          if [ -z "${BASE_URL}" ]; then
+            echo "::error::preview ジョブの出力からプレビュー URL を取得できませんでした"
+            exit 1
+          fi
+          maestro test --headless -e BASE_URL="${BASE_URL}" --debug-output maestro-debug e2e/
+
+      - name: Upload Maestro debug output
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-debug
+          path: maestro-debug
+          include-hidden-files: true
+          retention-days: 7

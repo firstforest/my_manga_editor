@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor/feature/app_info/view/app_info_dialog.dart';
-import 'package:my_manga_editor/feature/manga/provider/manga_page_view_model.dart';
+import 'package:my_manga_editor/feature/manga/provider/manga_creator.dart';
 import 'package:my_manga_editor/feature/manga/provider/tag_providers.dart';
 import 'package:my_manga_editor/feature/manga/view/kanban_column.dart';
 import 'package:my_manga_editor/feature/manga/view/tag_filter_bar.dart';
@@ -37,11 +37,10 @@ class MangaSelectPage extends ConsumerWidget {
               // タグで絞り込んでいる最中の新規作成は、そのタグを付けて作る。
               // 作った直後に一覧から消えて見えなくなるのを避けるため。
               final filter = ref.read(tagFilterProvider);
-              final mangaId = await ref
-                  .read(mangaPageViewModelProvider.notifier)
-                  .createNewManga(
-                    tags: filter is TagFilterTag ? [filter.name] : const [],
-                  );
+              final mangaId =
+                  await ref.read(mangaCreatorProvider.notifier).create(
+                        tags: filter is TagFilterTag ? [filter.name] : const [],
+                      );
               if (context.mounted) {
                 ref.read(routerProvider).go('/manga/${mangaId.id}');
               }

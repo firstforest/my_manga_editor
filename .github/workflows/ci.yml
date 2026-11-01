@@ -1,7 +1,8 @@
 name: CI
 
 # リリース (main への push) の前に develop / PR で品質ゲートを通すための workflow。
-# 実施内容は scripts/release.sh の品質ゲートと揃えてある。
+# analyze / test は scripts/release.sh の品質ゲートと揃えてある。
+# format とコード生成のズレはリリース元の develop がここを通っているので release.sh では見ない。
 on:
   pull_request:
   push:
@@ -41,6 +42,34 @@ jobs:
       - name: Install dependencies (my_manga_editor_common)
         run: flutter pub get
         working-directory: local_package/my_manga_editor_common
+
+      - name: Check format (root)
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Check format (my_manga_editor_data)
+        run: dart format --output=none --set-exit-if-changed lib test
+        working-directory: local_package/my_manga_editor_data
+
+      - name: Check format (my_manga_editor_common)
+        run: dart format --output=none --set-exit-if-changed lib test
+        working-directory: local_package/my_manga_editor_common
+
+      # 生成し忘れを検知する。生成物の差分は AI レビューの入力も膨らませる
+      - name: Generate code (root)
+        run: dart run build_runner build -d
+
+      - name: Generate code (my_manga_editor_data)
+        run: dart run build_runner build -d
+        working-directory: local_package/my_manga_editor_data
+
+      - name: Check generated code is committed
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            git diff
+            echo "::error::生成ファイルがコミットされた内容と一致しません。build_runner build -d を実行してコミットしてください"
+            exit 1
+          fi
 
       - name: Analyze (root)
         run: flutter analyze

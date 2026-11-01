@@ -6,6 +6,7 @@ import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
+import 'package:my_manga_editor/widgets/quill_text_field_semantics.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/feature/manga/view/copy_page_dialogues.dart';
 import 'package:my_manga_editor/hooks/quill_controller_hook.dart';
@@ -637,19 +638,23 @@ class _QuillEditor extends HookWidget {
     }, []);
 
     final padding = EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r);
-    final editor = QuillEditor.basic(
-        controller: quillController,
-        focusNode: focusNode,
-        config: QuillEditorConfig(
-          placeholder: placeholder,
-          // RenderEditor の intrinsic height 計算は config.padding を
-          // 行ごとに加算してしまうため、IntrinsicHeight 配下で使う
-          // 非スクロール時は外側の Padding で余白を与える
-          padding: scrollable ? padding : EdgeInsets.zero,
-          scrollable: scrollable,
-          maxHeight: scrollable ? 300.r : null,
-          minHeight: scrollable ? null : 60.r,
-        ));
+    final editor = QuillTextFieldSemantics(
+      focusNode: focusNode,
+      label: placeholder,
+      child: QuillEditor.basic(
+          controller: quillController,
+          focusNode: focusNode,
+          config: QuillEditorConfig(
+            placeholder: placeholder,
+            // RenderEditor の intrinsic height 計算は config.padding を
+            // 行ごとに加算してしまうため、IntrinsicHeight 配下で使う
+            // 非スクロール時は外側の Padding で余白を与える
+            padding: scrollable ? padding : EdgeInsets.zero,
+            scrollable: scrollable,
+            maxHeight: scrollable ? 300.r : null,
+            minHeight: scrollable ? null : 60.r,
+          )),
+    );
     if (scrollable) {
       return editor;
     }

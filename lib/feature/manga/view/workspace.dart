@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor_common/logger.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
+import 'package:my_manga_editor/widgets/quill_text_field_semantics.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/hooks/quill_controller_hook.dart';
 
@@ -133,12 +134,16 @@ class _QuillEditor extends HookConsumerWidget {
           ),
         ),
         Expanded(
-          child: QuillEditor.basic(
-            controller: controller,
+          child: QuillTextFieldSemantics(
             focusNode: focusNode,
-            config: QuillEditorConfig(
-              padding: EdgeInsets.symmetric(vertical: 8.r, horizontal: 16.r),
-              placeholder: '何でも書ける場所',
+            label: '何でも書ける場所',
+            child: QuillEditor.basic(
+              controller: controller,
+              focusNode: focusNode,
+              config: QuillEditorConfig(
+                padding: EdgeInsets.symmetric(vertical: 8.r, horizontal: 16.r),
+                placeholder: '何でも書ける場所',
+              ),
             ),
           ),
         ),

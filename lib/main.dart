@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:my_manga_editor/theme/app_theme.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/env_config.dart';
 import 'package:my_manga_editor/feature/app_notice/view/app_notice_banner.dart';
@@ -33,6 +33,9 @@ Future<void> main() async {
   ));
 }
 
+// テーマは context に依存しないので、ビルドのたびに作り直さず一度だけ作る
+final _appTheme = buildAppTheme();
+
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
@@ -41,13 +44,7 @@ class MyApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
       title: '漫画プロットエディタ Komakusa',
-      theme: ThemeData(
-        textTheme: GoogleFonts.notoSansJpTextTheme(
-          Theme.of(context).textTheme,
-        ),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: _appTheme,
       localizationsDelegates: FlutterQuillLocalizations.localizationsDelegates,
       routerConfig: router,
       // お知らせバナーは画面を問わず出したいので、router の外側で重ねる

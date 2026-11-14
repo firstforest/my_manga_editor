@@ -71,13 +71,14 @@ class _FilteredSummary extends ConsumerWidget {
     final mangaCount = ref.watch(filteredMangaListProvider).length;
     final pageTotal = ref.watch(filteredPageTotalProvider);
 
+    final theme = Theme.of(context);
     return Center(
       child: Text(
-        '$mangaCount作品・計 $pageTotalページ',
-        style: TextStyle(
-          fontSize: 12,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+        pageTotal == null
+            ? '$mangaCount作品・ページ数を集計中'
+            : '$mangaCount作品・計 $pageTotalページ',
+        style: theme.textTheme.bodySmall
+            ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
       ),
     );
   }

@@ -40,11 +40,31 @@ class _Harness extends ConsumerWidget {
   }
 }
 
+Stream<List<MangaPageId>> _pageIdStream(
+  String mangaId, {
+  required int pageCount,
+  required bool loading,
+  required bool error,
+}) {
+  if (loading) {
+    final controller = StreamController<List<MangaPageId>>();
+    addTearDown(controller.close);
+    return controller.stream;
+  }
+  if (error) return Stream.error(Exception('読み込みに失敗'));
+  return Stream.value([
+    for (var i = 0; i < pageCount; i++) MangaPageId('$mangaId-$i'),
+  ]);
+}
+
 /// [pageCounts] は作品 ID ごとのページ数。指定の無い作品は 0 ページ。
+/// [loadingIds] の作品はページ一覧が届かないまま、[errorIds] の作品はエラーになる。
 Future<void> _pumpHarness(
   WidgetTester tester,
   List<Manga> mangaList, {
   Map<String, int> pageCounts = const {},
+  Set<String> loadingIds = const {},
+  Set<String> errorIds = const {},
 }) async {
   final controller = StreamController<List<Manga>>();
   addTearDown(controller.close);
@@ -56,10 +76,12 @@ Future<void> _pumpHarness(
         allMangaListProvider.overrideWith((ref) => controller.stream),
         for (final manga in mangaList)
           mangaPageIdListProvider(manga.id).overrideWith(
-            (ref) => Stream.value([
-              for (var i = 0; i < (pageCounts[manga.id.id] ?? 0); i++)
-                MangaPageId('${manga.id.id}-$i'),
-            ]),
+            (ref) => _pageIdStream(
+              manga.id.id,
+              pageCount: pageCounts[manga.id.id] ?? 0,
+              loading: loadingIds.contains(manga.id.id),
+              error: errorIds.contains(manga.id.id),
+            ),
           ),
       ],
       child: const _Harness(),
@@ -165,5 +187,28 @@ void main() {
     await tester.tap(find.widgetWithText(ChoiceChip, 'タグなし'));
     await tester.pumpAndSettle();
     expect(find.text('0作品・計 0ページ'), findsOneWidget);
+  });
+
+  testWidgets('ページ一覧が届いていない作品があるあいだは合計を出さない', (tester) async {
+    await _pumpHarness(
+      tester,
+      [_manga('1'), _manga('2')],
+      pageCounts: {'1': 16},
+      loadingIds: {'2'},
+    );
+
+    expect(find.text('2作品・ページ数を集計中'), findsOneWidget);
+    expect(find.textContaining('計 '), findsNothing);
+  });
+
+  testWidgets('ページ一覧の読み込みに失敗した作品があれば合計を出さない', (tester) async {
+    await _pumpHarness(
+      tester,
+      [_manga('1'), _manga('2')],
+      pageCounts: {'1': 16},
+      errorIds: {'2'},
+    );
+
+    expect(find.text('2作品・ページ数を集計中'), findsOneWidget);
   });
 }

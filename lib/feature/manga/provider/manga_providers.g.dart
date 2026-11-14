@@ -122,6 +122,111 @@ final class MangaPageIdListFamily extends $Family
   String toString() => r'mangaPageIdListProvider';
 }
 
+/// 作品のページ数。読み込み中・エラーのあいだは null。
+///
+/// カードの表示と絞り込みバーの合計が同じ数え方になるよう、ここ 1 箇所で決める。
+/// エラー時に前回の値を使わないのは、確かめられない数を確定値のように見せないため。
+
+@ProviderFor(mangaPageCount)
+final mangaPageCountProvider = MangaPageCountFamily._();
+
+/// 作品のページ数。読み込み中・エラーのあいだは null。
+///
+/// カードの表示と絞り込みバーの合計が同じ数え方になるよう、ここ 1 箇所で決める。
+/// エラー時に前回の値を使わないのは、確かめられない数を確定値のように見せないため。
+
+final class MangaPageCountProvider extends $FunctionalProvider<int?, int?, int?>
+    with $Provider<int?> {
+  /// 作品のページ数。読み込み中・エラーのあいだは null。
+  ///
+  /// カードの表示と絞り込みバーの合計が同じ数え方になるよう、ここ 1 箇所で決める。
+  /// エラー時に前回の値を使わないのは、確かめられない数を確定値のように見せないため。
+  MangaPageCountProvider._(
+      {required MangaPageCountFamily super.from,
+      required MangaId super.argument})
+      : super(
+          retry: null,
+          name: r'mangaPageCountProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$mangaPageCountHash();
+
+  @override
+  String toString() {
+    return r'mangaPageCountProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<int?> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  int? create(Ref ref) {
+    final argument = this.argument as MangaId;
+    return mangaPageCount(
+      ref,
+      argument,
+    );
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int?>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MangaPageCountProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$mangaPageCountHash() => r'0fb3d437f0f06781411569bb725395ff9a874e84';
+
+/// 作品のページ数。読み込み中・エラーのあいだは null。
+///
+/// カードの表示と絞り込みバーの合計が同じ数え方になるよう、ここ 1 箇所で決める。
+/// エラー時に前回の値を使わないのは、確かめられない数を確定値のように見せないため。
+
+final class MangaPageCountFamily extends $Family
+    with $FunctionalFamilyOverride<int?, MangaId> {
+  MangaPageCountFamily._()
+      : super(
+          retry: null,
+          name: r'mangaPageCountProvider',
+          dependencies: null,
+          $allTransitiveDependencies: null,
+          isAutoDispose: true,
+        );
+
+  /// 作品のページ数。読み込み中・エラーのあいだは null。
+  ///
+  /// カードの表示と絞り込みバーの合計が同じ数え方になるよう、ここ 1 箇所で決める。
+  /// エラー時に前回の値を使わないのは、確かめられない数を確定値のように見せないため。
+
+  MangaPageCountProvider call(
+    MangaId mangaId,
+  ) =>
+      MangaPageCountProvider._(argument: mangaId, from: this);
+
+  @override
+  String toString() => r'mangaPageCountProvider';
+}
+
 @ProviderFor(onlineStatus)
 final onlineStatusProvider = OnlineStatusProvider._();
 

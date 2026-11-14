@@ -39,42 +39,47 @@ class MangaEditWidget extends HookConsumerWidget {
                   height: 8.r,
                 ),
                 Expanded(
-                  child: TabBarView(
-                    children: [
-                      Workspace(
-                          mangaId: manga.id, deltaId: manga.ideaMemoDeltaId),
-                      MangaPageList(
-                        manga: manga,
-                        scrollController: scrollController,
-                      ),
-                    ],
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.r),
+                    child: TabBarView(
+                      children: [
+                        Workspace(
+                            mangaId: manga.id, deltaId: manga.ideaMemoDeltaId),
+                        MangaPageList(
+                          manga: manga,
+                          scrollController: scrollController,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-        _ => Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: Workspace(
-                  key: ValueKey(manga.id),
-                  mangaId: manga.id,
-                  deltaId: manga.ideaMemoDeltaId,
+        // 机の端と、2 枚の紙の間を同じ幅にする
+        _ => Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.r),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Workspace(
+                    key: ValueKey(manga.id),
+                    mangaId: manga.id,
+                    deltaId: manga.ideaMemoDeltaId,
+                  ),
                 ),
-              ),
-              Expanded(
-                flex: 3,
-                child: ColoredBox(
-                  color: Colors.black12,
+                SizedBox(width: 16.r),
+                Expanded(
+                  flex: 3,
                   child: MangaPageList(
                     manga: manga,
                     scrollController: scrollController,
                   ),
                 ),
-              ),
-            ],
-          )
+              ],
+            ),
+          ),
       },
     );
   }

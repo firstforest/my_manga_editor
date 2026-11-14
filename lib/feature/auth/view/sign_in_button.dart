@@ -43,7 +43,7 @@ class SignInButton extends HookConsumerWidget {
       loading: () => const CircularProgressIndicator(),
       error: (error, stack) => Text(
         'Auth error: $error',
-        style: const TextStyle(color: Colors.red),
+        style: TextStyle(color: Theme.of(context).colorScheme.error),
       ),
     );
   }
@@ -129,7 +129,8 @@ class SignInButton extends HookConsumerWidget {
             padding: const EdgeInsets.only(top: 8),
             child: Text(
               errorMessage.value!,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.error, fontSize: 12),
             ),
           ),
       ],
@@ -174,7 +175,9 @@ class SignInButton extends HookConsumerWidget {
                 if (!isAnonymous)
                   Text(
                     user.email ?? '',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
               ],
             ),
@@ -213,7 +216,8 @@ class SignInButton extends HookConsumerWidget {
             padding: const EdgeInsets.only(top: 8),
             child: Text(
               errorMessage.value!,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.error, fontSize: 12),
             ),
           ),
       ],

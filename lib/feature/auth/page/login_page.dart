@@ -12,7 +12,9 @@ class LoginPage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.menu_book, size: 64.r, color: Colors.deepPurple),
+            Icon(Icons.menu_book,
+                size: 64.r,
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
             SizedBox(height: 16.r),
             Text(
               'My Manga Editor',
@@ -21,7 +23,9 @@ class LoginPage extends StatelessWidget {
             SizedBox(height: 8.r),
             Text(
               'ログインして始めましょう',
-              style: TextStyle(fontSize: 16.r, color: Colors.grey),
+              style: TextStyle(
+                  fontSize: 16.r,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             SizedBox(height: 32.r),
             const SignInButton(),

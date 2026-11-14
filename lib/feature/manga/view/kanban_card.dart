@@ -29,7 +29,7 @@ class _TagRow extends StatelessWidget {
       children: [
         for (final tag in visible)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: scheme.secondaryContainer,
               borderRadius: BorderRadius.circular(4),
@@ -44,10 +44,10 @@ class _TagRow extends StatelessWidget {
           ),
         if (hidden > 0)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2),
+            padding: const EdgeInsets.symmetric(vertical: 4),
             child: Text(
               '+$hidden',
-              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 10, color: scheme.onSurfaceVariant),
             ),
           ),
       ],
@@ -77,7 +77,6 @@ class KanbanCard extends ConsumerWidget {
       feedback: ExcludeSemantics(
         child: Material(
           elevation: 4,
-          borderRadius: BorderRadius.circular(8),
           child: SizedBox(
             width: 280,
             child: card,
@@ -116,7 +115,7 @@ class KanbanCard extends ConsumerWidget {
             value: _semanticsValue(pageCount),
             onTap: open,
             excludeSemantics: true,
-            child: _buildBody(open, previewText, pageCount),
+            child: _buildBody(context, open, previewText, pageCount),
           ),
           // 削除ボタンは本体のボタンの中に入れ子にすると、スクリーンリーダーで
           // 単独のボタンとして届かなくなるので、本体の外に重ねる
@@ -152,9 +151,9 @@ class KanbanCard extends ConsumerWidget {
     return '$pages、タグ: ${manga.tags.join('、')}';
   }
 
-  Widget _buildBody(VoidCallback onTap, String previewText, int pageCount) {
+  Widget _buildBody(BuildContext context, VoidCallback onTap,
+      String previewText, int pageCount) {
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -185,16 +184,20 @@ class KanbanCard extends ConsumerWidget {
                 previewText,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             ],
             const SizedBox(height: 4),
             Text(
               'ページ数: $pageCount',
-              style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+              style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             if (manga.tags.isNotEmpty) ...[
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               _TagRow(tags: manga.tags),
             ],
           ],

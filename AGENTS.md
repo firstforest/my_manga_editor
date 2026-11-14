@@ -68,4 +68,5 @@ UI (lib/feature/) → Riverpod Notifier → Repository → Service → Firestore
 | `local_package/my_manga_editor_data/**` 編集時 | [.claude/rules/data-layer.md](.claude/rules/data-layer.md) |
 | Riverpod Provider 追加・テスト時 | [.claude/rules/providers.md](.claude/rules/providers.md) |
 | `lib/router.dart` / 画面追加時 | [.claude/rules/routing.md](.claude/rules/routing.md) |
+| 画面の見た目（余白・色・紙の描き方）に触れるとき | [.claude/rules/ui-design.md](.claude/rules/ui-design.md) |
 | `.github/workflows/**` 編集時 | [.claude/rules/ci.md](.claude/rules/ci.md) |

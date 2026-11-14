@@ -3,7 +3,7 @@
 ## メタデータ
 - Status: implemented
 - Owner: TBD
-- Last Updated: 2026-08-08
+- Last Updated: 2026-11-14
 - Related:
   - [design.md](./design.md) / [tasks.md](./tasks.md)
   - [docs/design/data-model.md](../../../design/data-model.md)
@@ -95,6 +95,8 @@ so that 連載1本分の進行状況（アイデア／制作中／完成）だ�
   再読み込み後は `すべて` から始める
 - AC-2.10: THE SYSTEM SHALL カンバンの各カードに、その作品のタグを先頭から最大 3 個表示し、
   4 個目以降がある場合は `+N` の形で残り件数を示す
+- AC-2.11: THE SYSTEM SHALL 絞り込み UI の右端に、絞り込み後の作品数とそのページ数の合計を
+  `N作品・計 Mページ` の形で表示する（`すべて` / `タグなし` を選んでいるときも同じ）
 
 #### Edge Cases
 - 1つもタグが存在しない → 絞り込み UI は `すべて` / `タグなし` のみを出す

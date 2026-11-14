@@ -85,3 +85,18 @@ List<Manga> filteredMangaList(Ref ref) {
       mangaList.where((m) => m.tags.contains(name)).toList(),
   };
 }
+
+/// 絞り込み後の作品のページ数の合計。
+///
+/// カンバンのカードが購読している作品ごとのページ一覧を足し合わせるだけで、
+/// Firestore へ追加のクエリは投げない。読み込み中の作品は 0 ページとして数える
+/// (カードの表示と揃えるため)。
+@riverpod
+int filteredPageTotal(Ref ref) {
+  final mangaList = ref.watch(filteredMangaListProvider);
+  var total = 0;
+  for (final manga in mangaList) {
+    total += ref.watch(mangaPageIdListProvider(manga.id)).value?.length ?? 0;
+  }
+  return total;
+}

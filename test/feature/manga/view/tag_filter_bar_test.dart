@@ -40,7 +40,12 @@ class _Harness extends ConsumerWidget {
   }
 }
 
-Future<void> _pumpHarness(WidgetTester tester, List<Manga> mangaList) async {
+/// [pageCounts] は作品 ID ごとのページ数。指定の無い作品は 0 ページ。
+Future<void> _pumpHarness(
+  WidgetTester tester,
+  List<Manga> mangaList, {
+  Map<String, int> pageCounts = const {},
+}) async {
   final controller = StreamController<List<Manga>>();
   addTearDown(controller.close);
   controller.add(mangaList);
@@ -49,6 +54,13 @@ Future<void> _pumpHarness(WidgetTester tester, List<Manga> mangaList) async {
     ProviderScope(
       overrides: [
         allMangaListProvider.overrideWith((ref) => controller.stream),
+        for (final manga in mangaList)
+          mangaPageIdListProvider(manga.id).overrideWith(
+            (ref) => Stream.value([
+              for (var i = 0; i < (pageCounts[manga.id.id] ?? 0); i++)
+                MangaPageId('${manga.id.id}-$i'),
+            ]),
+          ),
       ],
       child: const _Harness(),
     ),
@@ -132,5 +144,26 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('件数: 1'), findsOneWidget);
+  });
+
+  testWidgets('絞り込み後の作品数とページ数の合計を出す', (tester) async {
+    await _pumpHarness(
+      tester,
+      [
+        _manga('1', tags: ['連載:ヒーロー']),
+        _manga('2', tags: ['連載:ヒーロー']),
+        _manga('3', tags: ['商業']),
+      ],
+      pageCounts: {'1': 16, '2': 24, '3': 8},
+    );
+    expect(find.text('3作品・計 48ページ'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, '連載:ヒーロー'));
+    await tester.pumpAndSettle();
+    expect(find.text('2作品・計 40ページ'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'タグなし'));
+    await tester.pumpAndSettle();
+    expect(find.text('0作品・計 0ページ'), findsOneWidget);
   });
 }

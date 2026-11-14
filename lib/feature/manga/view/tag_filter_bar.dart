@@ -20,27 +20,64 @@ class TagFilterBar extends ConsumerWidget {
 
     return SizedBox(
       height: 48,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
         children: [
-          _FilterChip(
-            label: 'すべて',
-            selected: selected is TagFilterAll,
-            onSelected: () => select(const TagFilter.all()),
+          Expanded(child: _buildChips(tags, selected, select)),
+          const Padding(
+            padding: EdgeInsets.only(left: 8, right: 16),
+            child: _FilteredSummary(),
           ),
-          _FilterChip(
-            label: 'タグなし',
-            selected: selected is TagFilterUntagged,
-            onSelected: () => select(const TagFilter.untagged()),
-          ),
-          for (final tag in tags)
-            _FilterChip(
-              label: tag,
-              selected: selected is TagFilterTag && selected.name == tag,
-              onSelected: () => select(TagFilter.tag(tag)),
-            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildChips(
+    List<String> tags,
+    TagFilter selected,
+    void Function(TagFilter) select,
+  ) {
+    return ListView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      children: [
+        _FilterChip(
+          label: 'すべて',
+          selected: selected is TagFilterAll,
+          onSelected: () => select(const TagFilter.all()),
+        ),
+        _FilterChip(
+          label: 'タグなし',
+          selected: selected is TagFilterUntagged,
+          onSelected: () => select(const TagFilter.untagged()),
+        ),
+        for (final tag in tags)
+          _FilterChip(
+            label: tag,
+            selected: selected is TagFilterTag && selected.name == tag,
+            onSelected: () => select(TagFilter.tag(tag)),
+          ),
+      ],
+    );
+  }
+}
+
+/// 絞り込み後の作品数とページ数の合計。
+class _FilteredSummary extends ConsumerWidget {
+  const _FilteredSummary();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mangaCount = ref.watch(filteredMangaListProvider).length;
+    final pageTotal = ref.watch(filteredPageTotalProvider);
+
+    return Center(
+      child: Text(
+        '$mangaCount作品・計 $pageTotalページ',
+        style: TextStyle(
+          fontSize: 12,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
     );
   }

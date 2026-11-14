@@ -15,6 +15,8 @@ import 'package:my_manga_editor_common/delta_text.dart';
 import 'package:my_manga_editor_common/logger.dart';
 import 'package:my_manga_editor_data/repository/manga_repository.dart';
 import 'package:my_manga_editor/hooks/quill_controller_hook.dart';
+import 'package:my_manga_editor/theme/app_theme.dart';
+import 'package:my_manga_editor/widgets/paper_sheet.dart';
 
 class MangaPageWidget extends HookConsumerWidget {
   const MangaPageWidget({
@@ -93,7 +95,7 @@ class _DesktopLayout extends HookConsumerWidget {
           children: [
             Expanded(
               flex: 1,
-              child: _buildMemo(),
+              child: _buildMemo(context),
             ),
             SizedBox(width: 4.r),
             Expanded(
@@ -101,7 +103,7 @@ class _DesktopLayout extends HookConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SizedBox(
+                  _CutPanel(
                     height: 300.r,
                     child: LayoutBuilder(
                       builder: (context, constraints) {
@@ -111,7 +113,7 @@ class _DesktopLayout extends HookConsumerWidget {
                               minHeight: constraints.maxHeight,
                             ),
                             child: _StretchColumn(
-                              spacing: 4.r,
+                              spacing: 0,
                               children: [
                                 for (int i = 0; i < page.sceneUnits.length; i++)
                                   SceneUnitDropTarget(
@@ -242,7 +244,7 @@ class _DesktopLayout extends HookConsumerWidget {
   Row _buildToolBar(WidgetRef ref, BuildContext context) {
     return Row(
       children: [
-        _buildPageIndicator(),
+        _PageIndicator(pageIndex: pageIndex, startPage: startPage),
         SizedBox(width: 4.r),
         IconButton(
           onPressed: () =>
@@ -262,25 +264,56 @@ class _DesktopLayout extends HookConsumerWidget {
     );
   }
 
-  Container _buildMemo() {
-    return Container(
+  Widget _buildMemo(BuildContext context) {
+    return SizedBox(
       height: 300.r,
-      constraints: BoxConstraints(minWidth: 300.r),
-      color: Colors.indigo.shade100,
-      child: _QuillTextAreaWidget(
-        mangaId: page.mangaId,
-        deltaId: page.memoDeltaId,
-        placeholder: 'このページで描きたいこと',
+      child: PaperSheet(
+        color: AppTokens.of(context).memoField,
+        child: _QuillTextAreaWidget(
+          mangaId: page.mangaId,
+          deltaId: page.memoDeltaId,
+          placeholder: 'このページで描きたいこと',
+        ),
       ),
     );
   }
+}
 
-  Text _buildPageIndicator() {
+class _PageIndicator extends StatelessWidget {
+  const _PageIndicator({required this.pageIndex, required this.startPage});
+
+  final int pageIndex;
+  final MangaStartPage startPage;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Text(
       '$pageIndex${_startPageToString(pageIndex.isOdd ? startPage : startPage.reverted)}',
-      style: const TextStyle(
-        color: Colors.black54,
+      style: theme.textTheme.titleSmall
+          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+    );
+  }
+}
+
+/// カットを並べる 1 枚の紙。カットどうし・欄どうしは罫線で仕切る
+class _CutPanel extends StatelessWidget {
+  const _CutPanel({required this.height, required this.child});
+
+  final double height;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      height: height,
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLowest,
+        border: Border.all(color: scheme.outlineVariant),
       ),
+      child: child,
     );
   }
 }
@@ -311,11 +344,12 @@ class _MobileLayout extends HookConsumerWidget {
         usePageController(initialPage: currentPageIndex.value);
 
     // Build page list: memo, then for each sceneUnit: dialogue, stageDirection
+    final tokens = AppTokens.of(context);
     final pages = <Widget>[
-      _buildMemo(),
+      _buildMemo(tokens),
       for (final unit in page.sceneUnits) ...[
-        _buildDialogues(unit),
-        _buildStageDirection(unit),
+        _buildDialogues(tokens, unit),
+        _buildStageDirection(tokens, unit),
       ],
     ];
 
@@ -374,10 +408,7 @@ class _MobileLayout extends HookConsumerWidget {
   Row _buildToolBar(WidgetRef ref, BuildContext context) {
     return Row(
       children: [
-        Text(
-          '$pageIndex${_startPageToString(pageIndex.isOdd ? startPage : startPage.reverted)}',
-          style: const TextStyle(color: Colors.black54),
-        ),
+        _PageIndicator(pageIndex: pageIndex, startPage: startPage),
         SizedBox(width: 4.r),
         IconButton(
           onPressed: () =>
@@ -397,12 +428,16 @@ class _MobileLayout extends HookConsumerWidget {
     );
   }
 
-  Container _buildMemo() {
-    return Container(
-      height: double.infinity,
-      constraints: BoxConstraints(minWidth: 300.r),
-      color: Colors.indigo.shade100,
-      child: _QuillTextAreaWidget(
+  Widget _buildField(Color color, Widget child) {
+    return SizedBox.expand(
+      child: PaperSheet(color: color, child: child),
+    );
+  }
+
+  Widget _buildMemo(AppTokens tokens) {
+    return _buildField(
+      tokens.memoField,
+      _QuillTextAreaWidget(
         mangaId: page.mangaId,
         deltaId: page.memoDeltaId,
         placeholder: 'このページで描きたいこと',
@@ -410,12 +445,10 @@ class _MobileLayout extends HookConsumerWidget {
     );
   }
 
-  Container _buildDialogues(SceneUnit unit) {
-    return Container(
-      height: double.infinity,
-      constraints: BoxConstraints(minWidth: 300.r),
-      color: Colors.black12,
-      child: _QuillTextAreaWidget(
+  Widget _buildDialogues(AppTokens tokens, SceneUnit unit) {
+    return _buildField(
+      tokens.dialogueField,
+      _QuillTextAreaWidget(
         key: ValueKey(unit.dialoguesDeltaId),
         mangaId: page.mangaId,
         deltaId: unit.dialoguesDeltaId,
@@ -424,12 +457,10 @@ class _MobileLayout extends HookConsumerWidget {
     );
   }
 
-  Container _buildStageDirection(SceneUnit unit) {
-    return Container(
-      height: double.infinity,
-      constraints: BoxConstraints(minWidth: 300.r),
-      color: Colors.black12,
-      child: _QuillTextAreaWidget(
+  Widget _buildStageDirection(AppTokens tokens, SceneUnit unit) {
+    return _buildField(
+      tokens.directionField,
+      _QuillTextAreaWidget(
         key: ValueKey(unit.stageDirectionDeltaId),
         mangaId: page.mangaId,
         deltaId: unit.stageDirectionDeltaId,
@@ -578,19 +609,32 @@ class _SceneUnitWidget extends HookWidget {
     final dragging = useState(false);
     return Opacity(
       opacity: dragging.value ? 0.4 : 1,
-      child: _buildContent(dragging),
+      child: Container(
+        // カットどうしの仕切り。先頭のカットの上は紙の縁なので引かない
+        decoration: BoxDecoration(
+          border: index > 0
+              ? Border(
+                  top: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
+                )
+              : null,
+        ),
+        child: _buildContent(AppTokens.of(context), dragging),
+      ),
     );
   }
 
-  Widget _buildContent(ValueNotifier<bool> dragging) {
+  Widget _buildContent(AppTokens tokens, ValueNotifier<bool> dragging) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
             flex: 3,
-            child: Container(
-              color: Colors.black12,
+            child: PaperSheet(
+              color: tokens.dialogueField,
+              outlined: false,
               child: _QuillTextAreaWidget(
                 key: ValueKey(sceneUnit.dialoguesDeltaId),
                 mangaId: mangaId,
@@ -600,11 +644,12 @@ class _SceneUnitWidget extends HookWidget {
               ),
             ),
           ),
-          SizedBox(width: 2.r),
+          const VerticalDivider(width: 1, thickness: 1),
           Expanded(
             flex: 2,
-            child: Container(
-              color: Colors.black12,
+            child: PaperSheet(
+              color: tokens.directionField,
+              outlined: false,
               child: _QuillTextAreaWidget(
                 key: ValueKey(sceneUnit.stageDirectionDeltaId),
                 mangaId: mangaId,
@@ -614,6 +659,7 @@ class _SceneUnitWidget extends HookWidget {
               ),
             ),
           ),
+          // 操作の列は紙の余白に置く（書き込む欄に見えないよう塗らない）
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [

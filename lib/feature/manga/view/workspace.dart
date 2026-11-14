@@ -9,6 +9,8 @@ import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor/widgets/quill_text_field_semantics.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/hooks/quill_controller_hook.dart';
+import 'package:my_manga_editor/theme/app_theme.dart';
+import 'package:my_manga_editor/widgets/paper_sheet.dart';
 
 class Workspace extends HookConsumerWidget {
   const Workspace({
@@ -134,16 +136,23 @@ class _QuillEditor extends HookConsumerWidget {
           ),
         ),
         Expanded(
-          child: QuillTextFieldSemantics(
-            controller: controller,
-            focusNode: focusNode,
-            label: '何でも書ける場所',
-            child: QuillEditor.basic(
-              controller: controller,
-              focusNode: focusNode,
-              config: QuillEditorConfig(
-                padding: EdgeInsets.symmetric(vertical: 8.r, horizontal: 16.r),
-                placeholder: '何でも書ける場所',
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 16.r),
+            child: PaperSheet(
+              color: AppTokens.of(context).dialogueField,
+              child: QuillTextFieldSemantics(
+                controller: controller,
+                focusNode: focusNode,
+                label: '何でも書ける場所',
+                child: QuillEditor.basic(
+                  controller: controller,
+                  focusNode: focusNode,
+                  config: QuillEditorConfig(
+                    padding:
+                        EdgeInsets.symmetric(vertical: 8.r, horizontal: 16.r),
+                    placeholder: '何でも書ける場所',
+                  ),
+                ),
               ),
             ),
           ),

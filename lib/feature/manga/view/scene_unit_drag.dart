@@ -177,7 +177,8 @@ class SceneUnitDragHandle extends StatelessWidget {
       onDragging?.call(value);
     }
 
-    final icon = Icon(Icons.drag_indicator, size: 16.r, color: Colors.black45);
+    final icon = Icon(Icons.drag_indicator,
+        size: 16.r, color: Theme.of(context).colorScheme.onSurfaceVariant);
     return Draggable<SceneUnitDragData>(
       data: data,
       dragAnchorStrategy: pointerDragAnchorStrategy,
@@ -314,8 +315,10 @@ class _SceneUnitDropTargetState extends State<SceneUnitDropTarget> {
               Positioned(
                 left: 0,
                 right: 0,
-                top: slot == widget.index ? -3.r : null,
-                bottom: slot == widget.index ? null : -3.r,
+                // カットの間は 1px の罫線しかないので、線はカットの内側の上端・下端に引く。
+                // 外にはみ出すと、先頭・末尾ではカットの紙に切られて見えなくなる
+                top: slot == widget.index ? 0 : null,
+                bottom: slot == widget.index ? null : 0,
                 child: IgnorePointer(
                   child: Container(
                     height: 3.r,

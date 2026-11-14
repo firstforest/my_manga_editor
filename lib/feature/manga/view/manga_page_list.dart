@@ -89,40 +89,37 @@ class MangaPageList extends HookConsumerWidget {
       scrollController: scrollController,
       child: ListView.builder(
         controller: scrollController,
-        padding: EdgeInsets.all(8.r),
         itemCount: pageIdList.length,
         itemBuilder: (context, index) {
           final pageId = pageIdList[index];
-          return Card(
+          return Padding(
             key: pageKeys.putIfAbsent(pageId, GlobalKey.new),
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 8.r, horizontal: 24.r),
-              child: Column(
-                children: [
-                  MangaPageWidget(
-                    pageIndex: index + 1,
-                    pageCount: pageIdList.length,
-                    startPage: manga.startPage,
-                    mangaPageId: pageId,
-                    onMovePage: (offset) => movePage(pageId, offset),
+            padding: EdgeInsets.symmetric(vertical: 8.r),
+            child: Column(
+              children: [
+                MangaPageWidget(
+                  pageIndex: index + 1,
+                  pageCount: pageIdList.length,
+                  startPage: manga.startPage,
+                  mangaPageId: pageId,
+                  onMovePage: (offset) => movePage(pageId, offset),
+                ),
+                SizedBox(
+                  height: 4.r,
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: IconButton(
+                    onPressed: () {
+                      ref
+                          .read(mangaProvider(manga.id).notifier)
+                          .addNewPage(index + 1);
+                    },
+                    tooltip: 'ここにページを追加',
+                    icon: const Icon(Icons.add),
                   ),
-                  SizedBox(
-                    height: 4.r,
-                  ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: IconButton(
-                      onPressed: () {
-                        ref
-                            .read(mangaProvider(manga.id).notifier)
-                            .addNewPage(index + 1);
-                      },
-                      tooltip: 'ここにページを追加',
-                      icon: const Icon(Icons.add),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },

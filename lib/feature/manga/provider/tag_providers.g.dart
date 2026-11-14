@@ -173,3 +173,60 @@ final class FilteredMangaListProvider
 }
 
 String _$filteredMangaListHash() => r'd803301c1aa43d6468adccab7a1057b92b5eac29';
+
+/// 絞り込み後の作品のページ数の合計。1 作品でも読み込み中・エラーなら null。
+///
+/// カンバンのカードは画面に見えている分しか作られないが、合計のために
+/// 絞り込み後の全作品のページ一覧を購読する。読み取りはその分増える。
+/// 途中までの和を確定値のように見せないよう、揃うまでは null を返す。
+
+@ProviderFor(filteredPageTotal)
+final filteredPageTotalProvider = FilteredPageTotalProvider._();
+
+/// 絞り込み後の作品のページ数の合計。1 作品でも読み込み中・エラーなら null。
+///
+/// カンバンのカードは画面に見えている分しか作られないが、合計のために
+/// 絞り込み後の全作品のページ一覧を購読する。読み取りはその分増える。
+/// 途中までの和を確定値のように見せないよう、揃うまでは null を返す。
+
+final class FilteredPageTotalProvider
+    extends $FunctionalProvider<int?, int?, int?> with $Provider<int?> {
+  /// 絞り込み後の作品のページ数の合計。1 作品でも読み込み中・エラーなら null。
+  ///
+  /// カンバンのカードは画面に見えている分しか作られないが、合計のために
+  /// 絞り込み後の全作品のページ一覧を購読する。読み取りはその分増える。
+  /// 途中までの和を確定値のように見せないよう、揃うまでは null を返す。
+  FilteredPageTotalProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'filteredPageTotalProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$filteredPageTotalHash();
+
+  @$internal
+  @override
+  $ProviderElement<int?> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  int? create(Ref ref) {
+    return filteredPageTotal(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int?>(value),
+    );
+  }
+}
+
+String _$filteredPageTotalHash() => r'3afad23f3e4e8049744070743b4d8fb402d26aa0';

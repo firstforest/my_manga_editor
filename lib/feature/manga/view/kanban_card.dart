@@ -64,10 +64,7 @@ class KanbanCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final delta =
         ref.watch(deltaProvider(manga.id, manga.ideaMemoDeltaId)).value;
-    final pageCount = ref.watch(mangaPageIdListProvider(manga.id)).maybeMap(
-          data: (data) => data.value.length,
-          orElse: () => 0,
-        );
+    final pageCount = ref.watch(mangaPageCountProvider(manga.id)) ?? 0;
 
     final card = _buildCard(context, ref, delta, pageCount);
 

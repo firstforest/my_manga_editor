@@ -21,6 +21,18 @@ Stream<List<MangaPageId>> mangaPageIdList(Ref ref, MangaId mangaId) {
   return ref.watch(mangaRepositoryProvider).watchAllMangaPageIdList(mangaId);
 }
 
+/// 作品のページ数。読み込み中・エラーのあいだは null。
+///
+/// カードの表示と絞り込みバーの合計が同じ数え方になるよう、ここ 1 箇所で決める。
+/// エラー時に前回の値を使わないのは、確かめられない数を確定値のように見せないため。
+@riverpod
+int? mangaPageCount(Ref ref, MangaId mangaId) {
+  return ref.watch(mangaPageIdListProvider(mangaId)).maybeMap(
+        data: (data) => data.value.length,
+        orElse: () => null,
+      );
+}
+
 @riverpod
 Stream<bool> onlineStatus(Ref ref) {
   return ref.watch(mangaRepositoryProvider).watchOnlineStatus();

@@ -15,6 +15,9 @@
 3. **UI 層** — カンバン上部の絞り込みバー、カードのタグ表示、編集画面のタグ編集欄
 
 Firestore への追加クエリは発生しない。絞り込みは既に購読済みの作品一覧をクライアント側で filter するだけ。
+絞り込みバーのページ数の合計（AC-2.11）だけは例外で、絞り込み後の全作品のページ一覧を購読する。
+カンバンのカードは画面に見えている分しか作られないため、見えていない作品の分は読み取りが増える。
+個人利用の作品数では許容できる量として、作品文書へのページ数の持たせ方（スキーマ追加）は採らない。
 既存データのバックフィルも不要で、`tags` を持たないドキュメントは「タグ無し」として読める。
 
 ## アーキテクチャ上の位置づけ
@@ -24,11 +27,11 @@ Firestore への追加クエリは発生しない。絞り込みは既に購読�
 | レイヤー | この機能の追加・変更点 |
 |---|---|
 | UI (`lib/feature/manga/page/manga_select_page.dart`) | 絞り込みバーの設置。カンバンへ渡す作品リストを絞り込み後のものにする |
-| UI (`lib/feature/manga/view/tag_filter_bar.dart`) | **新規**。`すべて` / `タグなし` / 各タグ の ChoiceChip 列（横スクロール） |
+| UI (`lib/feature/manga/view/tag_filter_bar.dart`) | **新規**。`すべて` / `タグなし` / 各タグ の ChoiceChip 列（横スクロール）と、右端の作品数・ページ数の合計（AC-2.11） |
 | UI (`lib/feature/manga/view/kanban_card.dart`) | カード下部にタグを最大 3 個 + `+N` で表示（AC-2.10） |
 | UI (`lib/feature/manga/view/manga_tags_widget.dart`) | **新規**。編集画面のタグ編集欄（チップ + × / 追加入力 + 候補提示） |
 | UI (`lib/feature/manga/page/manga_edit_page.dart`) | `MangaTitle` の開始ページ選択の右に `MangaTagsWidget` を並べる (行を増やさず `toolbarHeight` に収める) |
-| State (`lib/feature/manga/provider/tag_providers.dart`) | **新規**。`TagFilter` (freezed union) / `tagList` / `TagFilterNotifier` / `filteredMangaList` |
+| State (`lib/feature/manga/provider/tag_providers.dart`) | **新規**。`TagFilter` (freezed union) / `tagList` / `TagFilterNotifier` / `filteredMangaList` / `filteredPageTotal` |
 | State (`lib/feature/manga/provider/manga_providers.dart`) | `MangaNotifier.addTag` / `removeTag` を追加 |
 | State (`lib/feature/manga/provider/manga_creator.dart`) | 新規作成で、絞り込み中のタグを `MangaRepository.createNewManga` に渡す |
 | Repository (`manga_repository.dart`) | `addTag` / `removeTag` 追加、`createNewManga` に `tags` 引数追加、変換 extension の対応 |

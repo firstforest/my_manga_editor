@@ -85,3 +85,25 @@ List<Manga> filteredMangaList(Ref ref) {
       mangaList.where((m) => m.tags.contains(name)).toList(),
   };
 }
+
+/// 絞り込み後の作品のページ数の合計。1 作品でも読み込み中・エラーなら null。
+///
+/// カンバンのカードは画面に見えている分しか作られないが、合計のために
+/// 絞り込み後の全作品のページ一覧を購読する。読み取りはその分増える。
+/// 途中までの和を確定値のように見せないよう、揃うまでは null を返す。
+@riverpod
+int? filteredPageTotal(Ref ref) {
+  final mangaList = ref.watch(filteredMangaListProvider);
+  var total = 0;
+  var complete = true;
+  for (final manga in mangaList) {
+    // 全作品を watch してから判定する。途中で return すると残りの購読が始まらない。
+    final count = ref.watch(mangaPageCountProvider(manga.id));
+    if (count == null) {
+      complete = false;
+    } else {
+      total += count;
+    }
+  }
+  return complete ? total : null;
+}

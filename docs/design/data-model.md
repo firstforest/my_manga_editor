@@ -184,6 +184,29 @@ CloudManga に埋め込まれる同時編集防止用ロック。
   `filteredMangaListProvider` → `TagFilterBar` (一覧) / `MangaTagsWidget` (編集画面)
 - spec: [docs/spec/features/manga-tags/](../spec/features/manga-tags/)
 
+## メモの画像
+
+作品の「アイデアメモ」(`ideaMemo` の Delta) に画像を貼れる。ページのメモ・セリフ・ト書きには貼れない。
+
+- 画像の本体: Cloud Storage の `users/{userId}/mangas/{mangaId}/memoImages/{imageId}`
+  (`imageId` は UUID v4)。作品単位でまとめて消せるよう作品 ID の下に置く
+- Delta 上の表現: Quill 標準の画像 embed `{"insert": {"image": "<ダウンロード URL>"}}`。
+  Firestore のスキーマ (フィールド) は変わらないので `schemaVersion` は据え置き
+- 制約: PNG / JPEG / GIF / WebP、1 枚 10 MB まで。形式はファイル名ではなく先頭のバイト列で判定する
+  (`MemoImageRepository.maxBytes` と [storage.rules](../../storage.rules) の上限を揃える)
+- 表示はトークン付きのダウンロード URL で行う。URL を知っていればログインなしでも画像が読める
+  (Firestore 側のメモ本文は従来どおり本人しか読めない)
+- 作品を削除すると、Firestore の削除の**後に**その作品の画像をまとめて消す
+  (`MangaNotifier.delete`)。画像の削除に失敗しても作品の削除は失敗扱いにしない。
+  メモから画像を消しただけでは Storage のファイルは残る
+- **旧クライアントとの互換**: 画像 embed の表示部品を持たないビルド (1.0.4+5 以前) は、
+  画像入りのアイデアメモを開くとエディタの描画で例外になる。画像を使い始める前に
+  `minSupportedBuildNumber` を引き上げる ([最小バージョンゲート](#最小バージョンゲート))。
+  以降のビルドは未知の embed を「このバージョンでは表示できない内容です」と描いて落ちない
+- 実装: `MemoImageStorageService` → `MemoImageRepository.upload` / `deleteAllForManga` →
+  `Workspace` (ツールバーの「画像を追加」・クリップボード貼り付け) / `MemoImageEmbedBuilder`
+- spec: [docs/spec/features/idea-memo-image/](../spec/features/idea-memo-image/)
+
 ## アプリ内お知らせ
 
 リリース前の予告など、アプリのデプロイを待たずに全利用者へ伝えたいことを表示する。
@@ -309,6 +332,7 @@ Firestore
 |---|---|
 | MangaRepository | Manga / MangaPage / Delta の CRUD、リアクティブストリーム、Markdown エクスポート |
 | AuthRepository | 認証 (匿名 / Google サインイン) |
+| MemoImageRepository | メモの画像の保存 (形式・サイズの検証) と作品単位の削除 (Cloud Storage) |
 
 ### 例外階層
 
@@ -317,6 +341,8 @@ RepositoryException (abstract)
   ├── AuthException        — 未認証
   ├── NotFoundException    — リソース未発見 (resourceType, resourceId)
   ├── ValidationException  — 入力不正
+  │     ├── TagLengthException / TagLimitException
+  │     └── MemoImageTooLargeException / UnsupportedMemoImageException
   ├── StorageException     — Firestore エラー (code)
   └── PermissionException  — セキュリティルール拒否
 ```

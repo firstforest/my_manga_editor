@@ -8,7 +8,7 @@
 |---|---|---|
 | Web アプリ | `main` への push → GitHub Actions → Cloudflare Workers | 直前のデプロイへ即時に戻す (`mise run rollback-web-now`) / 過去タグから再デプロイ (`mise run rollback-web`) |
 | Web プレビュー | PR / `develop` への push → GitHub Actions → プレビュー用 Worker (dev Firebase) | 不要 (本番に影響しない) |
-| Firestore セキュリティルール | `mise run deploy-rules-prod` (手動) | 過去タグの `firestore.rules` を再デプロイ |
+| Firestore / Cloud Storage セキュリティルール | `mise run deploy-rules-prod` (手動) | 過去タグの `firestore.rules` / `storage.rules` を再デプロイ |
 | Firestore データ | アプリが書き込む | バックアップから復元 (`mise run restore-prod`) |
 | `config/app` 設定 | `mise run config-set-prod` | 同コマンドで前の値に戻す |
 | 変更履歴の公開 | [CHANGELOG.md](../CHANGELOG.md) → GitHub Release (タグの push で `release.yml` が自動作成) | Release を編集・削除 |
@@ -107,12 +107,12 @@ gh run watch          # デプロイの進行状況を追う
       expand-contract ルールに従っているか (旧フィールドの削除は次リリース以降)
 - [ ] 移行 fixture テストを追加したか (`test/data_migration/`)
 - [ ] 利用者に影響の大きい変更なら、事前告知を済ませたか (下記「利用者への影響が大きい変更」参照)
-- [ ] `firestore.rules` を変更している場合、**アプリより先に**
+- [ ] `firestore.rules` / `storage.rules` を変更している場合、**アプリより先に**
       `mise run deploy-rules-prod` を実行したか (下記「セキュリティルールとアプリの順序」参照)
 
 ### セキュリティルールとアプリの順序
 
-`firestore.rules` の変更は Web デプロイと連動しない。`mise run deploy-rules-prod` を
+`firestore.rules` / `storage.rules` の変更は Web デプロイと連動しない。`mise run deploy-rules-prod` を
 実行するまで本番には反映されないので、**ルールの緩和はアプリより先にデプロイする**
 (逆順だと、新しいアプリが読めないはずのものを読もうとして失敗する)。
 
@@ -295,13 +295,13 @@ gh run watch                           # デプロイ完了を待つ
   mise run config-set-prod minSupportedBuildNumber <戻す先の N>
   ```
 
-### 2. Firestore ルールを戻す
+### 2. セキュリティルールを戻す
 
 ```bash
 git stash                              # 作業中の変更があれば退避
-git checkout v1.0.1+2 -- firestore.rules
+git checkout v1.0.1+2 -- firestore.rules storage.rules
 mise run deploy-rules-prod
-git checkout develop -- firestore.rules   # 作業ツリーを元に戻す
+git checkout develop -- firestore.rules storage.rules   # 作業ツリーを元に戻す
 git stash pop                          # 退避していた場合
 ```
 

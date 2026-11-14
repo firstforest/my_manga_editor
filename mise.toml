@@ -35,14 +35,15 @@ run = "flutter run --web-port=50505"
 [tasks.run-prod]
 run = "flutter run --web-port=50505 --dart-define=ENV=prod"
 
-# Firestore セキュリティルールのデプロイ（dev: デフォルトプロジェクト）
-# 事前に `npx firebase login` を対話ターミナルで済ませておくこと
+# Firestore / Cloud Storage セキュリティルールのデプロイ（dev: デフォルトプロジェクト）
+# 事前に `npx firebase login` を対話ターミナルで済ませておくこと。
+# Storage は Firebase コンソールでバケットを作成済みであること（Blaze プランが必要）
 [tasks.deploy-rules]
-run = "npx firebase deploy --only firestore:rules"
+run = "npx firebase deploy --only firestore:rules,storage"
 
-# Firestore セキュリティルールのデプロイ（prod）
+# Firestore / Cloud Storage セキュリティルールのデプロイ（prod）
 [tasks.deploy-rules-prod]
-run = "npx firebase deploy --only firestore:rules --project prod"
+run = "npx firebase deploy --only firestore:rules,storage --project prod"
 
 # Firestore の config/app を読み書きする（scripts/config.mjs）。
 # 認証: ADC（gcloud auth application-default login）。詳細は scripts/config.mjs 参照。

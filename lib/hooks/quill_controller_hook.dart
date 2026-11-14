@@ -3,14 +3,19 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 
-QuillController useQuillController(Delta? initialDelta) {
-  return use(_QuillControllerHook(initialDelta));
+/// [config] は最初の build のときの値だけを使う。
+QuillController useQuillController(
+  Delta? initialDelta, {
+  QuillControllerConfig config = const QuillControllerConfig(),
+}) {
+  return use(_QuillControllerHook(initialDelta, config));
 }
 
 class _QuillControllerHook extends Hook<QuillController> {
-  const _QuillControllerHook(this.initialDelta);
+  const _QuillControllerHook(this.initialDelta, this.config);
 
   final Delta? initialDelta;
+  final QuillControllerConfig config;
 
   @override
   HookState<QuillController, Hook<QuillController>> createState() =>
@@ -24,7 +29,7 @@ class _QuillControllerHookState
   @override
   void initHook() {
     super.initHook();
-    _controller = QuillController.basic();
+    _controller = QuillController.basic(config: hook.config);
     if (hook.initialDelta != null) {
       _controller.document = Document.fromDelta(hook.initialDelta!);
     }

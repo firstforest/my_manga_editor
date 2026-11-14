@@ -63,3 +63,16 @@ class PermissionException implements RepositoryException {
   final String message;
   PermissionException([this.message = 'Permission denied']);
 }
+
+/// メモ画像が保存できる大きさの上限を超えている。
+class MemoImageTooLargeException extends ValidationException {
+  final int maxBytes;
+
+  MemoImageTooLargeException(this.maxBytes)
+      : super('Image must be at most $maxBytes bytes');
+}
+
+/// メモ画像として扱えない形式 (PNG / JPEG / GIF / WebP 以外)。
+class UnsupportedMemoImageException extends ValidationException {
+  UnsupportedMemoImageException() : super('Unsupported image format');
+}

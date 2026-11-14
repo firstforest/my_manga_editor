@@ -9,6 +9,7 @@ import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor/widgets/quill_text_field_semantics.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/feature/manga/view/copy_page_dialogues.dart';
+import 'package:my_manga_editor/feature/manga/view/memo_image_embed.dart';
 import 'package:my_manga_editor/feature/manga/view/page_menu_button.dart';
 import 'package:my_manga_editor/feature/manga/view/scene_unit_drag.dart';
 import 'package:my_manga_editor_common/delta_text.dart';
@@ -808,6 +809,7 @@ class _QuillEditor extends HookWidget {
             scrollable: scrollable,
             maxHeight: scrollable ? 300.r : null,
             minHeight: scrollable ? null : 60.r,
+            unknownEmbedBuilder: const UnknownEmbedBuilder(),
           )),
     );
     if (scrollable) {

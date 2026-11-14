@@ -7,6 +7,7 @@ import 'package:my_manga_editor_common/delta_text.dart';
 import 'package:my_manga_editor_common/logger.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 import 'package:my_manga_editor_data/repository/manga_repository.dart';
+import 'package:my_manga_editor_data/repository/memo_image_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'manga_providers.g.dart';
@@ -98,8 +99,12 @@ class MangaNotifier extends _$MangaNotifier {
     await ref.read(mangaRepositoryProvider).updateMangaName(id, value);
   }
 
-  void delete() {
-    ref.read(mangaRepositoryProvider).deleteManga(id);
+  /// 作品を消してから、メモに貼った画像を消す。
+  /// 先に画像を消すと、作品の削除に失敗したときにメモの画像だけが壊れるため。
+  Future<void> delete() async {
+    final memoImageRepository = ref.read(memoImageRepositoryProvider);
+    await ref.read(mangaRepositoryProvider).deleteManga(id);
+    await memoImageRepository.deleteAllForManga(id);
   }
 
   void updateStartPage(MangaStartPage value) {

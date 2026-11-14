@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // メモに貼った画像（MemoImageStorageService）。自分の UID 配下のみ扱える。
+    // 表示はダウンロード URL（トークン付き）で行うため、URL を知っていれば
+    // ログインなしでも読める。ここで絞れるのは SDK 経由の読み取り・一覧・削除。
+    // 一覧 (listAll) はフォルダに対する要求なので、ファイル単位の match では拾えない。
+    // 読み取り・一覧・削除はフォルダ配下すべてに対して許可する。
+    match /users/{userId}/mangas/{mangaId}/memoImages/{allPaths=**} {
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /users/{userId}/mangas/{mangaId}/memoImages/{imageId} {
+      // 上限は MemoImageRepository.maxBytes と揃える。上書きはさせない。
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size <= 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|gif|webp)');
+    }
+  }
+}

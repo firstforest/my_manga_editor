@@ -47,7 +47,7 @@ jobs:
             CHANGED=$(git ls-tree -r --name-only "${GITHUB_REF_NAME}")
           fi
 
-          if echo "${CHANGED}" | grep -qxF 'firestore.rules'; then
+          if echo "${CHANGED}" | grep -qxE 'firestore\.rules|storage\.rules'; then
             echo "rules_changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "rules_changed=false" >> "$GITHUB_OUTPUT"
@@ -110,7 +110,7 @@ jobs:
             echo
             echo "- [ ] 本番 URL (${PRODUCTION_URL}) で動作確認"
             if [ "${RULES_CHANGED}" = "true" ]; then
-              echo "- [ ] **\`firestore.rules\` に変更あり** → \`mise run deploy-rules-prod\` を実行する"
+              echo "- [ ] **\`firestore.rules\` / \`storage.rules\` に変更あり** → \`mise run deploy-rules-prod\` を実行する"
               echo "  （ルールのデプロイは Web デプロイと連動していない）"
             fi
             echo "- [ ] 破壊的スキーマ変更を含む場合のみ: \`mise run config-set-prod minSupportedBuildNumber ${BUILD_NUMBER}\`"

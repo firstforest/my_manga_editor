@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:my_manga_editor/feature/manga/provider/manga_providers.dart';
 import 'package:my_manga_editor/router.dart';
+import 'package:my_manga_editor_common/delta_text.dart';
 import 'package:my_manga_editor_data/model/manga.dart';
 
 /// カード上のタグ表示。
@@ -90,9 +90,8 @@ class KanbanCard extends ConsumerWidget {
 
   Widget _buildCard(
       BuildContext context, WidgetRef ref, Delta? delta, int pageCount) {
-    final previewText = delta != null && delta.isNotEmpty
-        ? Document.fromDelta(delta).toPlainText()
-        : '';
+    final previewText =
+        delta != null && delta.isNotEmpty ? deltaToPlainText(delta) : '';
 
     void open() => ref.read(routerProvider).go('/manga/${manga.id.id}');
 

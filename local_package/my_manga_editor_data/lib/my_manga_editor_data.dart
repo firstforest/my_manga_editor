@@ -8,6 +8,7 @@ export 'repository/app_config_repository.dart';
 export 'repository/auth_repository.dart';
 export 'repository/exceptions.dart';
 export 'repository/manga_repository.dart';
+export 'repository/memo_image_repository.dart';
 
 // Services
 export 'service/firebase/auth_service.dart' hide AuthException;

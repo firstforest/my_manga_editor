@@ -95,7 +95,7 @@ class _DesktopLayout extends HookConsumerWidget {
           children: [
             Expanded(
               flex: 1,
-              child: _buildMemo(context),
+              child: _buildMemo(),
             ),
             SizedBox(width: 4.r),
             Expanded(
@@ -264,7 +264,7 @@ class _DesktopLayout extends HookConsumerWidget {
     );
   }
 
-  Widget _buildMemo(BuildContext context) {
+  Widget _buildMemo() {
     return SizedBox(
       height: 300.r,
       child: _MemoSheet(mangaId: page.mangaId, memoDeltaId: page.memoDeltaId),

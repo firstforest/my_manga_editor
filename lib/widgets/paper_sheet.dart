@@ -5,17 +5,20 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 /// 中のエディタが入力中のあいだは差し色の縁を出す。
 ///
 /// 1 枚の紙を欄に区切って使うとき（カットの中のセリフとト書き）は
-/// outlined を false にして、縁は外側の紙に任せる
+/// outlined を false にして、縁は外側の紙に任せる。外側の紙は focusOutline を
+/// false にして、入力中の縁を中の欄だけに出す
 class PaperSheet extends HookWidget {
   const PaperSheet({
     super.key,
     required this.color,
     required this.child,
     this.outlined = true,
+    this.focusOutline = true,
   });
 
   final Color color;
   final bool outlined;
+  final bool focusOutline;
   final Widget child;
 
   @override
@@ -27,7 +30,7 @@ class PaperSheet extends HookWidget {
       skipTraversal: true,
       // 欄のセマンティクスは QuillTextFieldSemantics が出すので、ここでは足さない
       includeSemantics: false,
-      onFocusChange: (value) => focused.value = value,
+      onFocusChange: (value) => focused.value = focusOutline && value,
       child: Container(
         decoration: BoxDecoration(
           color: color,

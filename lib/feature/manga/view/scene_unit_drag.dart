@@ -215,7 +215,6 @@ class _SceneUnitDragFeedback extends ConsumerWidget {
       offset: const Offset(12, 12),
       child: Material(
         elevation: 4,
-        borderRadius: BorderRadius.circular(4),
         child: Container(
           width: 240,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

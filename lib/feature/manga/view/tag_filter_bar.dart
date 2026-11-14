@@ -22,7 +22,7 @@ class TagFilterBar extends ConsumerWidget {
       height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         children: [
           _FilterChip(
             label: 'すべて',
@@ -61,12 +61,15 @@ class _FilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: selected,
-        // 選択中のチップを押しても選択は外れない (「すべて」に戻すには
-        // 「すべて」を押す)。絞り込み無しの状態が 2 通りできるのを避ける。
-        onSelected: (_) => onSelected(),
+      // 横向きの ListView は子をバーの高さいっぱいに伸ばすので、チップは自然な高さで縦中央に置く
+      child: Center(
+        child: ChoiceChip(
+          label: Text(label),
+          selected: selected,
+          // 選択中のチップを押しても選択は外れない (「すべて」に戻すには
+          // 「すべて」を押す)。絞り込み無しの状態が 2 通りできるのを避ける。
+          onSelected: (_) => onSelected(),
+        ),
       ),
     );
   }

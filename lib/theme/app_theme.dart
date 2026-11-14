@@ -49,8 +49,12 @@ ThemeData buildAppTheme() {
 
 const _ai = Color(0xFF2E4B85);
 
+/// 「うまくいっている」状態の緑。墨と藍の中で浮かないよう彩度を落とす
+const _success = Color(0xFF3F8F5A);
+
 /// 書ける場所ごとの紙の色など、ColorScheme の役割の名前だけでは意味が伝わらないもの。
-/// 色の値は ColorScheme から導き、同じ紙を別々の値で持たない
+/// 紙の色は ColorScheme から導き、同じ紙を別々の値で持たない。
+/// success は ColorScheme に対応する役割がないので、このテーマの固定値を持つ
 @immutable
 class AppTokens extends ThemeExtension<AppTokens> {
   const AppTokens({
@@ -65,7 +69,7 @@ class AppTokens extends ThemeExtension<AppTokens> {
       memoField: scheme.primaryContainer,
       dialogueField: scheme.surfaceContainerLowest,
       directionField: scheme.surfaceContainer,
-      success: const Color(0xFF3F8F5A),
+      success: _success,
     );
   }
 

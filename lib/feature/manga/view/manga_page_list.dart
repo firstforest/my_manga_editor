@@ -94,7 +94,8 @@ class MangaPageList extends HookConsumerWidget {
           final pageId = pageIdList[index];
           return Padding(
             key: pageKeys.putIfAbsent(pageId, GlobalKey.new),
-            padding: EdgeInsets.symmetric(vertical: 8.r),
+            // 右端に重なって出るデスクトップのスクロールバーが、カットの操作列を覆わないよう左右を空ける
+            padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r),
             child: Column(
               children: [
                 MangaPageWidget(

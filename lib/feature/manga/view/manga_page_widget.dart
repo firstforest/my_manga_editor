@@ -267,13 +267,26 @@ class _DesktopLayout extends HookConsumerWidget {
   Widget _buildMemo(BuildContext context) {
     return SizedBox(
       height: 300.r,
-      child: PaperSheet(
-        color: AppTokens.of(context).memoField,
-        child: _QuillTextAreaWidget(
-          mangaId: page.mangaId,
-          deltaId: page.memoDeltaId,
-          placeholder: 'このページで描きたいこと',
-        ),
+      child: _MemoSheet(mangaId: page.mangaId, memoDeltaId: page.memoDeltaId),
+    );
+  }
+}
+
+/// ページのメモ欄の紙。大きさは置く側のレイアウトが決める
+class _MemoSheet extends StatelessWidget {
+  const _MemoSheet({required this.mangaId, required this.memoDeltaId});
+
+  final MangaId mangaId;
+  final DeltaId memoDeltaId;
+
+  @override
+  Widget build(BuildContext context) {
+    return PaperSheet(
+      color: AppTokens.of(context).memoField,
+      child: _QuillTextAreaWidget(
+        mangaId: mangaId,
+        deltaId: memoDeltaId,
+        placeholder: 'このページで描きたいこと',
       ),
     );
   }
@@ -296,7 +309,8 @@ class _PageIndicator extends StatelessWidget {
   }
 }
 
-/// カットを並べる 1 枚の紙。カットどうし・欄どうしは罫線で仕切る
+/// カットを並べる 1 枚の紙。カットどうし・欄どうしは罫線で仕切る。
+/// 入力中の縁は中の欄が出すので、この紙には出さない
 class _CutPanel extends StatelessWidget {
   const _CutPanel({required this.height, required this.child});
 
@@ -305,15 +319,13 @@ class _CutPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
+    return SizedBox(
       height: height,
-      clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLowest,
-        border: Border.all(color: scheme.outlineVariant),
+      child: PaperSheet(
+        color: Theme.of(context).colorScheme.surfaceContainerLowest,
+        focusOutline: false,
+        child: ClipRect(child: child),
       ),
-      child: child,
     );
   }
 }
@@ -346,7 +358,9 @@ class _MobileLayout extends HookConsumerWidget {
     // Build page list: memo, then for each sceneUnit: dialogue, stageDirection
     final tokens = AppTokens.of(context);
     final pages = <Widget>[
-      _buildMemo(tokens),
+      SizedBox.expand(
+        child: _MemoSheet(mangaId: page.mangaId, memoDeltaId: page.memoDeltaId),
+      ),
       for (final unit in page.sceneUnits) ...[
         _buildDialogues(tokens, unit),
         _buildStageDirection(tokens, unit),
@@ -431,17 +445,6 @@ class _MobileLayout extends HookConsumerWidget {
   Widget _buildField(Color color, Widget child) {
     return SizedBox.expand(
       child: PaperSheet(color: color, child: child),
-    );
-  }
-
-  Widget _buildMemo(AppTokens tokens) {
-    return _buildField(
-      tokens.memoField,
-      _QuillTextAreaWidget(
-        mangaId: page.mangaId,
-        deltaId: page.memoDeltaId,
-        placeholder: 'このページで描きたいこと',
-      ),
     );
   }
 
